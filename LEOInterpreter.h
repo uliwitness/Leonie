@@ -20,7 +20,7 @@
 typedef uint16_t	LEOInstructionID;	// Index into our instruction function array. Index 0 contains the "unimplemented" error exit function.
 
 
-typedef struct
+typedef struct LEOInstruction
 {
 	LEOInstructionID		instructionID;
 	uint16_t				param1;
@@ -28,8 +28,10 @@ typedef struct
 } LEOInstruction;
 
 
-typedef struct
+typedef struct LEOContext
 {
+	bool			keepRunning;			// ExitToShell and errors set this to TRUE to stop interpreting of code.
+	char			errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
 	LEOInstruction	*currentInstruction;	// PC
 	union LEOValue	*stackBasePtr;			// BP
 	union LEOValue	*stackEndPtr;			// SP (always points at element after last element)

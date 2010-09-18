@@ -18,17 +18,17 @@
 #pragma mark -
 #pragma mark Instruction Functions
 
-void	LEOAbnormalExitInstruction( LEOContext* inContext )
+void	LEOInvalidInstruction( LEOContext* inContext )
 {
 	printf( "\n*** TERMINATING DUE TO UNKNOWN INSTRUCTION %u ***\n\n", inContext->currentInstruction->instructionID );
 	
-	inContext->currentInstruction = NULL;	// Causes interpreter loop to exit.
+	inContext->keepRunning = false;	// Causes interpreter loop to exit.
 }
 
 
 void	LEOExitToShellInstruction( LEOContext* inContext )
 {
-	inContext->currentInstruction = NULL;	// Causes interpreter loop to exit.
+	inContext->keepRunning = false;	// Causes interpreter loop to exit.
 }
 
 
@@ -56,7 +56,7 @@ void	LEOPrintInstruction( LEOContext* inContext )
 	char		buf[1024] = { 0 };
 	
 	union LEOValue*	theValue = inContext->stackEndPtr -1;
-	LEOGetValueAsString( theValue, buf, sizeof(buf) );
+	LEOGetValueAsString( theValue, buf, sizeof(buf), inContext );
 	printf( "%s", buf );
 	
 	inContext->currentInstruction++;
@@ -71,17 +71,39 @@ void	LEOPopInstruction( LEOContext* inContext )
 }
 
 
+void	LEOPushBooleanInstruction( LEOContext* inContext )
+{
+	LEOInitBooleanValue( (LEOValuePtr) inContext->stackEndPtr, inContext->currentInstruction->param2 == 1 );
+	inContext->stackEndPtr++;
+
+	inContext->currentInstruction++;
+}
+
+
+void	LEOAssignStringFromTableInstruction( LEOContext* inContext )
+{
+	union LEOValue*	theValue = inContext->stackEndPtr -1;
+	const char*		theStr = "Top 'o the mornin' to ya!";
+	
+	LEOSetValueAsString( theValue, theStr, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
 #pragma mark -
 #pragma mark Instruction table
 
 LEOInstructionFuncPtr	gInstructions[] =
 {
-	LEOAbnormalExitInstruction,
+	LEOInvalidInstruction,
 	LEOExitToShellInstruction,
 	LEONoOpInstruction,
 	LEOPushStringFromTableInstruction,
 	LEOPrintInstruction,
-	LEOPopInstruction
+	LEOPopInstruction,
+	LEOPushBooleanInstruction,
+	LEOAssignStringFromTableInstruction
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

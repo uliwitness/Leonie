@@ -9,6 +9,7 @@
 #import "LeonieAppDelegate.h"
 #import "LEOInterpreter.h"
 #import "LEOInstructions.h"
+#include <stdio.h>
 
 
 @implementation LeonieAppDelegate
@@ -18,7 +19,7 @@
 
 -(void)	applicationDidFinishLaunching: (NSNotification *)aNotification
 {
-	NSLog( @"Running script" );
+	printf( ">>> Running bytecode\n" );
 	
 	LEOInstruction		instructions[] =
 	{
@@ -26,16 +27,25 @@
 		{ PRINT_VALUE_INSTR, 0, 0 },
 		{ POP_VALUE_INSTR, 0, 0 },
 		{ EXIT_TO_SHELL_INSTR, 0, 0 },
-		{ ABNORMAL_EXIT_INSTR, 0, 0 },		// Directly produce effect of invalid instruction.
-		{ 77, 9, 8 },						// Completely invalid.
+		{ PUSH_BOOLEAN_INSTR, 0, true },
+		{ ASSIGN_STRING_FROM_TABLE_INSTR, 0, 2 },
+		{ POP_VALUE_INSTR, 0, 0 },
+		{ INVALID_INSTR, 0, 0 },		// Directly produce effect of invalid instruction.
+		{ 77, 9, 8 },					// Completely invalid.
 	};
 	
 	LEOContext			context;
 	LEOInitContext( &context );
 	LEORunInContext( instructions, &context );
-	LEOCleanUpContext( &context );
 	
-	NSLog( @"FINISHED Running script" );
+	if( context.errMsg[0] != 0 )
+		printf( ">>> ABORTED Running bytecode: *** %s ***\n", context.errMsg );
+	else
+		printf( ">>> FINISHED Running bytecode\n" );
+	
+	LEOCleanUpContext( &context );
+
+
 //	char				buf[1024];
 //	LEOValueString		theStr;
 //	LEOInitStringConstantValue( (LEOValuePtr)&theStr, "Top 'o the mornin' to ya!" );

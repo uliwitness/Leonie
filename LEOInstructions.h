@@ -14,12 +14,14 @@
 #include <sys/types.h>
 
 
-#define	ABNORMAL_EXIT_INSTR				0
+#define	INVALID_INSTR					0
 #define	EXIT_TO_SHELL_INSTR				1
 #define	NO_OP_INSTR						2
 #define	PUSH_STR_FROM_TABLE_INSTR		3
 #define	PRINT_VALUE_INSTR				4
 #define	POP_VALUE_INSTR					5
+#define PUSH_BOOLEAN_INSTR				6
+#define ASSIGN_STRING_FROM_TABLE_INSTR	7
 
 
 

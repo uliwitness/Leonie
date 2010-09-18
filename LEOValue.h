@@ -35,20 +35,24 @@ typedef struct LEOValueType *	LEOValueTypePtr;
 typedef struct LEOValueBase	*	LEOValuePtr;
 
 
+struct LEOContext;
+
+
 // Layout of the virtual function tables:
 struct LEOValueType
 {
-	size_t		size;
+	const char*	displayTypeName;	// Used for error messages etc. Doesn't distinguish between dynamic and constant strings.
+	size_t		size;				// Minimal size required for a variable of this type.
 	
-	double		(*GetAsNumber)( LEOValuePtr self );
-	void		(*GetAsString)( LEOValuePtr self, char* outBuf, long bufSize );
-	LEOObjectID	(*GetAsObjectID)( LEOValuePtr self );
-	bool		(*GetAsBoolean)( LEOValuePtr self );
+	double		(*GetAsNumber)( LEOValuePtr self, struct LEOContext* inContext );
+	void		(*GetAsString)( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
+	LEOObjectID	(*GetAsObjectID)( LEOValuePtr self, struct LEOContext* inContext );
+	bool		(*GetAsBoolean)( LEOValuePtr self, struct LEOContext* inContext );
 	
-	void		(*SetAsNumber)( LEOValuePtr self, double inNumber );
-	void		(*SetAsString)( LEOValuePtr self, const char* inBuf );
-	void		(*SetAsObjectID)( LEOValuePtr self, LEOObjectID inObjectID );
-	void		(*SetAsBoolean)( LEOValuePtr self, bool inBoolean );
+	void		(*SetAsNumber)( LEOValuePtr self, double inNumber, struct LEOContext* inContext );
+	void		(*SetAsString)( LEOValuePtr self, const char* inBuf, struct LEOContext* inContext );
+	void		(*SetAsObjectID)( LEOValuePtr self, LEOObjectID inObjectID, struct LEOContext* inContext );
+	void		(*SetAsBoolean)( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
 	
 	void		(*InitCopy)( LEOValuePtr self, LEOValuePtr dest );	// dest is an uninitialized value.
 	
@@ -156,59 +160,59 @@ void		LEOInitBooleanValue( LEOValuePtr inStorage, bool inBoolean );
 #define		LEOGetBooleanValueSize()			(kLeoValueTypeBoolean.size)		
 
 // Convenience macros for calling virtual methods w/o knowing what object it is:
-#define 	LEOGetValueAsNumber(v)		((LEOValuePtr)(v))->isa->GetAsNumber(((LEOValuePtr)(v)))
-#define 	LEOGetValueAsString(v,s,l)	((LEOValuePtr)(v))->isa->GetAsString(((LEOValuePtr)(v)),(s),(l))
-#define 	LEOGetValueAsObjectID(v)	((LEOValuePtr)(v))->isa->GetAsObjectID(((LEOValuePtr)(v)))
-#define 	LEOGetValueAsBoolean(v)		((LEOValuePtr)(v))->isa->GetAsBoolean(((LEOValuePtr)(v)))
+#define 	LEOGetValueAsNumber(v,c)		((LEOValuePtr)(v))->isa->GetAsNumber(((LEOValuePtr)(v)),(c))
+#define 	LEOGetValueAsString(v,s,l,c)	((LEOValuePtr)(v))->isa->GetAsString(((LEOValuePtr)(v)),(s),(l),(c))
+#define 	LEOGetValueAsObjectID(v,c)		((LEOValuePtr)(v))->isa->GetAsObjectID(((LEOValuePtr)(v)),(c))
+#define 	LEOGetValueAsBoolean(v,c)		((LEOValuePtr)(v))->isa->GetAsBoolean(((LEOValuePtr)(v)),(c))
 
-#define 	LEOSetValueAsNumber(v,n)	((LEOValuePtr)(v))->isa->SetAsNumber(((LEOValuePtr)(v)),(n))
-#define 	LEOSetValueAsString(v,s)	((LEOValuePtr)(v))->isa->SetAsString(((LEOValuePtr)(v)),(s))
-#define 	LEOSetValueAsObjectID(v,i)	((LEOValuePtr)(v))->isa->SetAsObjectID(((LEOValuePtr)(v)),(i))
-#define 	LEOSetValueAsBoolean(v,n)	((LEOValuePtr)(v))->isa->SetAsBoolean(((LEOValuePtr)(v)),(n))
+#define 	LEOSetValueAsNumber(v,n,c)		((LEOValuePtr)(v))->isa->SetAsNumber(((LEOValuePtr)(v)),(n),(c))
+#define 	LEOSetValueAsString(v,s,c)		((LEOValuePtr)(v))->isa->SetAsString(((LEOValuePtr)(v)),(s),(c))
+#define 	LEOSetValueAsObjectID(v,i,c)	((LEOValuePtr)(v))->isa->SetAsObjectID(((LEOValuePtr)(v)),(i),(c))
+#define 	LEOSetValueAsBoolean(v,n,c)		((LEOValuePtr)(v))->isa->SetAsBoolean(((LEOValuePtr)(v)),(n),(c))
 
-#define 	LEOInitCopy(v,d)			((LEOValuePtr)(v))->isa->InitCopy(((LEOValuePtr)(v)),((LEOValuePtr)(n)))
+#define 	LEOInitCopy(v,d)				((LEOValuePtr)(v))->isa->InitCopy(((LEOValuePtr)(v)),((LEOValuePtr)(n)))
 
-#define 	LEOCleanUpValue(v)			((LEOValuePtr)(v))->isa->CleanUp(((LEOValuePtr)(v)))
+#define 	LEOCleanUpValue(v)				((LEOValuePtr)(v))->isa->CleanUp(((LEOValuePtr)(v)))
 
 // Failure indicators we re-use in many places:
-LEOObjectID	LEOCantGetValueAsObjectID( LEOValuePtr self );
-double		LEOCantGetValueAsNumber( LEOValuePtr self );
-bool		LEOCantGetValueAsBoolean( LEOValuePtr self );
-void		LEOCantSetValueAsObjectID( LEOValuePtr self, LEOObjectID inObjectID );
-void		LEOCantSetValueAsNumber( LEOValuePtr self, double inNumber );
-void		LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState );
+LEOObjectID	LEOCantGetValueAsObjectID( LEOValuePtr self, struct LEOContext* inContext );
+double		LEOCantGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
+bool		LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
+void		LEOCantSetValueAsObjectID( LEOValuePtr self, LEOObjectID inObjectID, struct LEOContext* inContext );
+void		LEOCantSetValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext );
+void		LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext* inContext );
 
 // Number instance methods:
-double		LEOGetNumberValueAsNumber( LEOValuePtr self );
-void		LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, long bufSize );
-void		LEOSetNumberValueAsNumber( LEOValuePtr self, double inNumber );
-void		LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber );
+double		LEOGetNumberValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
+void		LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
+void		LEOSetNumberValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext );
+void		LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, struct LEOContext* inContext );
 void		LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest );
 void		LEOCleanUpNumberValue( LEOValuePtr self );
 
 // String instance methods:
-double		LEOGetStringValueAsNumber( LEOValuePtr self );
-bool		LEOGetStringValueAsBoolean( LEOValuePtr self );
-void		LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, long bufSize );
-void		LEOSetStringValueAsNumber( LEOValuePtr self, double inNumber );
-void		LEOSetStringValueAsString( LEOValuePtr self, const char* inString );
-void		LEOSetStringValueAsBoolean( LEOValuePtr self, bool inBoolean );					// Makes it a constant string.
-void 		LEOSetStringValueAsStringConstant( LEOValuePtr self, const char* inString );	// Makes it a constant string.
+double		LEOGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
+bool		LEOGetStringValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
+void		LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
+void		LEOSetStringValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext );
+void		LEOSetStringValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );
+void		LEOSetStringValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );				// Makes it a constant string.
+void 		LEOSetStringValueAsStringConstant( LEOValuePtr self, const char* inString, struct LEOContext* inContext );	// Makes it a constant string.
 void		LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest );
 void		LEOCleanUpStringValue( LEOValuePtr self );
 
 // Replacement assignment methods and destructors for constant-referencing strings:
-void		LEOSetStringConstantValueAsNumber( LEOValuePtr self, double inNumber );			// Makes it a dynamically allocated string.
-void		LEOSetStringConstantValueAsString( LEOValuePtr self, const char* inString );	// Makes it a dynamically allocated string.
-void		LEOSetStringConstantValueAsBoolean( LEOValuePtr self, bool inBoolean );
+void		LEOSetStringConstantValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext );			// Makes it a dynamically allocated string.
+void		LEOSetStringConstantValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );	// Makes it a dynamically allocated string.
+void		LEOSetStringConstantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
 void		LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest );
 void		LEOCleanUpStringConstantValue( LEOValuePtr self );
 
 // Boolean instance methods:
-void		LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, long bufSize );
-bool		LEOGetBooleanValueAsBoolean( LEOValuePtr self );
-void		LEOSetBooleanValueAsString( LEOValuePtr self, const char* inString );
-void		LEOSetBooleanValueAsBoolean( LEOValuePtr self, bool inBoolean );
+void		LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
+bool		LEOGetBooleanValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
+void		LEOSetBooleanValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );
+void		LEOSetBooleanValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
 void		LEOInitBooleanValueCopy( LEOValuePtr self, LEOValuePtr dest );
 void		LEOCleanUpBooleanValue( LEOValuePtr self );
 

@@ -38,12 +38,15 @@ void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDel
 
 void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext )
 {
+	inContext->keepRunning = true;
 	inContext->currentInstruction = instructions;
 	inContext->stackBasePtr = inContext->stack;
 	inContext->stackEndPtr = inContext->stack;
+	inContext->errMsg[0] = 0;
 	
-	while( inContext->currentInstruction != NULL )	// Set the currentInstruction to NULL to do the equivalent of exit().
+	while( inContext->currentInstruction != NULL && inContext->keepRunning )	// Set keepRunning to FALSE to do the equivalent of exit().
 	{
+		inContext->errMsg[0] = 0;
 		LEOInstructionID	currID = inContext->currentInstruction->instructionID;
 		if( currID >= gNumInstructions )
 			currID = 0;	// First instruction is the special "unimplemented" instruction.
