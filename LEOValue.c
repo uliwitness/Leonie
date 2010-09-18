@@ -17,44 +17,92 @@
 #include <string.h>
 
 
+#pragma mark ISA v-tables
 // -----------------------------------------------------------------------------
 //	ISA v-tables for the subclasses:
 // -----------------------------------------------------------------------------
 
 struct LEOValueType	kLeoValueTypeNumber =
 {
+	sizeof(struct LEOValueNumber),
+	
 	LEOGetNumberValueAsNumber,
 	LEOGetNumberValueAsString,
 	LEOCantGetValueAsObjectID,
+	LEOCantGetValueAsBoolean,
+	
 	LEOSetNumberValueAsNumber,
 	LEOSetNumberValueAsString,
 	LEOCantSetValueAsObjectID,
+	LEOCantSetValueAsBoolean,
+	
+	LEOInitNumberValueCopy,
+	
 	LEOCleanUpNumberValue
 };
 
 
 struct LEOValueType	kLeoValueTypeString =
 {
+	sizeof(struct LEOValueString),
+	
 	LEOGetStringValueAsNumber,
 	LEOGetStringValueAsString,
 	LEOCantGetValueAsObjectID,
+	LEOGetStringValueAsBoolean,
+	
 	LEOSetStringValueAsNumber,
 	LEOSetStringValueAsString,
 	LEOCantSetValueAsObjectID,
+	LEOSetStringValueAsBoolean,
+	
+	LEOInitStringValueCopy,
+	
 	LEOCleanUpStringValue
 };
 
 
 struct LEOValueType	kLeoValueTypeStringConstant =
 {
+	sizeof(struct LEOValueString),
+	
 	LEOGetStringValueAsNumber,
 	LEOGetStringValueAsString,
 	LEOCantGetValueAsObjectID,
+	LEOGetStringValueAsBoolean,
+	
 	LEOSetStringConstantValueAsNumber,
 	LEOSetStringConstantValueAsString,
 	LEOCantSetValueAsObjectID,
+	LEOSetStringConstantValueAsBoolean,
+	
+	LEOInitStringConstantValueCopy,
+	
 	LEOCleanUpStringConstantValue
 };
+
+
+
+
+struct LEOValueType	kLeoValueTypeBoolean =
+{
+	sizeof(struct LEOValueBoolean),
+	
+	LEOCantGetValueAsNumber,
+	LEOGetBooleanValueAsString,
+	LEOCantGetValueAsObjectID,
+	LEOGetBooleanValueAsBoolean,
+	
+	LEOCantSetValueAsNumber,
+	LEOSetBooleanValueAsString,
+	LEOCantSetValueAsObjectID,
+	LEOSetBooleanValueAsBoolean,
+	
+	LEOInitBooleanValueCopy,
+	
+	LEOCleanUpBooleanValue
+};
+
 
 
 #pragma mark -
@@ -63,13 +111,49 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 
 LEOObjectID LEOCantGetValueAsObjectID( LEOValuePtr self )
 {
+	printf( "\n*** Can't make this into an object ID ***\n\n" );
+	
 	return LEOObjectIDINVALID;
+}
+
+
+double	LEOCantGetValueAsNumber( LEOValuePtr self )
+{
+	printf( "\n*** Can't make this into a number ***\n\n" );
+	
+	return 0.0;
+}
+
+
+bool	LEOCantGetValueAsBoolean( LEOValuePtr self )
+{
+	printf( "\n*** Can't make this into a boolean ***\n\n" );
+	
+	return false;
 }
 
 
 void	LEOCantSetValueAsObjectID( LEOValuePtr self, LEOObjectID inObjectID )
 {
-	
+	printf( "\n*** Can't take an object ID here ***\n\n" );
+}
+
+
+void	LEOCantSetValueAsNumber( LEOValuePtr self, double inNumber )
+{
+	printf( "\n*** Can't take a number here ***\n\n" );
+}
+
+
+void	LEOCantSetValueAsString( LEOValuePtr self, const char* inString )
+{
+	printf( "\n*** Can't take a string here ***\n\n" );
+}
+
+
+void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState )
+{
+	printf( "\n*** Can't take a boolean here ***\n\n" );
 }
 
 
@@ -108,6 +192,13 @@ void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber )
 }
 
 
+void	LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest )
+{
+	dest->isa = &kLeoValueTypeNumber;
+	((struct LEOValueNumber*)dest)->number = ((struct LEOValueNumber*)self)->number;
+}
+
+
 void	LEOCleanUpNumberValue( LEOValuePtr self )
 {
 	self->isa = NULL;
@@ -116,8 +207,7 @@ void	LEOCleanUpNumberValue( LEOValuePtr self )
 
 
 #pragma mark -
-#pragma mark Number
-
+#pragma mark Dynamically allocated string
 
 void	LEOInitStringValue( LEOValuePtr inStorage, const char* inString )
 {
@@ -149,6 +239,17 @@ void	LEOSetStringValueAsNumber( LEOValuePtr self, double inNumber )
 }
 
 
+bool	LEOGetStringValueAsBoolean( LEOValuePtr self )
+{
+	if( strcasecmp( ((struct LEOValueString*)self)->string, "true" ) == 0 )
+		return true;
+	else if( strcasecmp( ((struct LEOValueString*)self)->string, "false" ) == 0 )
+		return false;
+	else
+		return LEOCantGetValueAsBoolean( self );
+}
+
+
 void LEOSetStringValueAsString( LEOValuePtr self, const char* inString )
 {
 	if( ((struct LEOValueString*)self)->string )
@@ -156,6 +257,31 @@ void LEOSetStringValueAsString( LEOValuePtr self, const char* inString )
 	long		theLen = strlen(inString) +1;
 	((struct LEOValueString*)self)->string = malloc( theLen );
 	strncpy( ((struct LEOValueString*)self)->string, inString, theLen );
+}
+
+
+void LEOSetStringValueAsBoolean( LEOValuePtr self, bool inBoolean )
+{
+	LEOSetStringValueAsStringConstant( self, inBoolean ? "true" : "false" );
+}
+
+
+void LEOSetStringValueAsStringConstant( LEOValuePtr self, const char* inString )
+{
+	if( ((struct LEOValueString*)self)->string )
+		free( ((struct LEOValueString*)self)->string );
+	
+	self->isa = &kLeoValueTypeStringConstant;
+	((struct LEOValueString*)self)->string = (char*) inString;
+}
+
+
+void	LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest )
+{
+	dest->isa = &kLeoValueTypeString;
+	long		theLen = strlen(((struct LEOValueString*)self)->string) +1;
+	((struct LEOValueString*)dest)->string = malloc( theLen );
+	strncpy( ((struct LEOValueString*)dest)->string, ((struct LEOValueString*)self)->string, theLen );
 }
 
 
@@ -169,7 +295,7 @@ void	LEOCleanUpStringValue( LEOValuePtr self )
 
 
 #pragma mark -
-#pragma mark Number
+#pragma mark String Constant
 
 
 void	LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString )
@@ -198,10 +324,78 @@ void	LEOSetStringConstantValueAsString( LEOValuePtr self, const char* inString )
 }
 
 
+void	LEOSetStringConstantValueAsBoolean( LEOValuePtr self, bool inBoolean )
+{
+	((struct LEOValueString*)self)->string = (inBoolean ? "true" : "false");
+}
+
+
+void	LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest )
+{
+	dest->isa = &kLeoValueTypeStringConstant;
+	((struct LEOValueString*)dest)->string = ((struct LEOValueString*)self)->string;
+}
+
+
 void	LEOCleanUpStringConstantValue( LEOValuePtr self )
 {
 	self->isa = NULL;
 	((struct LEOValueString*)self)->string = NULL;
 }
+
+
+#pragma mark -
+#pragma mark Boolean
+
+
+void	LEOInitBooleanValue( LEOValuePtr self, bool inBoolean )
+{
+	self->isa = &kLeoValueTypeBoolean;
+	((struct LEOValueBoolean*)self)->boolean = inBoolean;
+}
+
+
+void	LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, long bufSize )
+{
+	strncpy( outBuf, ((struct LEOValueBoolean*)self)->boolean ? "true" : "false", bufSize -1 );
+}
+
+
+bool	LEOGetBooleanValueAsBoolean( LEOValuePtr self )
+{
+	return ((struct LEOValueBoolean*)self)->boolean;
+}
+
+
+void	LEOSetBooleanValueAsString( LEOValuePtr self, const char* inString )
+{
+	if( strcasecmp( inString, "true" ) == 0 )
+		((struct LEOValueBoolean*)self)->boolean = true;
+	else if( strcasecmp( inString, "false" ) == 0 )
+		((struct LEOValueBoolean*)self)->boolean = false;
+	else
+		LEOCantSetValueAsString( self, inString );
+}
+
+
+void	LEOSetBooleanValueAsBoolean( LEOValuePtr self, bool inBoolean )
+{
+	((struct LEOValueBoolean*)self)->boolean = inBoolean;
+}
+
+
+void	LEOInitBooleanValueCopy( LEOValuePtr self, LEOValuePtr dest )
+{
+	dest->isa = &kLeoValueTypeBoolean;
+	((struct LEOValueBoolean*)dest)->boolean = ((struct LEOValueBoolean*)self)->boolean;
+}
+
+
+void	LEOCleanUpBooleanValue( LEOValuePtr self )
+{
+	self->isa = NULL;
+	((struct LEOValueBoolean*)self)->boolean = false;
+}
+
 
 
