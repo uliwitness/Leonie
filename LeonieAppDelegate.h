@@ -8,10 +8,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface LeonieAppDelegate : NSObject <NSApplicationDelegate> {
-    NSWindow *window;
+@interface LeonieAppDelegate : NSObject <NSApplicationDelegate>
+{
+    NSWindow			*window;
+	NSProgressIndicator	*busyIndicator;
 }
 
-@property (assign) IBOutlet NSWindow *window;
+@property (assign) IBOutlet NSWindow			*window;
+@property (assign) IBOutlet NSProgressIndicator	*busyIndicator;
 
 @end

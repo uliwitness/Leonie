@@ -10,14 +10,33 @@
 #ifndef LEO_INTERPRETER_H
 #define LEO_INTERPRETER_H		1
 
+// -----------------------------------------------------------------------------
+//	Headers:
+// -----------------------------------------------------------------------------
+
 #include "LEOValue.h"
 #include <stdint.h>
 
 
+// -----------------------------------------------------------------------------
+//	Constants:
+// -----------------------------------------------------------------------------
+
 #define LEO_STACK_SIZE			1024
 
 
+// -----------------------------------------------------------------------------
+//	Types:
+// -----------------------------------------------------------------------------
+
 typedef uint16_t	LEOInstructionID;	// Index into our instruction function array. Index 0 contains the "unimplemented" error exit function.
+
+
+// All instructions are implemented as functions with the following signature:
+//	Apart from branching instructions, every instruction has to increment the
+//	inContext->currentInstruction so it'll advance to the next instruction. The
+//	instruction functions are looked up in the gInstructions array.
+typedef void (*LEOInstructionFuncPtr)( struct LEOContext* inContext );
 
 
 typedef struct LEOInstruction
@@ -30,21 +49,19 @@ typedef struct LEOInstruction
 
 typedef struct LEOContext
 {
-	bool			keepRunning;			// ExitToShell and errors set this to TRUE to stop interpreting of code.
-	char			errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
-	LEOInstruction	*currentInstruction;	// PC
-	union LEOValue	*stackBasePtr;			// BP
-	union LEOValue	*stackEndPtr;			// SP (always points at element after last element)
-	union LEOValue	stack[LEO_STACK_SIZE];	// The stack.
+	bool					keepRunning;			// ExitToShell and errors set this to TRUE to stop interpreting of code.
+	char					errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
+	LEOInstructionFuncPtr	preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
+	LEOInstruction			*currentInstruction;	// PC
+	union LEOValue			*stackBasePtr;			// BP
+	union LEOValue			*stackEndPtr;			// SP (always points at element after last element)
+	union LEOValue			stack[LEO_STACK_SIZE];	// The stack.
 } LEOContext;
 
 
-// All instructions are implemented as functions with the following signature:
-//	Apart from branching instructions, every instruction has to increment the
-//	inContext->currentInstruction so it'll advance to the next instruction. The
-//	instruction functions are looked up in the gInstructions array.
-typedef void (*LEOInstructionFuncPtr)( LEOContext* inContext );
-
+// -----------------------------------------------------------------------------
+//	Prototypes:
+// -----------------------------------------------------------------------------
 
 void	LEOInitContext( LEOContext* theContext );
 void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext );

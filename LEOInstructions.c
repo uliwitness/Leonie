@@ -20,13 +20,13 @@
 
 void	LEOInvalidInstruction( LEOContext* inContext )
 {
-	printf( "\n*** TERMINATING DUE TO UNKNOWN INSTRUCTION %u ***\n\n", inContext->currentInstruction->instructionID );
+	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "\n*** TERMINATING DUE TO UNKNOWN INSTRUCTION %u ***\n\n", inContext->currentInstruction->instructionID );
 	
 	inContext->keepRunning = false;	// Causes interpreter loop to exit.
 }
 
 
-void	LEOExitToShellInstruction( LEOContext* inContext )
+void	LEOExitToTopInstruction( LEOContext* inContext )
 {
 	inContext->keepRunning = false;	// Causes interpreter loop to exit.
 }
@@ -91,19 +91,51 @@ void	LEOAssignStringFromTableInstruction( LEOContext* inContext )
 }
 
 
+void	LEOJumpRelativeInstruction( LEOContext* inContext )
+{
+	inContext->currentInstruction += inContext->currentInstruction->param2;
+}
+
+
+void	LEOJumpRelativeIfTrueInstruction( LEOContext* inContext )
+{
+	union LEOValue*	theValue = inContext->stackEndPtr -1;
+	if( LEOGetValueAsBoolean( theValue, inContext ) )
+		inContext->currentInstruction += inContext->currentInstruction->param2;
+	else
+		inContext->currentInstruction++;
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+}
+
+
+void	LEOJumpRelativeIfFalseInstruction( LEOContext* inContext )
+{
+	union LEOValue*	theValue = inContext->stackEndPtr -1;
+	if( !LEOGetValueAsBoolean( theValue, inContext ) )
+		inContext->currentInstruction += inContext->currentInstruction->param2;
+	else
+		inContext->currentInstruction++;
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+}
+
+
+
 #pragma mark -
 #pragma mark Instruction table
 
 LEOInstructionFuncPtr	gInstructions[] =
 {
 	LEOInvalidInstruction,
-	LEOExitToShellInstruction,
+	LEOExitToTopInstruction,
 	LEONoOpInstruction,
 	LEOPushStringFromTableInstruction,
 	LEOPrintInstruction,
 	LEOPopInstruction,
 	LEOPushBooleanInstruction,
-	LEOAssignStringFromTableInstruction
+	LEOAssignStringFromTableInstruction,
+	LEOJumpRelativeInstruction,
+	LEOJumpRelativeIfTrueInstruction,
+	LEOJumpRelativeIfFalseInstruction
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

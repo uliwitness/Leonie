@@ -14,9 +14,16 @@
 #include "LEOInstructions.h"
 
 
+void	LEODoNothingPreInstructionProc( LEOContext* inContext )
+{
+	
+}
+
+
 void	LEOInitContext( LEOContext* theContext )
 {
 	memset( theContext, 0, sizeof(LEOContext) );
+	theContext->preInstructionProc = LEODoNothingPreInstructionProc;
 }
 
 
@@ -47,6 +54,11 @@ void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext )
 	while( inContext->currentInstruction != NULL && inContext->keepRunning )	// Set keepRunning to FALSE to do the equivalent of exit().
 	{
 		inContext->errMsg[0] = 0;
+		
+		inContext->preInstructionProc(inContext);
+		if( inContext->currentInstruction == NULL || !inContext->keepRunning )	// Did pre-instruction-proc request abort?
+			break;
+		
 		LEOInstructionID	currID = inContext->currentInstruction->instructionID;
 		if( currID >= gNumInstructions )
 			currID = 0;	// First instruction is the special "unimplemented" instruction.

@@ -15,18 +15,18 @@
 @implementation LeonieAppDelegate
 
 @synthesize window;
-
+@synthesize busyIndicator;
 
 -(void)	applicationDidFinishLaunching: (NSNotification *)aNotification
 {
-	printf( ">>> Running bytecode\n" );
+	[busyIndicator startAnimation: self];
 	
 	LEOInstruction		instructions[] =
 	{
 		{ PUSH_STR_FROM_TABLE_INSTR, 0, 1 },
 		{ PRINT_VALUE_INSTR, 0, 0 },
 		{ POP_VALUE_INSTR, 0, 0 },
-		{ EXIT_TO_SHELL_INSTR, 0, 0 },
+		//{ EXIT_TO_TOP_INSTR, 0, 0 },
 		{ PUSH_BOOLEAN_INSTR, 0, true },
 		{ ASSIGN_STRING_FROM_TABLE_INSTR, 0, 2 },
 		{ POP_VALUE_INSTR, 0, 0 },
@@ -38,12 +38,14 @@
 	LEOInitContext( &context );
 	LEORunInContext( instructions, &context );
 	
-	if( context.errMsg[0] != 0 )
-		printf( ">>> ABORTED Running bytecode: *** %s ***\n", context.errMsg );
-	else
-		printf( ">>> FINISHED Running bytecode\n" );
+	[busyIndicator stopAnimation: self];
 	
+	if( context.errMsg[0] != 0 )
+		NSRunAlertPanel( @"Script Aborted", @"%s", @"OK", @"", @"", context.errMsg );
+	
+	[busyIndicator startAnimation: self];
 	LEOCleanUpContext( &context );
+	[busyIndicator stopAnimation: self];
 
 
 //	char				buf[1024];
