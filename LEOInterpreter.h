@@ -69,6 +69,9 @@ void	LEOInitContext( LEOContext* theContext );
 void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext );
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete );
 void	LEOCleanUpContext( LEOContext* theContext );
-void	LEOPrintInstructions( LEOInstruction instructions[], size_t numInstructions );
+
+void	LEODebugPrintInstr( LEOInstruction* instruction );
+void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions );
+void	LEODebugPrintContext( LEOContext* ctx );
 
 #endif // LEO_INTERPRETER_H

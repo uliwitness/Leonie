@@ -68,15 +68,66 @@ void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext )
 }
 
 
-void	LEOPrintInstructions( LEOInstruction instructions[], size_t numInstructions )
+void	LEODebugPrintInstr( LEOInstruction* instruction )
 {
+	if( !instruction )
+	{
+		printf("(null)\n");
+		return;
+	}
+	
+	LEOInstructionID	currID = instruction->instructionID;
+	if( currID >= gNumInstructions )
+		printf("UNKNOWN_%d",currID);
+	else
+		printf("%s",gInstructionNames[currID]);
+	printf("( %u, %d );\n", instruction->param1, instruction->param2 );
+}
+
+
+void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions )
+{
+	printf( "%u INSTRUCTIONS:\n", numInstructions );
 	for( int x = 0; x < numInstructions; x++ )
 	{
-		LEOInstructionID	currID = instructions[x].instructionID;
-		if( currID >= gNumInstructions )
-			printf("UNKNOWN_%d",currID);
-		else
-			printf("%s",gInstructionNames[currID]);
-		printf("( %u, %d );\n", instructions[x].param1, instructions[x].param2 );
+		printf( "    " );
+		LEODebugPrintInstr( instructions +x );
 	}
 }
+
+
+void	LEODebugPrintContext( LEOContext* ctx )
+{
+	printf( "CONTEXT:\n" );
+	printf( "    keepRunning: %s\n", ctx->keepRunning ? "true" : "FALSE" );
+	printf( "    errMsg: %s\n", ctx->errMsg );
+	printf( "    currentInstruction: " ); LEODebugPrintInstr( ctx->currentInstruction );
+	printf( "    -----------------------------\n" );
+	
+	if( ctx->stackEndPtr != NULL )
+	{
+		union LEOValue*		currValue = ctx->stack;
+		while( currValue != ctx->stackEndPtr )
+		{
+			if( currValue == ctx->stackBasePtr )
+				printf("--> ");
+			else
+				printf("    ");
+			
+			char		str[1024] = { 0 };
+			LEOGetValueAsString( currValue, str, sizeof(str), ctx );
+			printf( "\"%s\"\n", str );
+			
+			currValue ++;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+

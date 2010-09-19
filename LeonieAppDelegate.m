@@ -27,17 +27,17 @@
 	// === start of stuff that a parser/compiler would generate:
 	LEOInstruction		instructions[] =
 	{
-		{ PUSH_NUMBER_INSTR, 0, 1000 },				// Create our loop counter local var and init to 3.
+		{ PUSH_NUMBER_INSTR, 0, 1000 },				// Create our loop counter local var and init to 1000 iterations.
 		{ JUMP_RELATIVE_IF_LT_ZERO_INSTR, 0, 4 },	// 0 at BP-relative offset, our counter. Jump past this loop if counter goes below 0.
 			{ PRINT_VALUE_INSTR, 0, 0 },				// Print counter.
 			{ ADD_NUMBER_INSTR, 0, -1 },				// Subtract 1 from counter
 		{ JUMP_RELATIVE_INSTR, 0, -3 },				// Jump back to loop condition.
 		{ PUSH_STR_FROM_TABLE_INSTR, 0xffff, 1 },	// Get a string.
 		{ PRINT_VALUE_INSTR, 0xffff, 0 },			// Output that string & pop off the stack.
-		{ EXIT_TO_TOP_INSTR, 0, 0 },
-		{ PUSH_BOOLEAN_INSTR, 0, true },
-		{ ASSIGN_STRING_FROM_TABLE_INSTR, 0, 2 },
-		{ POP_VALUE_INSTR, 0, 0 },
+		{ EXIT_TO_TOP_INSTR, 0, 0 },				// *** Exit, don't execute the following commands.
+		{ PUSH_BOOLEAN_INSTR, 0, true },				// Create a boolean on the stack.
+		{ ASSIGN_STRING_FROM_TABLE_INSTR, 0xffff, 2 },	// Assign a string to the last item on the stack (that's a boolean, so it'll fail).
+		{ POP_VALUE_INSTR, 0, 0 },						// Remove the boolean from the stack again.
 		{ INVALID_INSTR, 0, 0 },		// Directly produce effect of invalid instruction.
 		{ 77, 9, 8 },					// Completely invalid.
 	};
@@ -50,7 +50,7 @@
 	};
 	// === end of stuff that a parser/compiler would generate:
 	
-	LEOPrintInstructions( instructions, sizeof(instructions) / sizeof(LEOInstruction) );
+	LEODebugPrintInstructions( instructions, sizeof(instructions) / sizeof(LEOInstruction) );
 	
 	NSTimeInterval		startTime = [NSDate timeIntervalSinceReferenceDate];
 	
@@ -59,12 +59,16 @@
 	LEOInitContext( &context );
 	context.stringsTable = strings;
 	context.stringsTableSize = sizeof(strings) / sizeof(const char*);
+	LEODebugPrintContext( &context );
 	LEORunInContext( instructions, &context );
 	
 	[busyIndicator stopAnimation: self];
 	
 	if( context.errMsg[0] != 0 )
+	{
+		LEODebugPrintContext( &context );
 		NSRunAlertPanel( @"Script Aborted", @"%s", @"OK", @"", @"", context.errMsg );
+	}
 	
 	[busyIndicator startAnimation: self];
 	LEOCleanUpContext( &context );
