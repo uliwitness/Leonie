@@ -12,9 +12,14 @@
 {
     NSWindow			*window;
 	NSProgressIndicator	*busyIndicator;
+	NSTextField			*messageBoxField;
 }
 
 @property (assign) IBOutlet NSWindow			*window;
 @property (assign) IBOutlet NSProgressIndicator	*busyIndicator;
+@property (assign) IBOutlet NSTextField			*messageBoxField;
+
+
+-(void)	printMessage: (NSString*)inMessage;
 
 @end

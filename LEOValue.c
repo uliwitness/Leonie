@@ -188,7 +188,7 @@ double LEOGetNumberValueAsNumber( LEOValuePtr self, struct LEOContext* inContext
 
 void LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext )
 {
-	snprintf( outBuf, bufSize -1, "%f", ((struct LEOValueNumber*)self)->number );
+	snprintf( outBuf, bufSize -1, "%g", ((struct LEOValueNumber*)self)->number );
 }
 
 
@@ -200,7 +200,12 @@ void LEOSetNumberValueAsNumber( LEOValuePtr self, double inNumber, struct LEOCon
 
 void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, struct LEOContext* inContext )
 {
-	((struct LEOValueNumber*)self)->number = strtod( inNumber, NULL );
+	char*		endPtr = NULL;
+	double		theNum = strtod( inNumber, &endPtr );
+	if( endPtr != (inNumber +strlen(inNumber)) )
+		LEOCantSetValueAsString( self, inNumber, inContext );
+	else
+		((struct LEOValueNumber*)self)->number = theNum;
 }
 
 

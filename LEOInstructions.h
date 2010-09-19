@@ -14,17 +14,23 @@
 #include <sys/types.h>
 
 
-#define	INVALID_INSTR					0
-#define	EXIT_TO_TOP_INSTR				1
-#define	NO_OP_INSTR						2
-#define	PUSH_STR_FROM_TABLE_INSTR		3
-#define	PRINT_VALUE_INSTR				4
-#define	POP_VALUE_INSTR					5
-#define PUSH_BOOLEAN_INSTR				6
-#define ASSIGN_STRING_FROM_TABLE_INSTR	7
-#define JUMP_RELATIVE					8
-#define JUMP_RELATIVE_IF_TRUE			9
-#define JUMP_RELATIVE_IF_FALSE			10
+#define	INVALID_INSTR						0
+#define	EXIT_TO_TOP_INSTR					1
+#define	NO_OP_INSTR							2
+#define	PUSH_STR_FROM_TABLE_INSTR			3
+#define	PRINT_VALUE_INSTR					4
+#define	POP_VALUE_INSTR						5
+#define PUSH_BOOLEAN_INSTR					6
+#define ASSIGN_STRING_FROM_TABLE_INSTR		7
+#define JUMP_RELATIVE_INSTR					8
+#define JUMP_RELATIVE_IF_TRUE_INSTR			9
+#define JUMP_RELATIVE_IF_FALSE_INSTR		10
+#define JUMP_RELATIVE_IF_GT_ZERO_INSTR		11
+#define JUMP_RELATIVE_IF_LT_ZERO_INSTR		12
+#define JUMP_RELATIVE_IF_GT_SAME_ZERO_INSTR	13
+#define JUMP_RELATIVE_IF_LT_SAME_ZERO_INSTR	14
+#define PUSH_NUMBER_INSTR					15
+#define ADD_NUMBER_INSTR					16
 
 
 extern LEOInstructionFuncPtr	gInstructions[];

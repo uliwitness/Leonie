@@ -51,6 +51,8 @@ typedef struct LEOContext
 {
 	bool					keepRunning;			// ExitToShell and errors set this to TRUE to stop interpreting of code.
 	char					errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
+	const char**			stringsTable;			// List of string constants in this script, which we can load.
+	size_t					stringsTableSize;		// Number of items in stringsTable.
 	LEOInstructionFuncPtr	preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
 	LEOInstruction			*currentInstruction;	// PC
 	union LEOValue			*stackBasePtr;			// BP
