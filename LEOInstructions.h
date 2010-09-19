@@ -34,6 +34,7 @@
 
 
 extern LEOInstructionFuncPtr	gInstructions[];
+extern const char*				gInstructionNames[];
 extern size_t					gNumInstructions;
 
 

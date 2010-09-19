@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "LEOInstructions.h"
+#include <stdio.h>
 
 
 void	LEODoNothingPreInstructionProc( LEOContext* inContext )
@@ -63,5 +64,19 @@ void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext )
 		if( currID >= gNumInstructions )
 			currID = 0;	// First instruction is the special "unimplemented" instruction.
 		gInstructions[currID](inContext);
+	}
+}
+
+
+void	LEOPrintInstructions( LEOInstruction instructions[], size_t numInstructions )
+{
+	for( int x = 0; x < numInstructions; x++ )
+	{
+		LEOInstructionID	currID = instructions[x].instructionID;
+		if( currID >= gNumInstructions )
+			printf("UNKNOWN_%d",currID);
+		else
+			printf("%s",gInstructionNames[currID]);
+		printf("( %u, %d );\n", instructions[x].param1, instructions[x].param2 );
 	}
 }

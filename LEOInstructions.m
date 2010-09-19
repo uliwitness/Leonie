@@ -229,4 +229,25 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOAddNumberInstruction
 };
 
+const char*	gInstructionNames[] =
+{
+	"Invalid",
+	"ExitToTop",
+	"NoOp",
+	"PushStringFromTable",
+	"Print",
+	"Pop",
+	"PushBoolean",
+	"AssignStringFromTable",
+	"JumpRelative",
+	"JumpRelativeIfTrue",
+	"JumpRelativeIfFalse",
+	"JumpRelativeIfGreaterThanZero",
+	"JumpRelativeIfLessThanZero",
+	"JumpRelativeIfGreaterSameThanZero",
+	"JumpRelativeIfLessSameThanZero",
+	"PushNumber",
+	"AddNumber"
+};
+
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

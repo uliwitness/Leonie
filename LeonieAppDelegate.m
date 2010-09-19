@@ -50,6 +50,8 @@
 	};
 	// === end of stuff that a parser/compiler would generate:
 	
+	LEOPrintInstructions( instructions, sizeof(instructions) / sizeof(LEOInstruction) );
+	
 	NSTimeInterval		startTime = [NSDate timeIntervalSinceReferenceDate];
 	
 	// --- Start of code to run some raw code:
@@ -83,8 +85,10 @@
 
 -(void)	printMessage: (NSString*)inMessage
 {
+	NSWindow*	msgBox = [messageBoxField window];
 	[messageBoxField setStringValue: inMessage];
-	[[messageBoxField window] orderFront: self];
+	if( ![msgBox isVisible] )
+		[msgBox makeKeyAndOrderFront: self];
 	[messageBoxField display];
 }
 
