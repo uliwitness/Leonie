@@ -50,8 +50,6 @@ void	LEOPushStringFromTableInstruction( LEOContext* inContext )
 	LEOInitStringConstantValue( (LEOValuePtr) inContext->stackEndPtr, theString );
 	inContext->stackEndPtr++;
 	
-	LEODebugPrintContext( inContext );
-	
 	inContext->currentInstruction++;
 }
 
