@@ -10,6 +10,7 @@
 #import "LEOInterpreter.h"
 #import "LEOInstructions.h"
 #import "LEODebugger.h"
+#import "LEOChunks.h"
 #import <stdio.h>
 
 
@@ -19,10 +20,151 @@
 @synthesize busyIndicator;
 @synthesize messageBoxField;
 
+
+void LEOPrintStringWithRangeMarkers( const char* theStr, size_t chunkStart, size_t chunkEnd )
+{
+	size_t x = 0;
+	printf("%s\n",theStr);
+	size_t pEndOffs = chunkStart;
+	if( pEndOffs > 0 )
+		pEndOffs--;
+	for( x = 0; x < pEndOffs; x++ )
+		printf(" ");
+	printf("^");
+	if( chunkEnd != chunkStart )
+	{
+		pEndOffs = chunkEnd;
+		if( pEndOffs > 0 )
+			pEndOffs--;
+		for( ; x < pEndOffs; x++ )
+			printf(" ");
+		printf("^");
+	}
+	printf("\n");
+	char		substr[1024] = {0};
+	size_t		currDest = 0;
+	for( size_t x = chunkStart; x < chunkEnd; x++ )
+	{
+		substr[currDest++] = theStr[x];
+	}
+	substr[currDest] = 0;
+	printf("(%s)\n",substr);
+}
+
+
+void	DoChunkTests()
+{
+	const char*		theStr = "this,that,more";
+	size_t			outChunkStart, outChunkEnd,
+					outDelChunkStart, outDelChunkEnd;
+	
+	LEOGetChunkRanges( theStr, kLEOChunkTypeItem,
+					0, 0,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( theStr, kLEOChunkTypeItem,
+					1, 1,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+	
+	LEOGetChunkRanges( theStr, kLEOChunkTypeItem,
+					2, 2,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( theStr, kLEOChunkTypeItem,
+					0, 1,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( theStr, kLEOChunkTypeItem,
+					1, 2,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( theStr, kLEOChunkTypeItem,
+					0, 2,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( "daniel", kLEOChunkTypeItem,
+					0, 0,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( "daniel", outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( "daniel", outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( "", kLEOChunkTypeItem,
+					0, 0,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( "", outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( "", outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( ",,", kLEOChunkTypeItem,
+					0, 0,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( ",,", outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( ",,", outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( ",,", kLEOChunkTypeItem,
+					1, 1,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( ",,", outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( ",,", outDelChunkStart, outDelChunkEnd );
+
+
+	LEOGetChunkRanges( ",,", kLEOChunkTypeItem,
+					2, 2,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( ",,", outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( ",,", outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( ",,", kLEOChunkTypeItem,
+					0, 1,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( ",,", outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( ",,", outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( ",,", kLEOChunkTypeItem,
+					1, 2,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( ",,", outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( ",,", outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( ",,", kLEOChunkTypeItem,
+					0, 2,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( ",,", outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( ",,", outDelChunkStart, outDelChunkEnd );
+}
+
+
 -(void)	applicationDidFinishLaunching: (NSNotification *)aNotification
 {
 	[[messageBoxField window] setBackgroundColor: [NSColor whiteColor]];
 	
+	//DoChunkTests();
+		
 	[busyIndicator startAnimation: self];
 	
 	// === start of stuff that a parser/compiler would generate:

@@ -13,6 +13,7 @@
 		55303C581243F69000062EB5 /* LEOInstructions.m in Sources */ = {isa = PBXBuildFile; fileRef = 55303C571243F69000062EB5 /* LEOInstructions.m */; };
 		55648AEF1247E0C5000BE20A /* LEODebugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 55648AEE1247E0C5000BE20A /* LEODebugger.c */; };
 		55792F4C12357A0A00A84BD2 /* LEOValue.c in Sources */ = {isa = PBXBuildFile; fileRef = 55792F4B12357A0A00A84BD2 /* LEOValue.c */; };
+		55E140DC124805E8008EDC7C /* LEOChunks.c in Sources */ = {isa = PBXBuildFile; fileRef = 55E140DB124805E8008EDC7C /* LEOChunks.c */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -37,6 +38,8 @@
 		55648AEE1247E0C5000BE20A /* LEODebugger.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LEODebugger.c; sourceTree = "<group>"; };
 		55792F4A12357A0A00A84BD2 /* LEOValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LEOValue.h; sourceTree = "<group>"; };
 		55792F4B12357A0A00A84BD2 /* LEOValue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LEOValue.c; sourceTree = "<group>"; };
+		55E140DA124805E8008EDC7C /* LEOChunks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LEOChunks.h; sourceTree = "<group>"; };
+		55E140DB124805E8008EDC7C /* LEOChunks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LEOChunks.c; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Leonie-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Leonie-Info.plist"; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Leonie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Leonie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -99,6 +102,8 @@
 				55303C571243F69000062EB5 /* LEOInstructions.m */,
 				55648AED1247E0C5000BE20A /* LEODebugger.h */,
 				55648AEE1247E0C5000BE20A /* LEODebugger.c */,
+				55E140DA124805E8008EDC7C /* LEOChunks.h */,
+				55E140DB124805E8008EDC7C /* LEOChunks.c */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -197,6 +202,7 @@
 				55303C331243EC7100062EB5 /* LEOInterpreter.c in Sources */,
 				55303C581243F69000062EB5 /* LEOInstructions.m in Sources */,
 				55648AEF1247E0C5000BE20A /* LEODebugger.c in Sources */,
+				55E140DC124805E8008EDC7C /* LEOChunks.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
