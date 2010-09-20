@@ -10,8 +10,8 @@
 #include "LEOInterpreter.h"
 
 // Use this function as the PreInstructionProc of your context to activate the debugger:
-
 void LEODebuggerPreInstructionProc( struct LEOContext* inContext );
 
+// Yes, we can do simple breakpoints:
 void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction );
 void LEODebuggerRemoveBreakpoint( LEOInstruction* targetInstruction );
