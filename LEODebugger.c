@@ -36,24 +36,38 @@ void LEODebuggerPrompt( struct LEOContext* inContext )
 				stayInDebuggerPrompt = false;
 				printf( "\n" );
 			}
-			else if( strcasecmp(currCmd,"si") == 0 )
+			else if( strcasecmp(currCmd,"si") == 0 || strcasecmp(currCmd,"stepi") == 0 )
 			{
 				stayInDebuggerPrompt = false;
 				inContext->numSteps += 1;
 			}
-			else if( strcasecmp(currCmd,"bt") == 0 || strcasecmp(currCmd,"backtrace") == 0  )
+			else if( strcasecmp(currCmd,"bt") == 0 || strcasecmp(currCmd,"backtrace") == 0 )
 			{
 				LEODebugPrintContext( inContext );
+				printf("\n");
+			}
+			else if( strcasecmp(currCmd,"b") == 0 || strcasecmp(currCmd,"breakpoint") == 0 )
+			{
+				LEODebuggerAddBreakpoint( inContext->currentInstruction );
+				printf("\n");
+			}
+			else if( strcasecmp(currCmd,"delete") == 0 )
+			{
+				LEODebuggerRemoveBreakpoint( inContext->currentInstruction );
 				printf("\n");
 			}
 			else if( strcasecmp(currCmd,"help") == 0 )
 			{
 				printf( "LDB, the Leonie Debugger, Version 1.0.\nList of commands:\n" );
-				printf( "    continue  - continue running the program until the next breakpoint.\n" );
-				printf( "    si        - Execute the current byte-code instruction, then break into the debugger again.\n" );
-				printf( "    backtrace - Display information about the current context, including a stack backtrace.\n" );
-				printf( "    bt        - Short form of 'backtrace'.\n" );
-				printf( "    help      - Display this help text.\n\n" );
+				printf( "    continue   - continue running the program until the next breakpoint.\n" );
+				printf( "    stepi      - Execute the current byte-code instruction, then break into the debugger again.\n" );
+				printf( "    si         - Short form of 'stepi'.\n" );
+				printf( "    backtrace  - Display information about the current context, including a stack backtrace.\n" );
+				printf( "    bt         - Short form of 'backtrace'.\n" );
+				printf( "    breakpoint - Set a breakpoint at the current instruction.\n" );
+				printf( "    b          - Short form of 'breakpoint'.\n" );
+				printf( "    delete     - Delete a breakpoint at the current instruction.\n" );
+				printf( "    help       - Display this help text.\n\n" );
 			}
 			else
 				printf( "Unknown command '%s'. Type 'help' for help.\n\n", currCmd );
@@ -86,7 +100,7 @@ void LEODebuggerPreInstructionProc( struct LEOContext* inContext )
 
 void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction )
 {
-	printf("Set Breakpoint on instruction %p:",targetInstruction); LEODebugPrintInstr( targetInstruction );
+	printf("Set Breakpoint on instruction %p: ",targetInstruction); LEODebugPrintInstr( targetInstruction );
 	
 	gLEONumDebuggerBreakpoints += 1;
 	
