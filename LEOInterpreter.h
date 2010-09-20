@@ -66,7 +66,9 @@ typedef struct LEOContext
 // -----------------------------------------------------------------------------
 
 void	LEOInitContext( LEOContext* theContext );
-void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext );
+void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext );	// Shorthand for LEOPrepareContextForRunning and a loop of LEOContinueRunningContext
+void	LEOPrepareContextForRunning( LEOInstruction instructions[], LEOContext *inContext );
+bool	LEOContinueRunningContext( LEOInstruction instructions[], LEOContext *inContext );	// returns false if the code has finished executing or exited with an error.
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete );
 void	LEOCleanUpContext( LEOContext* theContext );
 
