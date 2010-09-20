@@ -89,11 +89,17 @@
 
 -(void)	printMessage: (NSString*)inMessage
 {
+	static NSTimeInterval		lastUpdateTime = 0;
+	
 	NSWindow*	msgBox = [messageBoxField window];
 	[messageBoxField setStringValue: inMessage];
 	if( ![msgBox isVisible] )
 		[msgBox makeKeyAndOrderFront: self];
-	[messageBoxField display];
+	if( lastUpdateTime < [NSDate timeIntervalSinceReferenceDate] )
+	{
+		[messageBoxField displayIfNeeded];
+		lastUpdateTime = [NSDate timeIntervalSinceReferenceDate] + 0.25;	// Update at most every quarter second.
+	}
 }
 
 @end
