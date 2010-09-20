@@ -54,6 +54,7 @@ typedef struct LEOContext
 	const char**			stringsTable;			// List of string constants in this script, which we can load.
 	size_t					stringsTableSize;		// Number of items in stringsTable.
 	LEOInstructionFuncPtr	preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
+	size_t					numSteps;				// Used by LEODebugger's PreInstructionProc to implement single-stepping.
 	LEOInstruction			*currentInstruction;	// PC
 	union LEOValue			*stackBasePtr;			// BP
 	union LEOValue			*stackEndPtr;			// SP (always points at element after last element)

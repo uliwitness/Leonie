@@ -9,7 +9,8 @@
 #import "LeonieAppDelegate.h"
 #import "LEOInterpreter.h"
 #import "LEOInstructions.h"
-#include <stdio.h>
+#import "LEODebugger.h"
+#import <stdio.h>
 
 
 @implementation LeonieAppDelegate
@@ -59,7 +60,9 @@
 	LEOInitContext( &context );
 	context.stringsTable = strings;
 	context.stringsTableSize = sizeof(strings) / sizeof(const char*);
-	LEODebugPrintContext( &context );
+	
+	context.preInstructionProc = LEODebuggerPreInstructionProc;	// Activate the debugger (not needed unless you want to debug).
+	LEODebuggerAddBreakpoint( instructions );	// Set a breakpoint on the first instruction, so we can step through everything with the debugger.
 	LEORunInContext( instructions, &context );
 	
 	[busyIndicator stopAnimation: self];
