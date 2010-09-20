@@ -31,7 +31,7 @@ void LEODebuggerPrompt( struct LEOContext* inContext )
 			if( lastCharIdx > 0 )
 				lastCharIdx -= 1;
 			currCmd[lastCharIdx] = 0;	// Remove the return character.
-			if( strcasecmp(currCmd,"continue") == 0 )
+			if( strcasecmp(currCmd,"c") == 0 || strcasecmp(currCmd,"continue") == 0 )
 			{
 				stayInDebuggerPrompt = false;
 				printf( "\n" );
