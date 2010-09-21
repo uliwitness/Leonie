@@ -17,6 +17,7 @@
 #include <limits.h>
 #include <sys/types.h>
 #include <stdbool.h>
+#include "LEOChunks.h"
 
 
 // -----------------------------------------------------------------------------

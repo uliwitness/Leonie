@@ -169,6 +169,27 @@ void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext
 }
 
 
+void	LEOGetValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
+									size_t inRangeStart, size_t inRangeEnd,
+									char* outBuf, long bufSize, struct LEOContext* inContext )
+{
+	char		str[256] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
+	size_t		outChunkStart = 0,
+				outChunkEnd = 0,
+				outDelChunkStart = 0,
+				outDelChunkEnd = 0;
+	LEOGetValueAsString( self, str, sizeof(str), inContext );
+	LEOGetChunkRanges( str, inType, inRangeStart, inRangeEnd,
+						&outChunkStart, &outChunkEnd,
+						&outDelChunkStart, &outDelChunkEnd, ',' );
+	size_t len = outChunkEnd -outChunkStart;
+	if( len > bufSize )
+		len = bufSize -1;
+	memmove( outBuf, str +outChunkStart, len );
+	outBuf[len] = 0;
+}
+
+
 #pragma mark -
 #pragma mark Number
 
@@ -265,6 +286,27 @@ bool	LEOGetStringValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext 
 	else
 		return LEOCantGetValueAsBoolean( self, inContext );
 }
+
+
+void	LEOGetStringValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
+											size_t inRangeStart, size_t inRangeEnd,
+											char* outBuf, long bufSize, struct LEOContext* inContext )
+{
+	size_t		outChunkStart = 0,
+				outChunkEnd = 0,
+				outDelChunkStart = 0,
+				outDelChunkEnd = 0;
+	LEOGetChunkRanges( ((struct LEOValueString*)self)->string, inType,
+						inRangeStart, inRangeEnd,
+						&outChunkStart, &outChunkEnd,
+						&outDelChunkStart, &outDelChunkEnd, ',' );
+	size_t		len = outChunkEnd -outChunkStart;
+	if( len > bufSize )
+		len = bufSize -1;
+	memmove( outBuf, ((struct LEOValueString*)self)->string +outChunkStart, len );
+	outBuf[len] = 0;
+}
+
 
 
 void LEOSetStringValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )

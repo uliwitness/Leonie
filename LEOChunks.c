@@ -8,6 +8,8 @@
  */
 
 #include "LEOChunks.h"
+#include <string.h>
+#include <stdbool.h>
 
 
 // Gives us both the actual range of a chunk, and the range that should be deleted
@@ -16,10 +18,10 @@
 //	to empty.
 
 void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
-						size_t inRangeStart, size_t inRangeEnd,
-						size_t *outChunkStart, size_t *outChunkEnd,
-						size_t *outDelChunkStart, size_t *outDelChunkEnd,
-						char itemDelimiter )
+							size_t inRangeStart, size_t inRangeEnd,
+							size_t *outChunkStart, size_t *outChunkEnd,
+							size_t *outDelChunkStart, size_t *outDelChunkEnd,
+							char itemDelimiter )
 {
 	if( inType == kLEOChunkTypeCharacter )
 	{
@@ -28,7 +30,7 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 		*outDelChunkStart = inRangeStart;
 		*outDelChunkEnd = inRangeEnd;
 	}
-	else if( inType == kLEOChunkTypeItem )
+	else if( inType == kLEOChunkTypeItem || inType == kLEOChunkTypeLine )
 	{
 		size_t		itemNum = 0;
 		size_t		theLen = strlen(inStr);
@@ -44,7 +46,12 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 		
 		for( size_t x = 0; x < theLen; x++ )
 		{
-			if( inStr[x] == itemDelimiter )
+			bool	foundDelimiter = false;
+			if( inType == kLEOChunkTypeItem )
+				foundDelimiter = (inStr[x] == itemDelimiter);
+			else if( inType == kLEOChunkTypeLine )
+				foundDelimiter = (inStr[x] == '\n' || inStr[x] == '\r');
+			if( foundDelimiter )
 			{
 				currChunkEnd = x;
 				currDelChunkEnd = x+1;
