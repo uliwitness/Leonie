@@ -18,6 +18,9 @@
 #include <string.h>
 
 
+#define OTHER_VALUE_SHORT_STRING_MAX_LENGTH		256
+
+
 #pragma mark ISA v-tables
 // -----------------------------------------------------------------------------
 //	ISA v-tables for the subclasses:
@@ -32,11 +35,13 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOGetNumberValueAsString,
 	LEOCantGetValueAsObjectID,
 	LEOCantGetValueAsBoolean,
+	LEOGetAnyValueAsRangeOfString,	// Only works as long as numbers can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
 	
 	LEOSetNumberValueAsNumber,
 	LEOSetNumberValueAsString,
 	LEOCantSetValueAsObjectID,
 	LEOCantSetValueAsBoolean,
+	LEOCantSetValueRangeAsString,
 	
 	LEOInitNumberValueCopy,
 	
@@ -53,11 +58,13 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOGetStringValueAsString,
 	LEOCantGetValueAsObjectID,
 	LEOGetStringValueAsBoolean,
+	LEOGetStringValueAsRangeOfString,
 	
 	LEOSetStringValueAsNumber,
 	LEOSetStringValueAsString,
 	LEOCantSetValueAsObjectID,
 	LEOSetStringValueAsBoolean,
+	LEOSetStringValueRangeAsString,
 	
 	LEOInitStringValueCopy,
 	
@@ -74,11 +81,13 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOGetStringValueAsString,
 	LEOCantGetValueAsObjectID,
 	LEOGetStringValueAsBoolean,
+	LEOGetStringValueAsRangeOfString,
 	
 	LEOSetStringConstantValueAsNumber,
 	LEOSetStringConstantValueAsString,
 	LEOCantSetValueAsObjectID,
 	LEOSetStringConstantValueAsBoolean,
+	LEOSetStringConstantValueRangeAsString,
 	
 	LEOInitStringConstantValueCopy,
 	
@@ -97,15 +106,40 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOGetBooleanValueAsString,
 	LEOCantGetValueAsObjectID,
 	LEOGetBooleanValueAsBoolean,
+	LEOGetAnyValueAsRangeOfString,	// Only works as long as booleans can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
 	
 	LEOCantSetValueAsNumber,
 	LEOSetBooleanValueAsString,
 	LEOCantSetValueAsObjectID,
 	LEOSetBooleanValueAsBoolean,
+	LEOCantSetValueRangeAsString,
 	
 	LEOInitBooleanValueCopy,
 	
 	LEOCleanUpBooleanValue
+};
+
+
+struct LEOValueType	kLeoValueTypeReference =
+{
+	"reference",
+	sizeof(struct LEOValueReference),
+	
+	LEOGetReferenceValueAsNumber,
+	LEOGetReferenceValueAsString,
+	LEOGetReferenceValueAsObjectID,
+	LEOGetReferenceValueAsBoolean,
+	LEOGetReferenceValueAsRangeOfString,
+	
+	LEOSetReferenceValueAsNumber,
+	LEOSetReferenceValueAsString,
+	LEOSetReferenceValueAsObjectID,
+	LEOSetReferenceValueAsBoolean,
+	LEOSetReferenceValueRangeAsString,
+	
+	LEOInitReferenceValueCopy,
+	
+	LEOCleanUpReferenceValue
 };
 
 
@@ -169,11 +203,20 @@ void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext
 }
 
 
-void	LEOGetValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
+void	LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
+									size_t inRangeStart, size_t inRangeEnd,
+									const char* inBuf, struct LEOContext* inContext )
+{
+	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found string", self->isa->displayTypeName );
+	inContext->keepRunning = false;
+}
+
+
+void	LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									char* outBuf, long bufSize, struct LEOContext* inContext )
 {
-	char		str[256] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
+	char		str[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
 	size_t		outChunkStart = 0,
 				outChunkEnd = 0,
 				outDelChunkStart = 0,
@@ -181,7 +224,7 @@ void	LEOGetValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 	LEOGetValueAsString( self, str, sizeof(str), inContext );
 	LEOGetChunkRanges( str, inType, inRangeStart, inRangeEnd,
 						&outChunkStart, &outChunkEnd,
-						&outDelChunkStart, &outDelChunkEnd, ',' );
+						&outDelChunkStart, &outDelChunkEnd, inContext->itemDelimiter );
 	size_t len = outChunkEnd -outChunkStart;
 	if( len > bufSize )
 		len = bufSize -1;
@@ -299,7 +342,7 @@ void	LEOGetStringValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 	LEOGetChunkRanges( ((struct LEOValueString*)self)->string, inType,
 						inRangeStart, inRangeEnd,
 						&outChunkStart, &outChunkEnd,
-						&outDelChunkStart, &outDelChunkEnd, ',' );
+						&outDelChunkStart, &outDelChunkEnd, inContext->itemDelimiter );
 	size_t		len = outChunkEnd -outChunkStart;
 	if( len > bufSize )
 		len = bufSize -1;
@@ -353,6 +396,41 @@ void	LEOCleanUpStringValue( LEOValuePtr self )
 }
 
 
+void	LEOSetStringValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
+											size_t inRangeStart, size_t inRangeEnd,
+											const char* inBuf, struct LEOContext* inContext )
+{
+	size_t		outChunkStart = 0,
+				outChunkEnd = 0,
+				outDelChunkStart = 0,
+				outDelChunkEnd = 0,
+				inBufLen = inBuf ? strlen(inBuf) : 0,
+				selfLen = strlen( ((struct LEOValueString*)self)->string ),
+				finalLen = 0;
+	LEOGetChunkRanges( ((struct LEOValueString*)self)->string, inType,
+						inRangeStart, inRangeEnd,
+						&outChunkStart, &outChunkEnd,
+						&outDelChunkStart, &outDelChunkEnd, inContext->itemDelimiter );
+	if( !inBuf )	// NULL string means 'delete'.
+	{
+		outChunkStart = outDelChunkStart;
+		outChunkEnd = outDelChunkEnd;
+	}
+	size_t		chunkLen = outChunkEnd -outChunkStart;
+	finalLen = selfLen -chunkLen +inBufLen;
+		
+	char*		newStr = malloc( finalLen +1 );
+	memmove( newStr, ((struct LEOValueString*)self)->string, outChunkStart );	// Copy before chunk.
+	if( inBufLen > 0 )
+		memmove( newStr +outChunkStart, inBuf, inBufLen );	// Copy new value of chunk.
+	memmove( newStr +outChunkStart +inBufLen, ((struct LEOValueString*)self)->string +outChunkEnd, selfLen -outChunkEnd );	// Copy after chunk.
+	newStr[finalLen] = 0;
+	
+	free( ((struct LEOValueString*)self)->string );
+	((struct LEOValueString*)self)->string = newStr;
+}
+
+
 #pragma mark -
 #pragma mark String Constant
 
@@ -400,6 +478,42 @@ void	LEOCleanUpStringConstantValue( LEOValuePtr self )
 {
 	self->isa = NULL;
 	((struct LEOValueString*)self)->string = NULL;
+}
+
+
+void	LEOSetStringConstantValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
+												size_t inRangeStart, size_t inRangeEnd,
+												const char* inBuf, struct LEOContext* inContext )
+{
+	size_t		outChunkStart = 0,
+				outChunkEnd = 0,
+				outDelChunkStart = 0,
+				outDelChunkEnd = 0,
+				inBufLen = inBuf ? strlen(inBuf) : 0,
+				selfLen = strlen( ((struct LEOValueString*)self)->string ),
+				finalLen = 0;
+	LEOGetChunkRanges( ((struct LEOValueString*)self)->string, inType,
+						inRangeStart, inRangeEnd,
+						&outChunkStart, &outChunkEnd,
+						&outDelChunkStart, &outDelChunkEnd, inContext->itemDelimiter );
+	if( !inBuf )	// NULL string means 'delete'.
+	{
+		outChunkStart = outDelChunkStart;
+		outChunkEnd = outDelChunkEnd;
+	}
+	size_t		chunkLen = outChunkEnd -outChunkStart;
+	finalLen = selfLen -chunkLen +inBufLen;
+		
+	char*		newStr = malloc( finalLen +1 );
+	memmove( newStr, ((struct LEOValueString*)self)->string, outChunkStart );	// Copy before chunk.
+	if( inBufLen > 0 )
+		memmove( newStr +outChunkStart, inBuf, inBufLen );	// Copy new value of chunk.
+	memmove( newStr +outChunkStart +inBufLen, ((struct LEOValueString*)self)->string +outChunkEnd, selfLen -outChunkEnd );	// Copy after chunk.
+	newStr[finalLen] = 0;
+	
+	// Turn this into a non-constant string:
+	self->isa = &kLeoValueTypeString;
+	((struct LEOValueString*)self)->string = newStr;
 }
 
 
@@ -456,5 +570,204 @@ void	LEOCleanUpBooleanValue( LEOValuePtr self )
 	((struct LEOValueBoolean*)self)->boolean = false;
 }
 
+
+
+#pragma mark -
+#pragma mark Reference
+
+
+void	LEOInitReferenceValue( LEOValuePtr inStorage, LEOValuePtr referencedValue )
+{
+	inStorage->isa = &kLeoValueTypeReference;
+	((struct LEOValueReference*)inStorage)->referencedValue = referencedValue;
+}
+
+
+void	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext )
+{
+	LEOGetValueAsString( ((struct LEOValueReference*)self)->referencedValue, outBuf, bufSize, inContext );
+}
+
+
+double	LEOGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return LEOGetValueAsNumber( ((struct LEOValueReference*)self)->referencedValue, inContext );
+}
+
+
+LEOObjectID	LEOGetReferenceValueAsObjectID( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return LEOGetValueAsObjectID( ((struct LEOValueReference*)self)->referencedValue, inContext );
+}
+
+
+bool	LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return LEOGetValueAsBoolean( ((struct LEOValueReference*)self)->referencedValue, inContext );
+}
+
+
+void	LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
+									size_t inRangeStart, size_t inRangeEnd,
+									char* outBuf, long bufSize, struct LEOContext* inContext )
+{
+	LEOGetValueAsRangeOfString( ((struct LEOValueReference*)self)->referencedValue, inType, inRangeStart, inRangeEnd, outBuf, bufSize, inContext );
+}
+
+
+void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )
+{
+	LEOSetValueAsString( ((struct LEOValueReference*)self)->referencedValue, inString, inContext );
+}
+
+
+void	LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext )
+{
+	LEOSetValueAsBoolean( ((struct LEOValueReference*)self)->referencedValue, inBoolean, inContext );
+}
+
+
+void	LEOSetReferenceValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext )
+{
+	LEOSetValueAsNumber( ((struct LEOValueReference*)self)->referencedValue, inNumber, inContext );
+}
+
+
+void	LEOSetReferenceValueAsObjectID( LEOValuePtr self, LEOObjectID inObjectID, struct LEOContext* inContext )
+{
+	LEOSetValueAsObjectID( ((struct LEOValueReference*)self)->referencedValue, inObjectID, inContext );
+}
+
+
+void	LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
+											size_t inRangeStart, size_t inRangeEnd,
+											const char* inBuf, struct LEOContext* inContext )
+{
+	LEOSetValueRangeAsString( ((struct LEOValueReference*)self)->referencedValue, inType, inRangeStart, inRangeEnd, inBuf, inContext );
+}
+
+
+void	LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest )
+{
+	dest->isa = &kLeoValueTypeReference;
+	((struct LEOValueReference*)dest)->referencedValue = ((struct LEOValueReference*)self)->referencedValue;
+}
+
+
+void	LEOCleanUpReferenceValue( LEOValuePtr self )
+{
+	self->isa = NULL;
+	((struct LEOValueReference*)self)->referencedValue = NULL;
+}
+
+
+#pragma mark -
+
+
+struct LEOArrayEntry
+{
+	struct LEOArrayEntry	*	smallerItem;
+	struct LEOArrayEntry	*	largerItem;
+	union LEOValue				value;
+	char						key[0];	// Must be last, dynamically sized array.
+};
+
+
+struct LEOArrayEntry	*	LEOAllocNewEntry( const char* inKey, LEOValuePtr inValue )
+{
+	struct LEOArrayEntry	*	newEntry = NULL;
+	size_t						inKeyLen = strlen(inKey);
+	newEntry = malloc( sizeof(struct LEOArrayEntry) +inKeyLen +1 );
+	memmove( newEntry->key, inKey, inKeyLen +1 ); 
+	LEOInitCopy( inValue, &newEntry->value );
+	newEntry->smallerItem = NULL;
+	newEntry->largerItem = NULL;
+	
+	return newEntry;
+}
+
+
+void	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOValuePtr inValue )
+{
+	struct LEOArrayEntry	*	currEntry = NULL;
+	
+	if( *arrayPtrByReference == NULL )
+		*arrayPtrByReference = LEOAllocNewEntry( inKey, inValue );
+	else
+	{
+		currEntry = *arrayPtrByReference;
+		while( true )
+		{
+			int			cmpResult = strcasecmp( currEntry->key, inKey );
+			if( cmpResult > 0 )	// Key is larger? Go down 'larger' side one step.
+			{
+				if( currEntry->largerItem == NULL )
+				{
+					currEntry->largerItem = LEOAllocNewEntry( inKey, inValue );
+					break;
+				}
+				else
+					currEntry = currEntry->largerItem;
+			}
+			else if( cmpResult < 0 )	// Key is smaller? Go down 'smaller' side one step.
+			{
+				if( currEntry->smallerItem == NULL )
+				{
+					currEntry->smallerItem = LEOAllocNewEntry( inKey, inValue );
+					break;
+				}
+				else
+					currEntry = currEntry->smallerItem;
+			}
+			else if( cmpResult == 0 )	// Key already exists? Replace value!
+			{
+				LEOCleanUpValue( &currEntry->value );
+				LEOInitCopy( inValue, &currEntry->value );
+			}
+		}
+	}
+}
+
+
+void	LEODeleteArrayEntryFromRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey )
+{
+	struct LEOArrayEntry**	parentPtr = arrayPtrByReference;
+	struct LEOArrayEntry*	currEntry = *arrayPtrByReference;
+	while( true )
+	{
+		if( !currEntry )
+			return;
+		
+		int			cmpResult = strcasecmp( currEntry->key, inKey );
+		if( cmpResult > 0 )	// Key is larger? Go down 'larger' side one step.
+		{
+			parentPtr = &currEntry->largerItem;
+			currEntry = currEntry->largerItem;
+		}
+		else if( cmpResult < 0 )	// Key is smaller? Go down 'smaller' side one step.
+		{
+			parentPtr = &currEntry->smallerItem;
+			currEntry = currEntry->smallerItem;
+		}
+		else if( cmpResult == 0 )	// Found key!
+		{
+			LEOCleanUpValue( &currEntry->value );
+			*parentPtr = NULL;
+			
+			if( currEntry->smallerItem && currEntry->largerItem )
+			{
+				// +++ Merge and re-add sub-tree.
+			}
+			else if( currEntry->smallerItem )
+			{
+				*parentPtr = currEntry->smallerItem;
+			}
+			else if( currEntry->largerItem )
+			{
+				*parentPtr = currEntry->largerItem;
+			}
+		}
+	}
+}
 
 

@@ -25,6 +25,7 @@ void	LEOInitContext( LEOContext* theContext )
 {
 	memset( theContext, 0, sizeof(LEOContext) );
 	theContext->preInstructionProc = LEODoNothingPreInstructionProc;
+	theContext->itemDelimiter = ',';
 }
 
 

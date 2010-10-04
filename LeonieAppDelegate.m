@@ -14,6 +14,14 @@
 #import <stdio.h>
 
 
+#ifndef RUN_TESTS
+#define RUN_TESTS				0
+#endif // RUN_TESTS
+
+#define ACTIVATE_DEBUGGER		0
+#define PRINT_BYTECODE			0
+
+
 @implementation LeonieAppDelegate
 
 @synthesize window;
@@ -57,6 +65,8 @@ void	DoChunkTests()
 	const char*		theStr = "this,that,more";
 	size_t			outChunkStart, outChunkEnd,
 					outDelChunkStart, outDelChunkEnd;
+	
+	printf( "==== chunk ====\n" );
 	
 	LEOGetChunkRanges( theStr, kLEOChunkTypeItem,
 					0, 0,
@@ -159,18 +169,293 @@ void	DoChunkTests()
 }
 
 
+void	DoChunkValueTests()
+{
+	LEOContext			ctx;
+	union LEOValue		theValue;
+	char				str[256];
+	
+	LEOInitContext( &ctx );
+	
+	printf( "==== getters ====\n" );
+	
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	memset( str, 'X', sizeof(str) );
+	LEOGetValueAsRangeOfString( &theValue, kLEOChunkTypeItem, 0, 0, str, sizeof(str), &ctx );
+	printf( "%s,THAT,MORE\n", str );
+	memset( str, 'X', sizeof(str) );
+	LEOGetValueAsRangeOfString( &theValue, kLEOChunkTypeItem, 1, 1, str, sizeof(str), &ctx );
+	printf( "THIS,%s,MORE\n", str );
+	memset( str, 'X', sizeof(str) );
+	LEOGetValueAsRangeOfString( &theValue, kLEOChunkTypeItem, 2, 2, str, sizeof(str), &ctx );
+	printf( "THIS,THAT,%s\n", str );
+	memset( str, 'X', sizeof(str) );
+	LEOGetValueAsRangeOfString( &theValue, kLEOChunkTypeItem, 0, 1, str, sizeof(str), &ctx );
+	printf( "%s,MORE\n", str );
+	memset( str, 'X', sizeof(str) );
+	LEOGetValueAsRangeOfString( &theValue, kLEOChunkTypeItem, 0, 2, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	memset( str, 'X', sizeof(str) );
+	LEOGetValueAsRangeOfString( &theValue, kLEOChunkTypeItem, 1, 2, str, sizeof(str), &ctx );
+	printf( "THIS,%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	printf( "==== constant ====\n" );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 0, "THIS", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 1, "THAT", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 2, 2, "MORE", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 1, "THISTHAT", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 2, "THISTHATMORE", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 2, "THATMORE", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	printf( "==== dynamic ====\n" );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 0, "THIS", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 1, "THAT", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 2, 2, "MORE", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 1, "THISTHAT", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 2, "THISTHATMORE", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 2, "THATMORE", &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+
+	printf( "==== delete constant ====\n" );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 0, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 1, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 2, 2, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 1, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 2, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringConstantValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 2, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	printf( "==== delete dynamic ====\n" );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 0, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 1, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 2, 2, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 1, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 2, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more" );
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 2, NULL, &ctx );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOCleanUpValue( &theValue );
+	
+	LEOCleanUpContext( &ctx );
+}
+
+
+void	DoReferenceTest()
+{
+	LEOContext			ctx;
+	union LEOValue		theValue;
+	union LEOValue		originalValue;
+	char				str[256];
+	
+	printf( "==== references ====\n" );
+	
+	LEOInitContext( &ctx );
+	
+	LEOInitStringConstantValue( &originalValue.base, "I am as real as it gets." );
+	LEOInitReferenceValue( &theValue.base, &originalValue.base );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+
+	memset( str, 'X', sizeof(str) );
+	LEOGetValueAsRangeOfString( &theValue, kLEOChunkTypeCharacter, 0, 4,
+								str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	LEOSetValueAsString( &theValue, "Even when set indirectly", &ctx );
+	
+	memset( str, 'X', sizeof(str) );
+	LEOGetValueAsString( &originalValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	
+	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeCharacter, 14, 24,
+								"by reference", &ctx );
+	memset( str, 'X', sizeof(str) );
+	LEOGetValueAsString( &originalValue, str, sizeof(str), &ctx );
+	printf( "%s\n", str );
+	
+	LEOCleanUpValue( &originalValue.base );
+	LEOInitNumberValue( &originalValue.base, 42 );
+	double	theNum = LEOGetValueAsNumber( &theValue, &ctx );
+	printf( "%f\n", theNum );
+	LEOSetValueAsNumber( &theValue, 11, &ctx );
+	theNum = LEOGetValueAsNumber( &originalValue, &ctx );
+	printf( "%f\n", theNum );
+	
+	LEOCleanUpValue( &originalValue.base );
+	LEOInitBooleanValue( &originalValue.base, true );
+	bool	theBool = LEOGetValueAsBoolean( &theValue, &ctx );
+	printf( "%s\n", theBool ? "true" : "false" );
+	
+	LEOSetValueAsString( &theValue.base, "false", &ctx );
+	theBool = LEOGetValueAsBoolean( &originalValue, &ctx );
+	printf( "%s\n", theBool ? "true" : "false" );
+	
+	LEOCleanUpValue( &theValue );
+	LEOCleanUpValue( &originalValue );
+	
+	LEOCleanUpContext( &ctx );
+}
+
+
 -(void)	applicationDidFinishLaunching: (NSNotification *)aNotification
 {
 	[[messageBoxField window] setBackgroundColor: [NSColor whiteColor]];
 	
-	//DoChunkTests();
+	#if RUN_TESTS
+	DoChunkTests();
+	DoChunkValueTests();
+	DoReferenceTest();
+	
+	[NSApp terminate: self];
+	#endif
 		
 	[busyIndicator startAnimation: self];
 	
 	// === start of stuff that a parser/compiler would generate:
 	LEOInstruction		instructions[] =
 	{
-		{ PUSH_NUMBER_INSTR, 0, 1000 },				// Create our loop counter local var and init to 1000 iterations.
+		{ PUSH_NUMBER_INSTR, 0, 10000 },			// Create our loop counter local var and init to 10'000 iterations.
 		{ JUMP_RELATIVE_IF_LT_ZERO_INSTR, 0, 4 },	// 0 at BP-relative offset, our counter. Jump past this loop if counter goes below 0.
 			{ PRINT_VALUE_INSTR, 0, 0 },				// Print counter.
 			{ ADD_NUMBER_INSTR, 0, -1 },				// Subtract 1 from counter
@@ -193,7 +478,9 @@ void	DoChunkTests()
 	};
 	// === end of stuff that a parser/compiler would generate:
 	
+	#if PRINT_BYTECODE
 	LEODebugPrintInstructions( instructions, sizeof(instructions) / sizeof(LEOInstruction) );
+	#endif // PRINT_BYTECODE
 	
 	NSTimeInterval		startTime = [NSDate timeIntervalSinceReferenceDate];
 	
@@ -203,8 +490,10 @@ void	DoChunkTests()
 	context.stringsTable = strings;
 	context.stringsTableSize = sizeof(strings) / sizeof(const char*);
 	
+	#if ACTIVATE_DEBUGGER
 	context.preInstructionProc = LEODebuggerPreInstructionProc;	// Activate the debugger (not needed unless you want to debug).
 	LEODebuggerAddBreakpoint( instructions );	// Set a breakpoint on the first instruction, so we can step through everything with the debugger.
+	#endif // ACTIVATE_DEBUGGER
 	LEORunInContext( instructions, &context );
 	
 	[busyIndicator stopAnimation: self];
