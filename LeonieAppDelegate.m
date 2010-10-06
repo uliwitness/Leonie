@@ -15,7 +15,7 @@
 
 
 #ifndef RUN_TESTS
-#define RUN_TESTS				0
+#define RUN_TESTS				1
 #endif // RUN_TESTS
 
 #define ACTIVATE_DEBUGGER		0
@@ -380,6 +380,55 @@ void	DoChunkValueTests()
 }
 
 
+void	DoWordsTest( const char* theStr )
+{
+	size_t			outChunkStart, outChunkEnd,
+					outDelChunkStart, outDelChunkEnd;
+
+	LEOGetChunkRanges( theStr, kLEOChunkTypeWord,
+					0, 0,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( theStr, kLEOChunkTypeWord,
+					1, 1,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( theStr, kLEOChunkTypeWord,
+					2, 2,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( theStr, kLEOChunkTypeWord,
+					0, 1,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( theStr, kLEOChunkTypeWord,
+					1, 2,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+
+	LEOGetChunkRanges( theStr, kLEOChunkTypeWord,
+					0, 2,
+					&outChunkStart, &outChunkEnd,
+					&outDelChunkStart, &outDelChunkEnd, ',' );
+	LEOPrintStringWithRangeMarkers( theStr, outChunkStart, outChunkEnd );
+	LEOPrintStringWithRangeMarkers( theStr, outDelChunkStart, outDelChunkEnd );
+}
+
+
 void	DoReferenceTest()
 {
 	LEOContext			ctx;
@@ -446,6 +495,10 @@ void	DoReferenceTest()
 	DoChunkTests();
 	DoChunkValueTests();
 	DoReferenceTest();
+	DoWordsTest( "this  that  more" );
+	DoWordsTest( "  this  that  more  " );
+	DoWordsTest( " this that more " );
+	DoWordsTest( "this that more" );
 	
 	[NSApp terminate: self];
 	#endif

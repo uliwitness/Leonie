@@ -23,8 +23,17 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 							size_t *outDelChunkStart, size_t *outDelChunkEnd,
 							char itemDelimiter )
 {
+	size_t		theLen = strlen(inStr);
+	
 	if( inType == kLEOChunkTypeCharacter )
 	{
+		if( theLen < inRangeEnd )
+			inRangeEnd = theLen;
+		if( inRangeStart < 0 )
+			inRangeStart = 0;
+		if( inRangeEnd < inRangeStart )
+			inRangeEnd = inRangeStart;
+		
 		*outChunkStart = inRangeStart;
 		*outChunkEnd = inRangeEnd;
 		*outDelChunkStart = inRangeStart;
@@ -33,7 +42,6 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 	else if( inType == kLEOChunkTypeItem || inType == kLEOChunkTypeLine )
 	{
 		size_t		itemNum = 0;
-		size_t		theLen = strlen(inStr);
 		size_t		currChunkStart = 0,
 					currChunkEnd = 0,
 					currDelChunkStart = 0,
@@ -85,6 +93,45 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 			*outDelChunkStart = currDelChunkStart;
 		}
 		if( itemNum == inRangeEnd )
+		{
+			*outChunkEnd = theLen;
+			*outDelChunkEnd = theLen;
+		}
+	}
+	else if( inType == kLEOChunkTypeWord )
+	{
+		size_t		wordNum = 0;
+		bool		isInWord = !(inStr[0] == ' ' || inStr[0] == '\t' || inStr[0] == '\r' || inStr[0] == '\n');
+		
+		*outChunkStart = 0;
+		*outDelChunkStart = 0;
+		
+		for( size_t x = 0; x < theLen; x++ )
+		{
+			bool		isWhitespace = (inStr[x] == ' ' || inStr[x] == '\t' || inStr[x] == '\r' || inStr[x] == '\n');
+			if( isWhitespace && isInWord )
+			{
+				isInWord = false;
+				if( wordNum == inRangeEnd )
+				{
+					*outChunkEnd = x;
+					*outDelChunkEnd = x;
+					break;
+				}
+				wordNum++;
+			}
+			else if( !isWhitespace && !isInWord )
+			{
+				isInWord = true;
+				if( wordNum == inRangeStart )
+				{
+					*outChunkStart = x;
+					*outDelChunkStart = x;
+				}
+			}
+		}
+		
+		if( isInWord && wordNum == inRangeEnd )
 		{
 			*outChunkEnd = theLen;
 			*outDelChunkEnd = theLen;
