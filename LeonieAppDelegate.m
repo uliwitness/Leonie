@@ -480,8 +480,15 @@ void	DoReferenceTest()
 	theBool = LEOGetValueAsBoolean( &originalValue, &ctx );
 	printf( "%s\n", theBool ? "true" : "false" );
 	
-	LEOCleanUpValue( &theValue, &ctx );
 	LEOCleanUpValue( &originalValue, &ctx );
+	
+	
+	LEOSetValueAsNumber( &theValue.base, 1, &ctx );
+	// Ensure we got an error about disposed original:
+	if( ctx.errMsg[0] != 0 )
+		printf("%s\n",ctx.errMsg);
+	printf( "keepRunning = %s\n", ctx.keepRunning ? "true" : "false" );
+	LEOCleanUpValue( &theValue, &ctx );
 	
 	LEOCleanUpContext( &ctx );
 }
