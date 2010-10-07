@@ -47,7 +47,7 @@ void	LEOPushStringFromTableInstruction( LEOContext* inContext )
 	if( inContext->currentInstruction->param2 < inContext->stringsTableSize )
 		theString = inContext->stringsTable[inContext->currentInstruction->param2];
 	
-	LEOInitStringConstantValue( (LEOValuePtr) inContext->stackEndPtr, theString );
+	LEOInitStringConstantValue( (LEOValuePtr) inContext->stackEndPtr, theString, inContext );
 	inContext->stackEndPtr++;
 	
 	inContext->currentInstruction++;
@@ -79,7 +79,7 @@ void	LEOPopInstruction( LEOContext* inContext )
 
 void	LEOPushBooleanInstruction( LEOContext* inContext )
 {
-	LEOInitBooleanValue( (LEOValuePtr) inContext->stackEndPtr, inContext->currentInstruction->param2 == 1 );
+	LEOInitBooleanValue( (LEOValuePtr) inContext->stackEndPtr, inContext->currentInstruction->param2 == 1, inContext );
 	inContext->stackEndPtr++;
 
 	inContext->currentInstruction++;
@@ -186,7 +186,7 @@ void	LEOJumpRelativeIfLessSameThanZeroInstruction( LEOContext* inContext )
 
 void	LEOPushNumberInstruction( LEOContext* inContext )
 {
-	LEOInitNumberValue( (LEOValuePtr) inContext->stackEndPtr, inContext->currentInstruction->param2 );
+	LEOInitNumberValue( (LEOValuePtr) inContext->stackEndPtr, inContext->currentInstruction->param2, inContext );
 	inContext->stackEndPtr++;
 
 	inContext->currentInstruction++;

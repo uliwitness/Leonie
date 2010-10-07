@@ -47,6 +47,13 @@ typedef struct LEOInstruction
 } LEOInstruction;
 
 
+typedef struct LEOObject	// What a LEOObjectID refers to. These are kept in a big array of "master pointers" in the context.
+{
+	LEOValuePtr		value;	// NULL for unused object entries.
+	LEOObjectSeed	seed;	// Whenever a referenced object entry is re-used, this seed is incremented, so people still referencing it know they're wrong.
+} LEOObject;
+
+
 typedef struct LEOContext
 {
 	bool					keepRunning;			// ExitToShell and errors set this to TRUE to stop interpreting of code.
@@ -57,6 +64,8 @@ typedef struct LEOContext
 	LEOInstructionFuncPtr	preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
 	size_t					numSteps;				// Used by LEODebugger's PreInstructionProc to implement single-stepping.
 	LEOInstruction			*currentInstruction;	// PC
+	size_t					numReferences;			// Available slots in "references" array.
+	LEOObject				*references;			// "Master pointer" table for references so we can detect when a reference goes away.
 	union LEOValue			*stackBasePtr;			// BP
 	union LEOValue			*stackEndPtr;			// SP (always points at element after last element)
 	union LEOValue			stack[LEO_STACK_SIZE];	// The stack.

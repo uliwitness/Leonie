@@ -32,10 +32,12 @@
 // -----------------------------------------------------------------------------
 
 typedef unsigned long long		LEOObjectID;
+typedef int						LEOObjectSeed;
 typedef struct LEOValueType *	LEOValueTypePtr;
 typedef struct LEOValueBase	*	LEOValuePtr;
 
 
+struct LEOObject;
 struct LEOContext;
 
 
@@ -47,7 +49,6 @@ struct LEOValueType
 	
 	double		(*GetAsNumber)( LEOValuePtr self, struct LEOContext* inContext );
 	void		(*GetAsString)( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
-	LEOObjectID	(*GetAsObjectID)( LEOValuePtr self, struct LEOContext* inContext );
 	bool		(*GetAsBoolean)( LEOValuePtr self, struct LEOContext* inContext );
 	void		(*GetAsRangeOfString)( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
@@ -55,14 +56,13 @@ struct LEOValueType
 	
 	void		(*SetAsNumber)( LEOValuePtr self, double inNumber, struct LEOContext* inContext );
 	void		(*SetAsString)( LEOValuePtr self, const char* inBuf, struct LEOContext* inContext );
-	void		(*SetAsObjectID)( LEOValuePtr self, LEOObjectID inObjectID, struct LEOContext* inContext );
 	void		(*SetAsBoolean)( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
 	void		(*SetRangeAsString)( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext );
-	void		(*InitCopy)( LEOValuePtr self, LEOValuePtr dest );	// dest is an uninitialized value.
+	void		(*InitCopy)( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );	// dest is an uninitialized value.
 	
-	void		(*CleanUp)( LEOValuePtr self );
+	void		(*CleanUp)( LEOValuePtr self, struct LEOContext* inContext );
 };
 
 
@@ -74,7 +74,8 @@ struct LEOValueType
 //	That way it can be typecasted to the more generic type and .
 struct LEOValueBase
 {
-	LEOValueTypePtr		isa;	// Virtual function dispatch table.
+	LEOValueTypePtr		isa;			// Virtual function dispatch table.
+	LEOObjectID			refObjectID;	// If we have a reference to us, this is it, so we can clear it on destruction.
 };
 
 
@@ -83,6 +84,7 @@ extern struct LEOValueType	kLeoValueTypeNumber;
 extern struct LEOValueType	kLeoValueTypeString;
 extern struct LEOValueType	kLeoValueTypeStringConstant;
 extern struct LEOValueType	kLeoValueTypeBoolean;
+extern struct LEOValueType	kLeoValueTypeReference;
 
 
 // -----------------------------------------------------------------------------
@@ -110,19 +112,6 @@ struct LEOValueString
 typedef struct LEOValueString	LEOValueString;
 
 
-// An object is anything we can't stuff in a small quantity, and anything that
-//	might disappear while we're executing:
-// A LEOObjectID MUST NOT be a direct pointer, it must reference a quantity that
-//	is either guaranteed to stay around, or can be detected as gone before it is
-//	accessed and we crash. 
-struct LEOValueObject
-{
-	struct LEOValueBase	base;
-	LEOObjectID			objectID;
-};
-typedef struct LEOValueObject	LEOValueObject;
-
-
 // This is a boolean. In our language, booleans and integers are distinct types,
 //	but the (case-insensitive) strings "true" and "false" are valid booleans as
 //	well.
@@ -139,7 +128,8 @@ typedef struct LEOValueBoolean	LEOValueBoolean;
 struct LEOValueReference
 {
 	struct LEOValueBase	base;
-	LEOValuePtr			referencedValue;
+	LEOObjectID			objectID;
+	LEOObjectSeed		objectSeed;
 };
 typedef struct LEOValueReference	LEOValueReference;
 
@@ -163,7 +153,6 @@ union LEOValue
 	struct LEOValueBase			base;
 	struct LEOValueNumber		number;
 	struct LEOValueString		string;
-	struct LEOValueObject		object;
 	struct LEOValueBoolean		boolean;
 	struct LEOValueReference	reference;
 	struct LEOValueArray		array;
@@ -175,11 +164,12 @@ union LEOValue
 // -----------------------------------------------------------------------------
 
 // Constructors & storage space measuring:
-void		LEOInitNumberValue( LEOValuePtr inStorage, double inNumber );
-void		LEOInitStringValue( LEOValuePtr inStorage, const char* inString );
-void		LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString );
-void		LEOInitBooleanValue( LEOValuePtr inStorage, bool inBoolean );
-void		LEOInitReferenceValue( LEOValuePtr inStorage, LEOValuePtr referencedValue );
+void		LEOInitNumberValue( LEOValuePtr inStorage, double inNumber, struct LEOContext *inContext );
+void		LEOInitStringValue( LEOValuePtr inStorage, const char* inString, struct LEOContext *inContext );
+void		LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString, struct LEOContext *inContext );
+void		LEOInitBooleanValue( LEOValuePtr inStorage, bool inBoolean, struct LEOContext *inContext );
+void		LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
+
 
 #define		LEOGetValueSize(v)					(((LEOValuePtr)(v))->isa->size)
 
@@ -191,25 +181,21 @@ void		LEOInitReferenceValue( LEOValuePtr inStorage, LEOValuePtr referencedValue 
 // Convenience macros for calling virtual methods w/o knowing what object it is:
 #define 	LEOGetValueAsNumber(v,c)		((LEOValuePtr)(v))->isa->GetAsNumber(((LEOValuePtr)(v)),(c))
 #define 	LEOGetValueAsString(v,s,l,c)	((LEOValuePtr)(v))->isa->GetAsString(((LEOValuePtr)(v)),(s),(l),(c))
-#define 	LEOGetValueAsObjectID(v,c)		((LEOValuePtr)(v))->isa->GetAsObjectID(((LEOValuePtr)(v)),(c))
 #define 	LEOGetValueAsBoolean(v,c)		((LEOValuePtr)(v))->isa->GetAsBoolean(((LEOValuePtr)(v)),(c))
 #define 	LEOGetValueAsRangeOfString(v,t,rs,re,s,sl,c)	((LEOValuePtr)(v))->isa->GetAsRangeOfString(((LEOValuePtr)(v)),(t),(rs),(re),(s),(sl),(c))
 
 #define 	LEOSetValueAsNumber(v,n,c)		((LEOValuePtr)(v))->isa->SetAsNumber(((LEOValuePtr)(v)),(n),(c))
 #define 	LEOSetValueAsString(v,s,c)		((LEOValuePtr)(v))->isa->SetAsString(((LEOValuePtr)(v)),(s),(c))
-#define 	LEOSetValueAsObjectID(v,i,c)	((LEOValuePtr)(v))->isa->SetAsObjectID(((LEOValuePtr)(v)),(i),(c))
 #define 	LEOSetValueAsBoolean(v,n,c)		((LEOValuePtr)(v))->isa->SetAsBoolean(((LEOValuePtr)(v)),(n),(c))
 #define 	LEOSetValueRangeAsString(v,t,rs,re,s,c)	((LEOValuePtr)(v))->isa->SetRangeAsString(((LEOValuePtr)(v)),(t),(rs),(re),(s),(c))
 
-#define 	LEOInitCopy(v,d)				((LEOValuePtr)(v))->isa->InitCopy(((LEOValuePtr)(v)),((LEOValuePtr)(d)))
+#define 	LEOInitCopy(v,d,c)				((LEOValuePtr)(v))->isa->InitCopy(((LEOValuePtr)(v)),((LEOValuePtr)(d)),(c))
 
-#define 	LEOCleanUpValue(v)				((LEOValuePtr)(v))->isa->CleanUp(((LEOValuePtr)(v)))
+#define 	LEOCleanUpValue(v,c)			((LEOValuePtr)(v))->isa->CleanUp(((LEOValuePtr)(v)),(c))
 
 // Failure indicators we re-use in many places:
-LEOObjectID	LEOCantGetValueAsObjectID( LEOValuePtr self, struct LEOContext* inContext );
 double		LEOCantGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 bool		LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
-void		LEOCantSetValueAsObjectID( LEOValuePtr self, LEOObjectID inObjectID, struct LEOContext* inContext );
 void		LEOCantSetValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext );
 void		LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext* inContext );
 void		LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
@@ -226,8 +212,8 @@ double		LEOGetNumberValueAsNumber( LEOValuePtr self, struct LEOContext* inContex
 void		LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
 void		LEOSetNumberValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext );
 void		LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, struct LEOContext* inContext );
-void		LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest );
-void		LEOCleanUpNumberValue( LEOValuePtr self );
+void		LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
+void		LEOCleanUpNumberValue( LEOValuePtr self, struct LEOContext* inContext );
 
 // String instance methods:
 double		LEOGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
@@ -243,8 +229,8 @@ void 		LEOSetStringValueAsStringConstant( LEOValuePtr self, const char* inString
 void		LEOSetStringValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 												size_t inRangeStart, size_t inRangeEnd,
 												const char* inBuf, struct LEOContext* inContext );
-void		LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest );
-void		LEOCleanUpStringValue( LEOValuePtr self );
+void		LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
+void		LEOCleanUpStringValue( LEOValuePtr self, struct LEOContext* inContext );
 
 // Replacement assignment methods and destructors for constant-referencing strings:
 void		LEOSetStringConstantValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext );		// Makes it a dynamically allocated string.
@@ -253,22 +239,21 @@ void		LEOSetStringConstantValueAsBoolean( LEOValuePtr self, bool inBoolean, stru
 void		LEOSetStringConstantValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 												size_t inRangeStart, size_t inRangeEnd,
 												const char* inBuf, struct LEOContext* inContext );						// Makes it a dynamically allocated string.
-void		LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest );
-void		LEOCleanUpStringConstantValue( LEOValuePtr self );
+void		LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
+void		LEOCleanUpStringConstantValue( LEOValuePtr self, struct LEOContext* inContext );
 
 // Boolean instance methods:
 void		LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
 bool		LEOGetBooleanValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOSetBooleanValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );
 void		LEOSetBooleanValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
-void		LEOInitBooleanValueCopy( LEOValuePtr self, LEOValuePtr dest );
-void		LEOCleanUpBooleanValue( LEOValuePtr self );
+void		LEOInitBooleanValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
+void		LEOCleanUpBooleanValue( LEOValuePtr self, struct LEOContext* inContext );
 
 
 // Reference instance methods:
 void		LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
 double		LEOGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
-LEOObjectID	LEOGetReferenceValueAsObjectID( LEOValuePtr self, struct LEOContext* inContext );
 bool		LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
@@ -276,12 +261,11 @@ void		LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType
 void		LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext );
-void		LEOSetReferenceValueAsObjectID( LEOValuePtr self, LEOObjectID inObjectID, struct LEOContext* inContext );
 void		LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
 											const char* inBuf, struct LEOContext* inContext );
-void		LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest );
-void		LEOCleanUpReferenceValue( LEOValuePtr self );
+void		LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
+void		LEOCleanUpReferenceValue( LEOValuePtr self, struct LEOContext* inContext );
 
 
 

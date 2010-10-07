@@ -32,6 +32,8 @@ void	LEOInitContext( LEOContext* theContext )
 void	LEOCleanUpContext( LEOContext* theContext )
 {
 	LEOCleanUpStackToPtr( theContext, theContext->stack );
+	free( theContext->references );
+	theContext->references = NULL;
 }
 
 
@@ -40,7 +42,7 @@ void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDel
 	while( theContext->stackEndPtr > lastItemToDelete )
 	{
 		theContext->stackEndPtr--;
-		LEOCleanUpValue( theContext->stackEndPtr );
+		LEOCleanUpValue( theContext->stackEndPtr, theContext );
 	}
 }
 
