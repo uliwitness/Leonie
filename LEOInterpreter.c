@@ -63,6 +63,8 @@ void	LEOPrepareContextForRunning( LEOInstruction instructions[], LEOContext *inC
 	inContext->stackBasePtr = inContext->stack;
 	inContext->stackEndPtr = inContext->stack;
 	inContext->errMsg[0] = 0;
+	
+	// +++ Should we call LEOCleanUpStackToPtr here? Would be necessary for reusing a context.
 }
 
 

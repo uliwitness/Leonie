@@ -10,6 +10,13 @@
 /*!
 	@header LEOInterpreter (Public)
 	This is the core interpreter logic for the Leonie bytecode interpreter.
+	
+	To compile Leonie bytecode, generate an array of LEOInstruction entries and
+	use the constants in LEOInstructions.h for the instruction IDs.
+	
+	To run Leonie bytecode, create a LEOContext using LEOInitContext(), then
+	call LEORunInContext to execute the bytecode. When the call returns, call
+	LEOCleanUpContext to free associated data again.
 */
 
 #ifndef LEO_INTERPRETER_H
@@ -138,17 +145,17 @@ void	LEOCleanUpContext( LEOContext* theContext );
 
 
 /*! Print the given instruction to the console for debugging purposes.
-	@seealso //apple_ref/c/func/LEODebugPrintInstructions
+	@seealso //apple_ref/c/func/LEODebugPrintInstructions	LEODebugPrintInstructions
 */
 void	LEODebugPrintInstr( LEOInstruction* instruction );
 
 /*! Print the given array of instructions to the console for debugging purposes using LEODebugPrintInstr.
-	@seealso //apple_ref/c/func/LEODebugPrintInstr
+	@seealso //apple_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
 */
 void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions );
 
 /*! Print the given context to the console for debugging purposes.
-	@seealso //apple_ref/c/func/LEODebugPrintInstr
+	@seealso //apple_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
 */
 void	LEODebugPrintContext( LEOContext* ctx );
 

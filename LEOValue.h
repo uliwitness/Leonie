@@ -11,8 +11,8 @@
 	@header LEOValue (Public)
 	
 	A LEOValue is essentially a base class (with subclasses) implemented in
-	straight C++. Each LEOValue has an "isa" that points to the method
-	table. This way, you can e.g. run the InitCopy method on any LEOValue without
+	straight C. Each LEOValue has an "isa" that points to the method table.
+	This way, you can e.g. run the InitCopy method on any LEOValue without
 	having to know which "subclass" you are dealing with.
 	
 	LEOValues are how variables and stack entries are implemented in the LEO
