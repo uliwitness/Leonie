@@ -51,7 +51,7 @@ void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext )
 {
 	LEOPrepareContextForRunning( instructions, inContext );
 	
-	while( LEOContinueRunningContext( instructions, inContext ) )
+	while( LEOContinueRunningContext( inContext ) )
 		;
 }
 
@@ -66,7 +66,7 @@ void	LEOPrepareContextForRunning( LEOInstruction instructions[], LEOContext *inC
 }
 
 
-bool	LEOContinueRunningContext( LEOInstruction instructions[], LEOContext *inContext )
+bool	LEOContinueRunningContext( LEOContext *inContext )
 {
 	inContext->errMsg[0] = 0;
 	
@@ -139,7 +139,62 @@ void	LEODebugPrintContext( LEOContext* ctx )
 }
 
 
+#define LEOReferencesTableChunkSize			16
 
+
+LEOObjectID	LEOCreateNewObjectIDForValue( LEOValuePtr theValue, struct LEOContext* inContext )
+{
+	LEOObjectID		newObjectID = LEOObjectIDINVALID;
+	if( inContext->references == NULL )
+	{
+		inContext->numReferences = LEOReferencesTableChunkSize;
+		inContext->references = calloc( inContext->numReferences, sizeof(struct LEOObject) );
+		
+		newObjectID = 0;	// Can start with first item right away.
+	}
+	else
+	{
+		// +++ Optimize: remember the last one we cleared or returned or so and start scanning there.
+		
+		for( size_t x = 0; x < inContext->numReferences; x++ )
+		{
+			if( inContext->references[x].value == NULL )	// Unused slot!
+				newObjectID = x;
+		}
+		
+		if( newObjectID == LEOObjectIDINVALID )
+		{
+			// No free slots left?
+			size_t		oldNumReferences = inContext->numReferences;
+			inContext->numReferences += LEOReferencesTableChunkSize;
+			inContext->references = realloc( inContext->references, sizeof(struct LEOObject) * inContext->numReferences );
+			memset( inContext->references +(oldNumReferences * sizeof(struct LEOObject)), 0, LEOReferencesTableChunkSize * sizeof(struct LEOObject) );
+			
+			newObjectID = oldNumReferences;	// Same as index of first new item.
+		}
+	}
+	
+	theValue->refObjectID = newObjectID;
+	inContext->references[newObjectID].value = theValue;
+	
+	return newObjectID;
+}
+
+
+void	LEORecycleObjectID( LEOObjectID inObjectID, struct LEOContext* inContext )
+{
+	inContext->references[inObjectID].value = NULL;
+	inContext->references[inObjectID].seed += 1;	// Make sure that if this is reused, whoever still references it knows it's gone.
+}
+
+
+LEOValuePtr	LEOGetValueForObjectIDAndSeed( LEOObjectID inObjectID, LEOObjectSeed inObjectSeed, struct LEOContext* inContext )
+{
+	if( inContext->references[inObjectID].seed != inObjectSeed )
+		return NULL;
+	
+	return inContext->references[inObjectID].value;
+}
 
 
 

@@ -13,7 +13,6 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
-#import "LeonieAppDelegate.h"
 
 
 #pragma mark -
@@ -54,19 +53,7 @@ void	LEOPushStringFromTableInstruction( LEOContext* inContext )
 }
 
 
-void	LEOPrintInstruction( LEOContext* inContext )
-{
-	char		buf[1024] = { 0 };
-	
-	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
-	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
-	LEOGetValueAsString( theValue, buf, sizeof(buf), inContext );
-	[(LeonieAppDelegate*)[NSApp delegate] printMessage: [NSString stringWithCString: buf encoding: NSUTF8StringEncoding]];
-	if( popOffStack )
-		LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
-	
-	inContext->currentInstruction++;
-}
+void	LEOPrintInstruction( LEOContext* inContext );
 
 
 void	LEOPopInstruction( LEOContext* inContext )

@@ -9,8 +9,16 @@
 /* Begin PBXBuildFile section */
 		1DDD58160DA1D0A300B32029 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1DDD58140DA1D0A300B32029 /* MainMenu.xib */; };
 		256AC3DA0F4B6AC300CF3369 /* LeonieAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 256AC3D90F4B6AC300CF3369 /* LeonieAppDelegate.m */; };
+		550A2A5B12607C7F00C6DB9D /* LEOInstructionsMac.m in Sources */ = {isa = PBXBuildFile; fileRef = 550A2A5A12607C7F00C6DB9D /* LEOInstructionsMac.m */; };
+		550A2A6612607DDC00C6DB9D /* LEOInstructionsGeneric.c in Sources */ = {isa = PBXBuildFile; fileRef = 550A2A5F12607D4100C6DB9D /* LEOInstructionsGeneric.c */; };
+		550A2A6712607DEE00C6DB9D /* LEOValue.c in Sources */ = {isa = PBXBuildFile; fileRef = 55792F4B12357A0A00A84BD2 /* LEOValue.c */; };
+		550A2A6812607DEE00C6DB9D /* LEOInterpreter.c in Sources */ = {isa = PBXBuildFile; fileRef = 55303C321243EC7100062EB5 /* LEOInterpreter.c */; };
+		550A2A6912607DEE00C6DB9D /* LEOInstructions.c in Sources */ = {isa = PBXBuildFile; fileRef = 55303C571243F69000062EB5 /* LEOInstructions.c */; };
+		550A2A6A12607DEE00C6DB9D /* LEODebugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 55648AEE1247E0C5000BE20A /* LEODebugger.c */; };
+		550A2A6B12607DEE00C6DB9D /* LEOChunks.c in Sources */ = {isa = PBXBuildFile; fileRef = 55E140DB124805E8008EDC7C /* LEOChunks.c */; };
+		550A2A8412607FD000C6DB9D /* TestsMain.c in Sources */ = {isa = PBXBuildFile; fileRef = 550A2A6F12607EAC00C6DB9D /* TestsMain.c */; };
 		55303C331243EC7100062EB5 /* LEOInterpreter.c in Sources */ = {isa = PBXBuildFile; fileRef = 55303C321243EC7100062EB5 /* LEOInterpreter.c */; };
-		55303C581243F69000062EB5 /* LEOInstructions.m in Sources */ = {isa = PBXBuildFile; fileRef = 55303C571243F69000062EB5 /* LEOInstructions.m */; };
+		55303C581243F69000062EB5 /* LEOInstructions.c in Sources */ = {isa = PBXBuildFile; fileRef = 55303C571243F69000062EB5 /* LEOInstructions.c */; };
 		55648AEF1247E0C5000BE20A /* LEODebugger.c in Sources */ = {isa = PBXBuildFile; fileRef = 55648AEE1247E0C5000BE20A /* LEODebugger.c */; };
 		55792F4C12357A0A00A84BD2 /* LEOValue.c in Sources */ = {isa = PBXBuildFile; fileRef = 55792F4B12357A0A00A84BD2 /* LEOValue.c */; };
 		55E140DC124805E8008EDC7C /* LEOChunks.c in Sources */ = {isa = PBXBuildFile; fileRef = 55E140DB124805E8008EDC7C /* LEOChunks.c */; };
@@ -18,6 +26,16 @@
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		550A2AEA12609D7100C6DB9D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 550A2A4A12607B0900C6DB9D /* LeonieTests */;
+			remoteInfo = LeonieTests;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -30,10 +48,14 @@
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		550A2A4B12607B0900C6DB9D /* LeonieTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = LeonieTests; sourceTree = BUILT_PRODUCTS_DIR; };
+		550A2A5A12607C7F00C6DB9D /* LEOInstructionsMac.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LEOInstructionsMac.m; path = macosx/LEOInstructionsMac.m; sourceTree = "<group>"; };
+		550A2A5F12607D4100C6DB9D /* LEOInstructionsGeneric.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOInstructionsGeneric.c; path = generic/LEOInstructionsGeneric.c; sourceTree = "<group>"; };
+		550A2A6F12607EAC00C6DB9D /* TestsMain.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = TestsMain.c; path = generic/TestsMain.c; sourceTree = "<group>"; };
 		55303C311243EC7100062EB5 /* LEOInterpreter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LEOInterpreter.h; sourceTree = "<group>"; };
 		55303C321243EC7100062EB5 /* LEOInterpreter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LEOInterpreter.c; sourceTree = "<group>"; };
 		55303C561243F69000062EB5 /* LEOInstructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LEOInstructions.h; sourceTree = "<group>"; };
-		55303C571243F69000062EB5 /* LEOInstructions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LEOInstructions.m; sourceTree = "<group>"; };
+		55303C571243F69000062EB5 /* LEOInstructions.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LEOInstructions.c; sourceTree = "<group>"; };
 		55648AED1247E0C5000BE20A /* LEODebugger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LEODebugger.h; sourceTree = "<group>"; };
 		55648AEE1247E0C5000BE20A /* LEODebugger.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LEODebugger.c; sourceTree = "<group>"; };
 		55792F4A12357A0A00A84BD2 /* LEOValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LEOValue.h; sourceTree = "<group>"; };
@@ -45,6 +67,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		550A2A4912607B0900C6DB9D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D11072E0486CEB800E47090 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -56,13 +85,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		080E96DDFE201D6D7F000001 /* Classes */ = {
+		080E96DDFE201D6D7F000001 /* Mac */ = {
 			isa = PBXGroup;
 			children = (
-				256AC3D80F4B6AC300CF3369 /* LeonieAppDelegate.h */,
-				256AC3D90F4B6AC300CF3369 /* LeonieAppDelegate.m */,
+				550A2A6412607DBE00C6DB9D /* Classes */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				550A2A5A12607C7F00C6DB9D /* LEOInstructionsMac.m */,
 			);
-			name = Classes;
+			name = Mac;
 			sourceTree = "<group>";
 		};
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
@@ -87,6 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				8D1107320486CEB800E47090 /* Leonie.app */,
+				550A2A4B12607B0900C6DB9D /* LeonieTests */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -94,18 +125,8 @@
 		29B97314FDCFA39411CA2CEA /* Leonie */ = {
 			isa = PBXGroup;
 			children = (
-				55792F4A12357A0A00A84BD2 /* LEOValue.h */,
-				55792F4B12357A0A00A84BD2 /* LEOValue.c */,
-				55303C311243EC7100062EB5 /* LEOInterpreter.h */,
-				55303C321243EC7100062EB5 /* LEOInterpreter.c */,
-				55303C561243F69000062EB5 /* LEOInstructions.h */,
-				55303C571243F69000062EB5 /* LEOInstructions.m */,
-				55648AED1247E0C5000BE20A /* LEODebugger.h */,
-				55648AEE1247E0C5000BE20A /* LEODebugger.c */,
-				55E140DA124805E8008EDC7C /* LEOChunks.h */,
-				55E140DB124805E8008EDC7C /* LEOChunks.c */,
-				080E96DDFE201D6D7F000001 /* Classes */,
-				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				550A2A5312607B3800C6DB9D /* LEOLib */,
+				550A2A6312607DA700C6DB9D /* Platforms */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
@@ -141,9 +162,70 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		550A2A5312607B3800C6DB9D /* LEOLib */ = {
+			isa = PBXGroup;
+			children = (
+				55792F4A12357A0A00A84BD2 /* LEOValue.h */,
+				55792F4B12357A0A00A84BD2 /* LEOValue.c */,
+				55303C311243EC7100062EB5 /* LEOInterpreter.h */,
+				55303C321243EC7100062EB5 /* LEOInterpreter.c */,
+				55303C561243F69000062EB5 /* LEOInstructions.h */,
+				55303C571243F69000062EB5 /* LEOInstructions.c */,
+				55648AED1247E0C5000BE20A /* LEODebugger.h */,
+				55648AEE1247E0C5000BE20A /* LEODebugger.c */,
+				55E140DA124805E8008EDC7C /* LEOChunks.h */,
+				55E140DB124805E8008EDC7C /* LEOChunks.c */,
+			);
+			name = LEOLib;
+			sourceTree = "<group>";
+		};
+		550A2A6212607D9300C6DB9D /* Generic */ = {
+			isa = PBXGroup;
+			children = (
+				550A2A5F12607D4100C6DB9D /* LEOInstructionsGeneric.c */,
+			);
+			name = Generic;
+			sourceTree = "<group>";
+		};
+		550A2A6312607DA700C6DB9D /* Platforms */ = {
+			isa = PBXGroup;
+			children = (
+				080E96DDFE201D6D7F000001 /* Mac */,
+				550A2A6212607D9300C6DB9D /* Generic */,
+				550A2A6F12607EAC00C6DB9D /* TestsMain.c */,
+			);
+			name = Platforms;
+			sourceTree = "<group>";
+		};
+		550A2A6412607DBE00C6DB9D /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				256AC3D80F4B6AC300CF3369 /* LeonieAppDelegate.h */,
+				256AC3D90F4B6AC300CF3369 /* LeonieAppDelegate.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		550A2A4A12607B0900C6DB9D /* LeonieTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 550A2A5412607B3800C6DB9D /* Build configuration list for PBXNativeTarget "LeonieTests" */;
+			buildPhases = (
+				550A2A4812607B0900C6DB9D /* Sources */,
+				550A2A4912607B0900C6DB9D /* Frameworks */,
+				550A2A5212607B2100C6DB9D /* Run Tests */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LeonieTests;
+			productName = LeonieTests;
+			productReference = 550A2A4B12607B0900C6DB9D /* LeonieTests */;
+			productType = "com.apple.product-type.tool";
+		};
 		8D1107260486CEB800E47090 /* Leonie */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Leonie" */;
@@ -155,6 +237,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				550A2AEB12609D7100C6DB9D /* PBXTargetDependency */,
 			);
 			name = Leonie;
 			productInstallPath = "$(HOME)/Applications";
@@ -182,6 +265,7 @@
 			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* Leonie */,
+				550A2A4A12607B0900C6DB9D /* LeonieTests */,
 			);
 		};
 /* End PBXProject section */
@@ -198,7 +282,39 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		550A2A5212607B2100C6DB9D /* Run Tests */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Tests";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "${TARGET_BUILD_DIR}/${PRODUCT_NAME}";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		550A2A4812607B0900C6DB9D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				550A2A6612607DDC00C6DB9D /* LEOInstructionsGeneric.c in Sources */,
+				550A2A6712607DEE00C6DB9D /* LEOValue.c in Sources */,
+				550A2A6812607DEE00C6DB9D /* LEOInterpreter.c in Sources */,
+				550A2A6912607DEE00C6DB9D /* LEOInstructions.c in Sources */,
+				550A2A6A12607DEE00C6DB9D /* LEODebugger.c in Sources */,
+				550A2A6B12607DEE00C6DB9D /* LEOChunks.c in Sources */,
+				550A2A8412607FD000C6DB9D /* TestsMain.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D11072C0486CEB800E47090 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -207,13 +323,22 @@
 				256AC3DA0F4B6AC300CF3369 /* LeonieAppDelegate.m in Sources */,
 				55792F4C12357A0A00A84BD2 /* LEOValue.c in Sources */,
 				55303C331243EC7100062EB5 /* LEOInterpreter.c in Sources */,
-				55303C581243F69000062EB5 /* LEOInstructions.m in Sources */,
+				55303C581243F69000062EB5 /* LEOInstructions.c in Sources */,
 				55648AEF1247E0C5000BE20A /* LEODebugger.c in Sources */,
 				55E140DC124805E8008EDC7C /* LEOChunks.c in Sources */,
+				550A2A5B12607C7F00C6DB9D /* LEOInstructionsMac.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		550A2AEB12609D7100C6DB9D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 550A2A4A12607B0900C6DB9D /* LeonieTests */;
+			targetProxy = 550A2AEA12609D7100C6DB9D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
@@ -235,6 +360,36 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		550A2A4D12607B0900C6DB9D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = LeonieTests;
+			};
+			name = Debug;
+		};
+		550A2A4E12607B0900C6DB9D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = LeonieTests;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -295,6 +450,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		550A2A5412607B3800C6DB9D /* Build configuration list for PBXNativeTarget "LeonieTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				550A2A4D12607B0900C6DB9D /* Debug */,
+				550A2A4E12607B0900C6DB9D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Leonie" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
