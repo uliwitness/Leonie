@@ -42,7 +42,7 @@ void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDel
 	while( theContext->stackEndPtr > lastItemToDelete )
 	{
 		theContext->stackEndPtr--;
-		LEOCleanUpValue( theContext->stackEndPtr, theContext );
+		LEOCleanUpValue( theContext->stackEndPtr, kLEOInvalidateReferences, theContext );
 	}
 }
 

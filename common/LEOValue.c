@@ -140,6 +140,69 @@ struct LEOValueType	kLeoValueTypeReference =
 };
 
 
+struct LEOValueType	kLeoValueTypeNumberVariant =
+{
+	"number",
+	sizeof(union LEOValue),
+	
+	LEOGetNumberValueAsNumber,
+	LEOGetNumberValueAsString,
+	LEOCantGetValueAsBoolean,
+	LEOGetAnyValueAsRangeOfString,	// Only works as long as numbers can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
+	
+	LEOSetVariantValueAsNumber,
+	LEOSetVariantValueAsString,
+	LEOSetVariantValueAsBoolean,
+	LEOSetVariantValueRangeAsString,
+	
+	LEOInitNumberVariantValueCopy,
+	
+	LEOCleanUpNumberValue
+};
+
+
+struct LEOValueType	kLeoValueTypeStringVariant =
+{
+	"string",
+	sizeof(struct LEOValueString),
+	
+	LEOGetStringValueAsNumber,
+	LEOGetStringValueAsString,
+	LEOGetStringValueAsBoolean,
+	LEOGetStringValueAsRangeOfString,
+	
+	LEOSetVariantValueAsNumber,
+	LEOSetVariantValueAsString,
+	LEOSetVariantValueAsBoolean,
+	LEOSetVariantValueRangeAsString,
+	
+	LEOInitStringVariantValueCopy,
+	
+	LEOCleanUpStringValue
+};
+
+
+struct LEOValueType	kLeoValueTypeBooleanVariant =
+{
+	"boolean",
+	sizeof(struct LEOValueBoolean),
+	
+	LEOCantGetValueAsNumber,
+	LEOGetBooleanValueAsString,
+	LEOGetBooleanValueAsBoolean,
+	LEOGetAnyValueAsRangeOfString,	// Only works as long as booleans can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
+	
+	LEOSetVariantValueAsNumber,
+	LEOSetVariantValueAsString,
+	LEOSetVariantValueAsBoolean,
+	LEOSetVariantValueRangeAsString,
+	
+	LEOInitBooleanVariantValueCopy,
+	
+	LEOCleanUpBooleanValue
+};
+
+
 #pragma mark -
 #pragma mark Shared
 
@@ -259,10 +322,11 @@ void	LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 	@functiongroup LEOValueNumber
 */
 
-void	LEOInitNumberValue( LEOValuePtr inStorage, double inNumber, struct LEOContext* inContext )
+void	LEOInitNumberValue( LEOValuePtr inStorage, double inNumber, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	inStorage->isa = &kLeoValueTypeNumber;
-	inStorage->refObjectID = LEOObjectIDINVALID;
+	if( keepReferences == kLEOInvalidateReferences )
+		inStorage->refObjectID = LEOObjectIDINVALID;
 	((struct LEOValueNumber*)inStorage)->number = inNumber;
 }
 
@@ -318,10 +382,11 @@ void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, struct L
 	Implementation of InitCopy for number values.
 */
 
-void	LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+void	LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	dest->isa = &kLeoValueTypeNumber;
-	dest->refObjectID = LEOObjectIDINVALID;
+	if( keepReferences == kLEOInvalidateReferences )
+		dest->refObjectID = LEOObjectIDINVALID;
 	((struct LEOValueNumber*)dest)->number = ((struct LEOValueNumber*)self)->number;
 }
 
@@ -331,11 +396,11 @@ void	LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOConte
 	that they will produce an error message if they ever try to access it again.
 */
 
-void	LEOCleanUpNumberValue( LEOValuePtr self, struct LEOContext* inContext )
+void	LEOCleanUpNumberValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	self->isa = NULL;
 	((struct LEOValueNumber*)self)->number = 0LL;
-	if( self->refObjectID != LEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
+	if( keepReferences == kLEOInvalidateReferences && self->refObjectID != LEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
 		LEORecycleObjectID( self->refObjectID, inContext );
 }
 
@@ -347,10 +412,11 @@ void	LEOCleanUpNumberValue( LEOValuePtr self, struct LEOContext* inContext )
 	@functiongroup LEOValueString
 */
 
-void	LEOInitStringValue( LEOValuePtr inStorage, const char* inString, struct LEOContext* inContext )
+void	LEOInitStringValue( LEOValuePtr inStorage, const char* inString, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	inStorage->isa = &kLeoValueTypeString;
-	inStorage->refObjectID = LEOObjectIDINVALID;
+	if( keepReferences == kLEOInvalidateReferences )
+		inStorage->refObjectID = LEOObjectIDINVALID;
 	long		theLen = strlen(inString) +1;
 	((struct LEOValueString*)inStorage)->string = malloc( theLen );
 	strncpy( ((struct LEOValueString*)inStorage)->string, inString, theLen );
@@ -484,10 +550,11 @@ void LEOSetStringValueAsStringConstant( LEOValuePtr self, const char* inString, 
 	Implementation of InitCopy for string values.
 */
 
-void	LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+void	LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	dest->isa = &kLeoValueTypeString;
-	dest->refObjectID = LEOObjectIDINVALID;
+	if( keepReferences == kLEOInvalidateReferences )
+		dest->refObjectID = LEOObjectIDINVALID;
 	long		theLen = strlen(((struct LEOValueString*)self)->string) +1;
 	((struct LEOValueString*)dest)->string = malloc( theLen );
 	strncpy( ((struct LEOValueString*)dest)->string, ((struct LEOValueString*)self)->string, theLen );
@@ -538,13 +605,13 @@ void	LEOSetStringValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 	that they will produce an error message if they ever try to access it again.
 */
 
-void	LEOCleanUpStringValue( LEOValuePtr self, struct LEOContext* inContext )
+void	LEOCleanUpStringValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	self->isa = NULL;
 	if( ((struct LEOValueString*)self)->string )
 		free( ((struct LEOValueString*)self)->string );
 	((struct LEOValueString*)self)->string = NULL;
-	if( self->refObjectID != LEOObjectIDINVALID )
+	if( keepReferences == kLEOInvalidateReferences && self->refObjectID != LEOObjectIDINVALID )
 		LEORecycleObjectID( self->refObjectID, inContext );
 }
 
@@ -556,10 +623,11 @@ void	LEOCleanUpStringValue( LEOValuePtr self, struct LEOContext* inContext )
 	@functiongroup LEOValueStringConstant
 */
 
-void	LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString, struct LEOContext* inContext )
+void	LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	inStorage->isa = &kLeoValueTypeStringConstant;
-	inStorage->refObjectID = LEOObjectIDINVALID;
+	if( keepReferences == kLEOInvalidateReferences )
+		inStorage->refObjectID = LEOObjectIDINVALID;
 	((struct LEOValueString*)inStorage)->string = (char*)inString;
 }
 
@@ -607,10 +675,11 @@ void	LEOSetStringConstantValueAsBoolean( LEOValuePtr self, bool inBoolean, struc
 	Implementation of InitCopy for string constant values.
 */
 
-void	LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+void	LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	dest->isa = &kLeoValueTypeStringConstant;
-	dest->refObjectID = LEOObjectIDINVALID;
+	if( keepReferences == kLEOInvalidateReferences )
+		dest->refObjectID = LEOObjectIDINVALID;
 	((struct LEOValueString*)dest)->string = ((struct LEOValueString*)self)->string;
 }
 
@@ -662,11 +731,11 @@ void	LEOSetStringConstantValueRangeAsString( LEOValuePtr self, LEOChunkType inTy
 	access it again.
 */
 
-void	LEOCleanUpStringConstantValue( LEOValuePtr self, struct LEOContext* inContext )
+void	LEOCleanUpStringConstantValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	self->isa = NULL;
 	((struct LEOValueString*)self)->string = NULL;
-	if( self->refObjectID != LEOObjectIDINVALID )
+	if( keepReferences == kLEOInvalidateReferences && self->refObjectID != LEOObjectIDINVALID )
 		LEORecycleObjectID( self->refObjectID, inContext );
 }
 
@@ -678,10 +747,11 @@ void	LEOCleanUpStringConstantValue( LEOValuePtr self, struct LEOContext* inConte
 	@functiongroup LEOValueBoolean
 */
 
-void	LEOInitBooleanValue( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext )
+void	LEOInitBooleanValue( LEOValuePtr self, bool inBoolean, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	self->isa = &kLeoValueTypeBoolean;
-	self->refObjectID = LEOObjectIDINVALID;
+	if( keepReferences == kLEOInvalidateReferences )
+		self->refObjectID = LEOObjectIDINVALID;
 	((struct LEOValueBoolean*)self)->boolean = inBoolean;
 }
 
@@ -737,10 +807,11 @@ void	LEOSetBooleanValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOCo
 	Implementation of InitCopy for boolean values.
 */
 
-void	LEOInitBooleanValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+void	LEOInitBooleanValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	dest->isa = &kLeoValueTypeBoolean;
-	dest->refObjectID = LEOObjectIDINVALID;
+	if( keepReferences == kLEOInvalidateReferences )
+		dest->refObjectID = LEOObjectIDINVALID;
 	((struct LEOValueBoolean*)dest)->boolean = ((struct LEOValueBoolean*)self)->boolean;
 }
 
@@ -750,11 +821,11 @@ void	LEOInitBooleanValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOCont
 	that they will produce an error message if they ever try to access it again.
 */
 
-void	LEOCleanUpBooleanValue( LEOValuePtr self, struct LEOContext* inContext )
+void	LEOCleanUpBooleanValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	self->isa = NULL;
 	((struct LEOValueBoolean*)self)->boolean = false;
-	if( self->refObjectID != LEOObjectIDINVALID )
+	if( keepReferences == kLEOInvalidateReferences && self->refObjectID != LEOObjectIDINVALID )
 		LEORecycleObjectID( self->refObjectID, inContext );
 }
 
@@ -777,10 +848,11 @@ void	LEOCleanUpBooleanValue( LEOValuePtr self, struct LEOContext* inContext )
 	However, the destructor of the value is safe to call, as is InitCopy.
 */
 
-void	LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr originalValue, struct LEOContext* inContext )
+void	LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr originalValue, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	self->isa = &kLeoValueTypeReference;
-	self->refObjectID = LEOObjectIDINVALID;
+	if( keepReferences == kLEOInvalidateReferences )
+		self->refObjectID = LEOObjectIDINVALID;
 	
 	if( originalValue->refObjectID == LEOObjectIDINVALID )
 		LEOCreateNewObjectIDForValue( originalValue, inContext );
@@ -937,10 +1009,11 @@ void	LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 	even if the original value this reference points to has already gone away.
 */
 
-void	LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+void	LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	dest->isa = &kLeoValueTypeReference;
-	dest->refObjectID = LEOObjectIDINVALID;
+	if( keepReferences == kLEOInvalidateReferences )
+		dest->refObjectID = LEOObjectIDINVALID;
 	((struct LEOValueReference*)dest)->objectID = ((struct LEOValueReference*)self)->objectID;
 	((struct LEOValueReference*)dest)->objectSeed = ((struct LEOValueReference*)self)->objectSeed;
 }
@@ -952,13 +1025,77 @@ void	LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, struct LEOCo
 	Yes, you can have references to references. Use this power wisely.
 */
 
-void	LEOCleanUpReferenceValue( LEOValuePtr self, struct LEOContext* inContext )
+void	LEOCleanUpReferenceValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	self->isa = NULL;
 	((struct LEOValueReference*)self)->objectID = LEOObjectIDINVALID;
 	((struct LEOValueReference*)self)->objectSeed = 0;
-	if( self->refObjectID != LEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
+	if( keepReferences == kLEOInvalidateReferences && self->refObjectID != LEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
 		LEORecycleObjectID( self->refObjectID, inContext );
+}
+
+
+#pragma mark -
+#pragma mark Variants
+
+void	LEOSetVariantValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext )
+{
+	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+	LEOInitNumberValue( self, inNumber, kLEOKeepReferences, inContext );
+	self->isa = &kLeoValueTypeNumberVariant;
+}
+
+
+void	LEOSetVariantValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )
+{
+	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+	LEOInitStringValue( self, inString, kLEOKeepReferences, inContext );
+	self->isa = &kLeoValueTypeStringVariant;
+}
+
+
+void	LEOSetVariantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext )				// Makes it a constant string.
+{
+	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+	LEOInitBooleanValue( self, inBoolean, kLEOKeepReferences, inContext );
+	self->isa = &kLeoValueTypeBooleanVariant;
+}
+
+
+void	LEOSetVariantValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
+											size_t inRangeStart, size_t inRangeEnd,
+											const char* inBuf, struct LEOContext* inContext )
+{
+	if( self->isa != &kLeoValueTypeStringVariant )	// Convert to string first.
+	{
+		char		shortStr[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
+		LEOGetValueAsString( self, shortStr, sizeof(shortStr), inContext );
+		LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+		LEOInitStringValue( self, shortStr, kLEOKeepReferences, inContext );
+		self->isa = &kLeoValueTypeStringVariant;
+	}
+	LEOSetStringValueRangeAsString( self, inType, inRangeStart, inRangeEnd, inBuf, inContext );
+}
+
+
+void	LEOInitNumberVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitNumberValueCopy( self, dest, keepReferences, inContext );
+	dest->isa = &kLeoValueTypeNumberVariant;
+}
+
+
+void	LEOInitBooleanVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitBooleanValueCopy( self, dest, keepReferences, inContext );
+	dest->isa = &kLeoValueTypeBooleanVariant;
+}
+
+
+void	LEOInitStringVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitStringValueCopy( self, dest, keepReferences, inContext );
+	dest->isa = &kLeoValueTypeStringVariant;
 }
 
 
@@ -980,7 +1117,7 @@ struct LEOArrayEntry	*	LEOAllocNewEntry( const char* inKey, LEOValuePtr inValue,
 	size_t						inKeyLen = strlen(inKey);
 	newEntry = malloc( sizeof(struct LEOArrayEntry) +inKeyLen +1 );
 	memmove( newEntry->key, inKey, inKeyLen +1 ); 
-	LEOInitCopy( inValue, &newEntry->value, inContext );
+	LEOInitCopy( inValue, &newEntry->value, kLEOInvalidateReferences, inContext );
 	newEntry->smallerItem = NULL;
 	newEntry->largerItem = NULL;
 	
@@ -1022,8 +1159,8 @@ void	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const c
 			}
 			else if( cmpResult == 0 )	// Key already exists? Replace value!
 			{
-				LEOCleanUpValue( &currEntry->value, inContext );
-				LEOInitCopy( inValue, &currEntry->value, inContext );
+				LEOCleanUpValue( &currEntry->value, kLEOKeepReferences, inContext );
+				LEOInitCopy( inValue, &currEntry->value, kLEOKeepReferences, inContext );
 			}
 		}
 	}
@@ -1052,7 +1189,7 @@ void	LEODeleteArrayEntryFromRoot( struct LEOArrayEntry** arrayPtrByReference, co
 		}
 		else if( cmpResult == 0 )	// Found key!
 		{
-			LEOCleanUpValue( &currEntry->value, inContext );
+			LEOCleanUpValue( &currEntry->value, kLEOInvalidateReferences, inContext );
 			*parentPtr = NULL;
 			
 			if( currEntry->smallerItem && currEntry->largerItem )

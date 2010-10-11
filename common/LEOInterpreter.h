@@ -15,8 +15,14 @@
 	use the constants in LEOInstructions.h for the instruction IDs.
 	
 	To run Leonie bytecode, create a LEOContext using LEOInitContext(), then
-	call LEORunInContext to execute the bytecode. When the call returns, call
-	LEOCleanUpContext to free associated data again.
+	call LEORunInContext() to execute the bytecode. When the call returns, call
+	LEOCleanUpContext() to free associated data again.
+	
+	@seealso //leo_ref/c/tdef/LEOInstruction LEOInstruction
+	@seealso //leo_ref/c/tdef/LEOContext LEOContext
+	@seealso //leo_ref/c/func/LEOInitContext	LEOInitContext
+	@seealso //leo_ref/c/func/LEORunInContext	LEORunInContext
+	@seealso //leo_ref/c/func/LEOCleanUpContext	LEOCleanUpContext
 */
 
 #ifndef LEO_INTERPRETER_H
@@ -69,7 +75,7 @@ typedef struct LEOInstruction
 	big array of "master pointers" named "references" in the LEOContext.
 	@field	value	The actual pointer to the referenced value. NULL for unused object entries.
 	@field	seed	Whenever a referenced object entry is re-used, this seed is incremented, so people still referencing it know they're wrong.
-	@seealso //apple_ref/c/tag/LEOValueReference LEOValueReference */
+	@seealso //leo_ref/c/tag/LEOValueReference LEOValueReference */
 typedef struct LEOObject	// What a LEOObjectID refers to. These are kept in a big array of "master pointers" in the context.
 {
 	LEOValuePtr		value;	// NULL for unused object entries.
@@ -100,8 +106,8 @@ typedef struct LEOObject	// What a LEOObjectID refers to. These are kept in a bi
 	@field	stackEndPtr			Stack pointer indicating used size of our stack. Always points at element after last element.
 	@field	stack				The stack containing all our local variables, parameters etc.
 								
-	@seealso //apple_ref/c/tag/LEOValueReference LEOValueReference
-	@seealso //apple_ref/c/tdef/LEOValuePtr LEOValuePtr */
+	@seealso //leo_ref/c/tag/LEOValueReference LEOValueReference
+	@seealso //leo_ref/c/tdef/LEOValuePtr LEOValuePtr */
 
 typedef struct LEOContext
 {
@@ -131,13 +137,16 @@ void	LEOInitContext( LEOContext* theContext );
 /*! Shorthand for LEOPrepareContextForRunning and a loop of LEOContinueRunningContext. */
 void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext );
 
-/*! Set the currentInstruction of the given LEOContext to the given instruction array's first instruction, and initialize the Base pointer and stack end pointer and keepRunning etc. */
+/*! Set the currentInstruction of the given LEOContext to the given instruction 
+	array's first instruction, and initialize the Base pointer and stack end pointer
+	and keepRunning etc. */
 void	LEOPrepareContextForRunning( LEOInstruction instructions[], LEOContext *inContext );
 
-/*! Execute the next instruction in the context. Returns false if the code has finished executing or exited with an error. */
+/*! Execute the next instruction in the context. Returns false if the code has
+	finished executing or exited with an error. */
 bool	LEOContinueRunningContext( LEOContext *inContext );
 
-/*! Used internally to unwind the stack and ensure values get destructed correctly. */
+// Used internally to unwind the stack and ensure values get destructed correctly.
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete );
 
 /*! Dispose of the given context's associated data structures once you're finished. */
@@ -145,17 +154,17 @@ void	LEOCleanUpContext( LEOContext* theContext );
 
 
 /*! Print the given instruction to the console for debugging purposes.
-	@seealso //apple_ref/c/func/LEODebugPrintInstructions	LEODebugPrintInstructions
+	@seealso //leo_ref/c/func/LEODebugPrintInstructions	LEODebugPrintInstructions
 */
 void	LEODebugPrintInstr( LEOInstruction* instruction );
 
 /*! Print the given array of instructions to the console for debugging purposes using LEODebugPrintInstr.
-	@seealso //apple_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
+	@seealso //leo_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
 */
 void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions );
 
 /*! Print the given context to the console for debugging purposes.
-	@seealso //apple_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
+	@seealso //leo_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
 */
 void	LEODebugPrintContext( LEOContext* ctx );
 

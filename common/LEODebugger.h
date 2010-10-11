@@ -25,9 +25,9 @@ void LEODebuggerPreInstructionProc( struct LEOContext* inContext );
 /*! Set a breakpoint on the given instruction. This will cause execution to be
 	interrupted and a debugger console to be shown that allows examining the
 	current stack.
-	@seealso //apple_ref/c/func/LEODebuggerRemoveBreakpoint LEODebuggerRemoveBreakpoint */
+	@seealso //leo_ref/c/func/LEODebuggerRemoveBreakpoint LEODebuggerRemoveBreakpoint */
 void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction );
 
 /*! Remove a breakpoint set using LEODebuggerAddBreakpoint().
-	@seealso //apple_ref/c/func/LEODebuggerAddBreakpoint LEODebuggerAddBreakpoint */
+	@seealso //leo_ref/c/func/LEODebuggerAddBreakpoint LEODebuggerAddBreakpoint */
 void LEODebuggerRemoveBreakpoint( LEOInstruction* targetInstruction );
