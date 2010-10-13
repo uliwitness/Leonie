@@ -10,14 +10,14 @@
 /*!
 	@header LEOValue (Public)
 	
+	LEOValues are how variables and stack entries are implemented in the LEO
+	runtime. They can have various types, and most types can be transparently
+	converted into each other.
+	
 	A LEOValue is essentially a base class (with subclasses) implemented in
 	straight C. Each LEOValue has an "isa" that points to the method table.
 	This way, you can e.g. run the InitCopy method on any LEOValue without
 	having to know which "subclass" you are dealing with.
-	
-	LEOValues are how variables and stack entries are implemented in the LEO
-	runtime. They can have various types, and most types can be transparently
-	converted into each other.
 */
 
 #ifndef LEO_VALUE_H
@@ -223,19 +223,23 @@ union LEOValue
 
 
 // -----------------------------------------------------------------------------
-//	IVar layout for LEOValueBase subclasses:
+//	Methods:
 // -----------------------------------------------------------------------------
 
-/*! @functiongroup Constructors & storage space measuring */
+/*! @functiongroup Constructors */
 /*!
 	Initialize the given storage so it's a valid number value containing the
 	given number.
+
+	@seealso //leo_ref/c/macro/LEOGetNumberValueSize LEOGetNumberValueSize
 */
 void		LEOInitNumberValue( LEOValuePtr inStorage, double inNumber, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
 
 /*!
 	Initialize the given storage so it's a valid string value containing a copy
 	of the given string.
+
+	@seealso //leo_ref/c/macro/LEOGetStringValueSize LEOGetStringValueSize
 */
 void		LEOInitStringValue( LEOValuePtr inStorage, const char* inString, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
 
@@ -243,12 +247,16 @@ void		LEOInitStringValue( LEOValuePtr inStorage, const char* inString, LEOKeepRe
 	Initialize the given storage so it's a valid string constant value directly
 	referencing the given string. The caller is responsible for ensuring that
 	the string is not disposed of while the value still needs it. 
+
+	@seealso //leo_ref/c/macro/LEOGetStringConstantValueSize LEOGetStringConstantValueSize
 */
 void		LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
 
 /*!
 	Initialize the given storage so it's a valid boolean value containing the
 	given boolean.
+
+	@seealso //leo_ref/c/macro/LEOGetBooleanValueSize LEOGetBooleanValueSize
 */
 void		LEOInitBooleanValue( LEOValuePtr inStorage, bool inBoolean, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
 
@@ -259,8 +267,65 @@ void		LEOInitBooleanValue( LEOValuePtr inStorage, bool inBoolean, LEOKeepReferen
 	fail with an error message and abort execution of the current LEOContext.
 	
 	However, the destructor of the value is safe to call, as is InitCopy.
+
+	@seealso //leo_ref/c/macro/LEOGetReferenceValueSize LEOGetReferenceValueSize
 */
 void		LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+
+
+/*!
+	Initialize the given storage so it's a valid number variant value containing
+	the given number.
+	
+	A variant is a value whose type changes depending on what type of data you
+	put in it. So while this value is initially a number, if you call
+	LEOSetValueAsString() on it, it will turn itself into a string variant
+	value, or if you call LEOSetValueAsBoolean() a boolean variant value.
+	
+	As such, assignments to variants can never fail due to a type mismatch,
+	but retrieving a variant as a certain type still can.
+	
+	@seealso //leo_ref/c/func/LEOInitStringVariantValue LEOInitStringVariantValue
+	@seealso //leo_ref/c/func/LEOInitBooleanVariantValue LEOInitBooleanVariantValue
+	@seealso //leo_ref/c/macro/LEOGetVariantValueSize LEOGetVariantValueSize
+*/
+void		LEOInitNumberVariantValue( LEOValuePtr self, double inNumber, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+
+/*!
+	Initialize the given storage so it's a valid string variant value containing
+	the given C-string.
+	
+	A variant is a value whose type changes depending on what type of data you
+	put in it. So while this value is initially a string, if you call
+	LEOSetValueAsNumber() on it, it will turn itself into a number variant
+	value, or if you call LEOSetValueAsBoolean() a boolean variant value.
+	
+	As such, assignments to variants can never fail due to a type mismatch,
+	but retrieving a variant as a certain type still can.
+	
+	@seealso //leo_ref/c/func/LEOInitNumberVariantValue LEOInitNumberVariantValue
+	@seealso //leo_ref/c/func/LEOInitBooleanVariantValue LEOInitBooleanVariantValue
+	@seealso //leo_ref/c/macro/LEOGetVariantValueSize LEOGetVariantValueSize
+*/
+void		LEOInitStringVariantValue( LEOValuePtr self, const char* inString, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+
+/*!
+	Initialize the given storage so it's a valid boolean variant value containing
+	the given boolean.
+	
+	A variant is a value whose type changes depending on what type of data you
+	put in it. So while this value is initially a boolean, if you call
+	LEOSetValueAsString() on it, it will turn itself into a string variant
+	value, or if you call LEOSetValueAsNumber() a number variant value.
+	
+	As such, assignments to variants can never fail due to a type mismatch,
+	but retrieving a variant as a certain type still can.
+	
+	@seealso //leo_ref/c/func/LEOInitStringVariantValue LEOInitStringVariantValue
+	@seealso //leo_ref/c/func/LEOInitNumberVariantValue LEOInitNumberVariantValue
+	@seealso //leo_ref/c/macro/LEOGetVariantValueSize LEOGetVariantValueSize
+*/
+void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
 
 /*! @functiongroup LEOValue storage measuring */
@@ -301,9 +366,17 @@ void		LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 #define		LEOGetBooleanValueSize()			(kLeoValueTypeBoolean.size)		
 
 /*!
+	@function LEOGetReferenceValueSize
+	Returns the size (in bytes) of storage you need to provide to LEOInitCopy for
+	a new reference value.
+*/
+#define		LEOGetReferenceValueSize()			(kLeoValueTypeReference.size)		
+
+/*!
 	@function LEOGetVariantValueSize
 	Returns the size (in bytes) of storage you need to provide to LEOInitCopy for
-	a new variant value.
+	a new variant value. Since variants can be converted between all types, this
+	method applies to all kinds of variants.
 */
 #define		LEOGetVariantValueSize()				(sizeof(union LEOValue))		
 

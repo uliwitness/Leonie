@@ -1038,6 +1038,28 @@ void	LEOCleanUpReferenceValue( LEOValuePtr self, LEOKeepReferencesFlag keepRefer
 #pragma mark -
 #pragma mark Variants
 
+
+void	LEOInitNumberVariantValue( LEOValuePtr self, double inNumber, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitNumberValue( self, inNumber, keepReferences, inContext );
+	self->isa = &kLeoValueTypeNumberVariant;
+}
+
+
+void	LEOInitStringVariantValue( LEOValuePtr self, const char* inString, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitStringValue( self, inString, keepReferences, inContext );
+	self->isa = &kLeoValueTypeStringVariant;
+}
+
+
+void	LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitBooleanValue( self, inBoolean, keepReferences, inContext );
+	self->isa = &kLeoValueTypeBooleanVariant;
+}
+
+
 void	LEOSetVariantValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext )
 {
 	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
