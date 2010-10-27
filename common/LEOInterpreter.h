@@ -71,18 +71,6 @@ typedef struct LEOInstruction
 } LEOInstruction;
 
 
-/*! What a LEOObjectID refers to, used by reference values. These are kept in a
-	big array of "master pointers" named "references" in the LEOContext.
-	@field	value	The actual pointer to the referenced value. NULL for unused object entries.
-	@field	seed	Whenever a referenced object entry is re-used, this seed is incremented, so people still referencing it know they're wrong.
-	@seealso //leo_ref/c/tag/LEOValueReference LEOValueReference */
-typedef struct LEOObject	// What a LEOObjectID refers to. These are kept in a big array of "master pointers" in the context.
-{
-	LEOValuePtr		value;	// NULL for unused object entries.
-	LEOObjectSeed	seed;	// Whenever a referenced object entry is re-used, this seed is incremented, so people still referencing it know they're wrong.
-} LEOObject;
-
-
 /*! A LEOContext encapsulates all execution state needed to run bytecode. Speaking
 	in CPU terms, it encapsulates the registers, the call stack, and a few
 	thread-globals. Hence, each thread in which you want to run bytecode needs
@@ -100,8 +88,6 @@ typedef struct LEOObject	// What a LEOObjectID refers to. These are kept in a bi
 								or to process events while a script is running.
 	@field	numSteps			Used by LEODebugger's PreInstructionProc to implement single-stepping.
 	@field	currentInstruction	The instruction currently being executed. Essentially the Program Counter of our virtual CPU.
-	@field	references			An array of "master pointers" to values to which references have been created.
-	@field	numReferences		Number of items in the <tt>references</tt>.
 	@field	stackBasePtr		Base pointer into stack, used during function calls to find parameters & start of local variable section.
 	@field	stackEndPtr			Stack pointer indicating used size of our stack. Always points at element after last element.
 	@field	stack				The stack containing all our local variables, parameters etc.
@@ -111,6 +97,7 @@ typedef struct LEOObject	// What a LEOObjectID refers to. These are kept in a bi
 
 typedef struct LEOContext
 {
+	struct LEOContextGroup	*group;					// The group this context belongs to, containing its global state, references etc.
 	bool					keepRunning;			// ExitToShell and errors set this to FALSE to stop interpreting of code.
 	char					errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
 	const char**			stringsTable;			// List of string constants in this script, which we can load.
@@ -119,8 +106,6 @@ typedef struct LEOContext
 	LEOInstructionFuncPtr	preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
 	size_t					numSteps;				// Used by LEODebugger's PreInstructionProc to implement single-stepping.
 	LEOInstruction			*currentInstruction;	// PC
-	LEOObject				*references;			// "Master pointer" table for references so we can detect when a reference goes away.
-	size_t					numReferences;			// Available slots in "references" array.
 	union LEOValue			*stackBasePtr;			// BP
 	union LEOValue			*stackEndPtr;			// SP (always points at element after last element)
 	union LEOValue			stack[LEO_STACK_SIZE];	// The stack.
@@ -131,8 +116,12 @@ typedef struct LEOContext
 //	Prototypes:
 // -----------------------------------------------------------------------------
 
-/*! Initialize the given LEOContext so its instance variables are valid. */
-void	LEOInitContext( LEOContext* theContext );
+/*! Initialize the given LEOContext so its instance variables are valid.
+	The context is added to the provided group, and will retain the context
+	group until the context is cleaned up. So once you have added the context
+	to the context group, you can release it if you don't intend to create any
+	other contexts in that group directly. */
+void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup );
 
 /*! Shorthand for LEOPrepareContextForRunning and a loop of LEOContinueRunningContext. */
 void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext );
@@ -149,7 +138,9 @@ bool	LEOContinueRunningContext( LEOContext *inContext );
 // Used internally to unwind the stack and ensure values get destructed correctly.
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete );
 
-/*! Dispose of the given context's associated data structures once you're finished. */
+/*! Dispose of the given context's associated data structures once you're
+	finished, and release the reference to its context group that the context
+	holds. */
 void	LEOCleanUpContext( LEOContext* theContext );
 
 
@@ -167,12 +158,6 @@ void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstruc
 	@seealso //leo_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
 */
 void	LEODebugPrintContext( LEOContext* ctx );
-
-
-// Used to implement references to values that can disappear:
-LEOObjectID	LEOCreateNewObjectIDForValue( LEOValuePtr theValue, struct LEOContext* inContext );
-void		LEORecycleObjectID( LEOObjectID inObjectID, struct LEOContext* inContext );
-LEOValuePtr	LEOGetValueForObjectIDAndSeed( LEOObjectID inObjectID, LEOObjectSeed inObjectSeed, struct LEOContext* inContext );
 
 
 #endif // LEO_INTERPRETER_H

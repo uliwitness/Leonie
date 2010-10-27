@@ -11,6 +11,7 @@
 #import "LEOInstructions.h"
 #import "LEODebugger.h"
 #import "LEOChunks.h"
+#import "LEOContextGroup.h"
 #import <stdio.h>
 
 
@@ -65,7 +66,9 @@
 	
 	// --- Start of code to run some raw code:
 	LEOContext			context;
-	LEOInitContext( &context );
+	LEOContextGroup*	group = LEOContextGroupCreate();
+	LEOInitContext( &context, group );
+	LEOContextGroupRelease(group);
 	context.stringsTable = strings;
 	context.stringsTableSize = sizeof(strings) / sizeof(const char*);
 	

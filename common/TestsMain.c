@@ -7,12 +7,13 @@
  *
  */
 
+#include "LEOInterpreter.h"
+#include "LEOChunks.h"
+#include "LEOContextGroup.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include "LEOInterpreter.h"
-#include "LEOChunks.h"
 
 
 #define ASSERT(expr)	({ if( !(expr) ) printf( "error: Test failed: %s\n", #expr ); else printf( "note: Test passed: %s\n", #expr ); })
@@ -205,8 +206,10 @@ void	DoChunkValueTests()
 	LEOContext			ctx;
 	union LEOValue		theValue;
 	char				str[256];
+	LEOContextGroup*	group = LEOContextGroupCreate();
 	
-	LEOInitContext( &ctx );
+	LEOInitContext( &ctx, group );
+	LEOContextGroupRelease( group );
 	
 	printf( "\nnote: Value Chunk Range tests\n" );
 	
@@ -417,10 +420,12 @@ void	DoReferenceTest()
 	union LEOValue		theValue;
 	union LEOValue		originalValue;
 	char				str[256];
+	LEOContextGroup*	group = LEOContextGroupCreate();
 	
 	printf( "\nnote: Reference to string value tests\n" );
 		
-	LEOInitContext( &ctx );
+	LEOInitContext( &ctx, group );
+	LEOContextGroupRelease( group );
 	
 	LEOInitStringConstantValue( &originalValue.base, "I am as real as it gets.", kLEOInvalidateReferences, &ctx );
 	LEOInitReferenceValue( &theValue.base, &originalValue.base, kLEOInvalidateReferences, &ctx );

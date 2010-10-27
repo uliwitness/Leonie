@@ -23,6 +23,8 @@
 		5572AD8F126A0390004B782C /* LEOScript.c in Sources */ = {isa = PBXBuildFile; fileRef = 5572AD8E126A0390004B782C /* LEOScript.c */; };
 		5572AD90126A0390004B782C /* LEOScript.c in Sources */ = {isa = PBXBuildFile; fileRef = 5572AD8E126A0390004B782C /* LEOScript.c */; };
 		55792F4C12357A0A00A84BD2 /* LEOValue.c in Sources */ = {isa = PBXBuildFile; fileRef = 55792F4B12357A0A00A84BD2 /* LEOValue.c */; };
+		55BB77921278CD5B006A7F62 /* LEOContextGroup.c in Sources */ = {isa = PBXBuildFile; fileRef = 55BB77911278CD5B006A7F62 /* LEOContextGroup.c */; };
+		55BB77B41278DAC9006A7F62 /* LEOContextGroup.c in Sources */ = {isa = PBXBuildFile; fileRef = 55BB77911278CD5B006A7F62 /* LEOContextGroup.c */; };
 		55E140DC124805E8008EDC7C /* LEOChunks.c in Sources */ = {isa = PBXBuildFile; fileRef = 55E140DB124805E8008EDC7C /* LEOChunks.c */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -64,6 +66,8 @@
 		5572AD8E126A0390004B782C /* LEOScript.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOScript.c; path = ../common/LEOScript.c; sourceTree = SOURCE_ROOT; };
 		55792F4A12357A0A00A84BD2 /* LEOValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOValue.h; path = ../common/LEOValue.h; sourceTree = "<group>"; };
 		55792F4B12357A0A00A84BD2 /* LEOValue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOValue.c; path = ../common/LEOValue.c; sourceTree = "<group>"; };
+		55BB77901278CD5B006A7F62 /* LEOContextGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOContextGroup.h; path = ../common/LEOContextGroup.h; sourceTree = SOURCE_ROOT; };
+		55BB77911278CD5B006A7F62 /* LEOContextGroup.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOContextGroup.c; path = ../common/LEOContextGroup.c; sourceTree = SOURCE_ROOT; };
 		55E140DA124805E8008EDC7C /* LEOChunks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOChunks.h; path = ../common/LEOChunks.h; sourceTree = "<group>"; };
 		55E140DB124805E8008EDC7C /* LEOChunks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOChunks.c; path = ../common/LEOChunks.c; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Leonie-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Leonie-Info.plist"; sourceTree = "<group>"; };
@@ -182,6 +186,8 @@
 				55648AEE1247E0C5000BE20A /* LEODebugger.c */,
 				55E140DA124805E8008EDC7C /* LEOChunks.h */,
 				55E140DB124805E8008EDC7C /* LEOChunks.c */,
+				55BB77901278CD5B006A7F62 /* LEOContextGroup.h */,
+				55BB77911278CD5B006A7F62 /* LEOContextGroup.c */,
 				550A2A6F12607EAC00C6DB9D /* TestsMain.c */,
 			);
 			name = common;
@@ -250,7 +256,6 @@
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Leonie" */;
 			compatibilityVersion = "Xcode 3.1";
-			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -311,6 +316,7 @@
 				550A2A6B12607DEE00C6DB9D /* LEOChunks.c in Sources */,
 				550A2A8412607FD000C6DB9D /* TestsMain.c in Sources */,
 				5572AD90126A0390004B782C /* LEOScript.c in Sources */,
+				55BB77B41278DAC9006A7F62 /* LEOContextGroup.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,6 +333,7 @@
 				55E140DC124805E8008EDC7C /* LEOChunks.c in Sources */,
 				550A2A5B12607C7F00C6DB9D /* LEOInstructionsMac.m in Sources */,
 				5572AD8F126A0390004B782C /* LEOScript.c in Sources */,
+				55BB77921278CD5B006A7F62 /* LEOContextGroup.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

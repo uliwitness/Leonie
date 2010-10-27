@@ -93,6 +93,8 @@ LEOScript*	LEOScriptCreateForOwner( LEOObjectID ownerObject, LEOObjectSeed owner
 	Acquire ownership of the given script, so that when the current owner releases
 	it the object still stays around for your use. Increases the reference count
 	by 1.
+	@result Returns inScript so you can assign it to a variable in a struct,
+			or a global, or whatever makes sense.
 */
 LEOScript*	LEOScriptRetain( LEOScript* inScript );		// Adds 1 to referenceCount. Returns inScript.
 

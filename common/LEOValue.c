@@ -20,6 +20,7 @@
 
 #include "LEOValue.h"
 #include "LEOInterpreter.h"
+#include "LEOContextGroup.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -401,7 +402,7 @@ void	LEOCleanUpNumberValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferenc
 	self->isa = NULL;
 	((struct LEOValueNumber*)self)->number = 0LL;
 	if( keepReferences == kLEOInvalidateReferences && self->refObjectID != LEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
-		LEORecycleObjectID( self->refObjectID, inContext );
+		LEOContextGroupRecycleObjectID( inContext->group, self->refObjectID );
 }
 
 
@@ -612,7 +613,7 @@ void	LEOCleanUpStringValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferenc
 		free( ((struct LEOValueString*)self)->string );
 	((struct LEOValueString*)self)->string = NULL;
 	if( keepReferences == kLEOInvalidateReferences && self->refObjectID != LEOObjectIDINVALID )
-		LEORecycleObjectID( self->refObjectID, inContext );
+		LEOContextGroupRecycleObjectID( inContext->group, self->refObjectID );
 }
 
 
@@ -736,7 +737,7 @@ void	LEOCleanUpStringConstantValue( LEOValuePtr self, LEOKeepReferencesFlag keep
 	self->isa = NULL;
 	((struct LEOValueString*)self)->string = NULL;
 	if( keepReferences == kLEOInvalidateReferences && self->refObjectID != LEOObjectIDINVALID )
-		LEORecycleObjectID( self->refObjectID, inContext );
+		LEOContextGroupRecycleObjectID( inContext->group, self->refObjectID );
 }
 
 
@@ -826,7 +827,7 @@ void	LEOCleanUpBooleanValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferen
 	self->isa = NULL;
 	((struct LEOValueBoolean*)self)->boolean = false;
 	if( keepReferences == kLEOInvalidateReferences && self->refObjectID != LEOObjectIDINVALID )
-		LEORecycleObjectID( self->refObjectID, inContext );
+		LEOContextGroupRecycleObjectID( inContext->group, self->refObjectID );
 }
 
 
@@ -855,10 +856,10 @@ void	LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr originalValue, LEOKeep
 		self->refObjectID = LEOObjectIDINVALID;
 	
 	if( originalValue->refObjectID == LEOObjectIDINVALID )
-		LEOCreateNewObjectIDForValue( originalValue, inContext );
+		LEOContextGroupCreateNewObjectIDForValue( inContext->group, originalValue );
 	
 	((LEOValueReference*)self)->objectID = originalValue->refObjectID;
-	((LEOValueReference*)self)->objectSeed = inContext->references[originalValue->refObjectID].seed;
+	((LEOValueReference*)self)->objectSeed = LEOContextGroupGetSeedForObjectID( inContext->group, originalValue->refObjectID );
 }
 
 
@@ -868,7 +869,7 @@ void	LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr originalValue, LEOKeep
 
 void	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext )
 {
-	LEOValuePtr		theValue = LEOGetValueForObjectIDAndSeed( ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed, inContext );
+	LEOValuePtr		theValue = LEOContextGroupGetValueForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
 	if( theValue == NULL )
 	{
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
@@ -885,7 +886,7 @@ void	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, long bufSize,
 
 double	LEOGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inContext )
 {
-	LEOValuePtr		theValue = LEOGetValueForObjectIDAndSeed( ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed, inContext );
+	LEOValuePtr		theValue = LEOContextGroupGetValueForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
 	if( theValue == NULL )
 	{
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
@@ -903,7 +904,7 @@ double	LEOGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inCont
 
 bool	LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext )
 {
-	LEOValuePtr		theValue = LEOGetValueForObjectIDAndSeed( ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed, inContext );
+	LEOValuePtr		theValue = LEOContextGroupGetValueForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
 	if( theValue == NULL )
 	{
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
@@ -923,7 +924,7 @@ void	LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									char* outBuf, long bufSize, struct LEOContext* inContext )
 {
-	LEOValuePtr		theValue = LEOGetValueForObjectIDAndSeed( ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed, inContext );
+	LEOValuePtr		theValue = LEOContextGroupGetValueForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
 	if( theValue == NULL )
 	{
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
@@ -940,7 +941,7 @@ void	LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 
 void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )
 {
-	LEOValuePtr		theValue = LEOGetValueForObjectIDAndSeed( ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed, inContext );
+	LEOValuePtr		theValue = LEOContextGroupGetValueForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
 	if( theValue == NULL )
 	{
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
@@ -957,7 +958,7 @@ void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, struc
 
 void	LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext )
 {
-	LEOValuePtr		theValue = LEOGetValueForObjectIDAndSeed( ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed, inContext );
+	LEOValuePtr		theValue = LEOContextGroupGetValueForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
 	if( theValue == NULL )
 	{
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
@@ -974,7 +975,7 @@ void	LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEO
 
 void	LEOSetReferenceValueAsNumber( LEOValuePtr self, double inNumber, struct LEOContext* inContext )
 {
-	LEOValuePtr		theValue = LEOGetValueForObjectIDAndSeed( ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed, inContext );
+	LEOValuePtr		theValue = LEOContextGroupGetValueForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
 	if( theValue == NULL )
 	{
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
@@ -993,7 +994,7 @@ void	LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
 											const char* inBuf, struct LEOContext* inContext )
 {
-	LEOValuePtr		theValue = LEOGetValueForObjectIDAndSeed( ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed, inContext );
+	LEOValuePtr		theValue = LEOContextGroupGetValueForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
 	if( theValue == NULL )
 	{
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
@@ -1031,7 +1032,7 @@ void	LEOCleanUpReferenceValue( LEOValuePtr self, LEOKeepReferencesFlag keepRefer
 	((struct LEOValueReference*)self)->objectID = LEOObjectIDINVALID;
 	((struct LEOValueReference*)self)->objectSeed = 0;
 	if( keepReferences == kLEOInvalidateReferences && self->refObjectID != LEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
-		LEORecycleObjectID( self->refObjectID, inContext );
+		LEOContextGroupRecycleObjectID( inContext->group, self->refObjectID );
 }
 
 
