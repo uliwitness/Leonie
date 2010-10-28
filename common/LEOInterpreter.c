@@ -215,6 +215,22 @@ void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstruc
 }
 
 
+void	LEOContextDebugPrintCallStack( LEOContext* inContext )
+{
+	if( inContext->numCallStackEntries == 0 )
+		return;
+	
+	size_t x = inContext->numCallStackEntries;
+	
+	do
+	{
+		x--;
+		
+		printf( "%s\n", inContext->callStackEntries[x].handler->handlerName );
+	} while( x > 0 );
+}
+
+
 void	LEODebugPrintContext( LEOContext* ctx )
 {
 	printf( "CONTEXT:\n" );
@@ -239,6 +255,9 @@ void	LEODebugPrintContext( LEOContext* ctx )
 			
 			currValue ++;
 		}
+		
+		printf( "    -----------------------------\n" );
+		LEOContextDebugPrintCallStack( ctx );
 	}
 }
 

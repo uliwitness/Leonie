@@ -193,8 +193,15 @@ void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstruc
 
 /*! Print the given context to the console for debugging purposes.
 	@seealso //leo_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
+	@seealso //leo_ref/c/func/LEOContextDebugPrintCallStack	LEOContextDebugPrintCallStack
 */
 void	LEODebugPrintContext( LEOContext* ctx );
+
+/*!
+	Print the current call stack of the given context to the console for
+	debugging purposes.
+*/
+void	LEOContextDebugPrintCallStack( LEOContext* inContext );
 
 
 void				LEOContextPushHandlerAndScript( LEOContext* inContext, struct LEOHandler* inHandler, struct LEOScript* inScript );
