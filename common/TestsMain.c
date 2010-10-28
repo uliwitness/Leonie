@@ -10,6 +10,7 @@
 #include "LEOInterpreter.h"
 #include "LEOChunks.h"
 #include "LEOContextGroup.h"
+#include "LEOScript.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,6 +34,45 @@ void	ASSERT_RANGE_MATCHES_STRING( const char* theStr, size_t chunkStart, size_t 
 		printf( "note: Range %lu to %lu of \"%s\" matches \"%s\"\n", chunkStart, chunkEnd, theStr, matchStr );
 	else
 		printf( "error: Test failed: Range %lu to %lu of \"%s\" doesn't match \"%s\"\n", chunkStart, chunkEnd, theStr, matchStr );
+}
+
+
+
+void	DoScriptTest()
+{
+	LEOScript	*	theScript = LEOScriptCreateForOwner( 0, 0 );
+	LEOHandler	*	newHandler = NULL;
+	LEOHandler	*	foundHandler = NULL;
+	
+	// Add 1st handler:
+	newHandler = LEOScriptAddCommandHandlerNamed( theScript, "mouseDown" );
+	ASSERT( theScript->numCommands == 1 );
+	ASSERT( newHandler != NULL );
+	ASSERT( strcasecmp(newHandler->handlerName,"mouseDown") == 0 );
+	
+	foundHandler = LEOScriptFindCommandHandlerNamed( theScript, "mouseDown" );
+	ASSERT( foundHandler != NULL );
+	ASSERT( strcasecmp(foundHandler->handlerName,"mouseDown") == 0 );
+
+	// Add 2nd handler:
+	newHandler = LEOScriptAddCommandHandlerNamed( theScript, "mouseUp" );
+	ASSERT( theScript->numCommands == 2 );
+	ASSERT( newHandler != NULL );
+	ASSERT( strcasecmp(newHandler->handlerName,"mouseUp") == 0 );
+	
+	foundHandler = LEOScriptFindCommandHandlerNamed( theScript, "mousedown" );
+	ASSERT( foundHandler != NULL );
+	ASSERT( strcasecmp(foundHandler->handlerName,"mouseDown") == 0 );
+
+	foundHandler = LEOScriptFindCommandHandlerNamed( theScript, "MOUSEUP" );
+	ASSERT( foundHandler != NULL );
+	ASSERT( strcasecmp(foundHandler->handlerName,"mouseUp") == 0 );
+
+	// Look for a handler that doesn't exist:
+	foundHandler = LEOScriptFindCommandHandlerNamed( theScript, "nonexistentHandler" );
+	ASSERT( foundHandler == NULL );
+	
+	LEOScriptRelease( theScript );
 }
 
 
@@ -709,6 +749,8 @@ int main( int argc, char** argv )
 	DoWordsTestDoubleSpaced();
 	DoWordsTestLeadingWhiteSingleSpaced();
 	DoWordsTestLeadingWhiteDoubleSpaced();
+	
+	DoScriptTest();
 	
 	return EXIT_SUCCESS;
 }
