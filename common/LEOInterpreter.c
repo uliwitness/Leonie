@@ -7,13 +7,27 @@
  *
  */
 
+// -----------------------------------------------------------------------------
+//	Headers:
+// -----------------------------------------------------------------------------
+
 #include "LEOInterpreter.h"
 #include "LEOInstructions.h"
 #include "LEOContextGroup.h"
+#include "LEOScript.h"
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
+
+
+// -----------------------------------------------------------------------------
+//	Constants:
+// -----------------------------------------------------------------------------
+
+#define LEOCallStackEntriesChunkSize			16
+
 
 
 void	LEODoNothingPreInstructionProc( LEOContext* inContext )
@@ -36,6 +50,92 @@ void	LEOCleanUpContext( LEOContext* theContext )
 	LEOCleanUpStackToPtr( theContext, theContext->stack );
 	LEOContextGroupRelease( theContext->group );
 	theContext->group = NULL;
+	if( theContext->callStackEntries )
+	{
+		for( int x = 0; x < theContext->numCallStackEntries; x++ )
+		{
+			LEOScriptRelease( theContext->callStackEntries[x].script );
+			theContext->callStackEntries[x].script = NULL;
+			theContext->callStackEntries[x].handler = NULL;	// Script owns handlers, so this is invalid now, too.
+		}
+		
+		free( theContext->callStackEntries );
+		theContext->callStackEntries = NULL;
+		theContext->numCallStackEntries = 0;
+	}
+}
+
+
+void	LEOContextPushHandlerAndScript( LEOContext* inContext, LEOHandler* inHandler, LEOScript* inScript )
+{
+	size_t		newEntryIndex = 0;
+	if( inContext->callStackEntries == NULL )
+	{
+		inContext->numCallStackEntries = 1;
+		inContext->callStackEntries = calloc( LEOCallStackEntriesChunkSize, sizeof(struct LEOCallStackEntry) );
+		
+		newEntryIndex = 0;	// Can start with first item right away.
+	}
+	else
+	{
+		// +++ Optimize: remember the last one we cleared or returned or so and start scanning there.
+		
+		newEntryIndex = inContext->numCallStackEntries;
+		inContext->numCallStackEntries ++;
+		if( (inContext->numCallStackEntries % LEOCallStackEntriesChunkSize) == 1 )	// Just exceeded previous block?
+		{
+			size_t	numSlots = inContext->numCallStackEntries +LEOCallStackEntriesChunkSize -1;
+			inContext->callStackEntries = realloc( inContext->callStackEntries, sizeof(struct LEOCallStackEntry) * numSlots );
+		}
+	}
+	
+	inContext->callStackEntries[newEntryIndex].handler = inHandler;
+	inContext->callStackEntries[newEntryIndex].script = LEOScriptRetain( inScript );
+}
+
+
+LEOHandler*	LEOContextPeekCurrentHandler( LEOContext* inContext )
+{
+	if( inContext->numCallStackEntries < 1 )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Error: No current handler found." );
+		inContext->keepRunning = false;
+		return NULL;
+	}
+	else
+		return inContext->callStackEntries[inContext->numCallStackEntries -1].handler;
+}
+
+
+LEOScript*	LEOContextPeekCurrentScript( LEOContext* inContext )
+{
+	if( inContext->numCallStackEntries < 1 )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Error: No current script found." );
+		inContext->keepRunning = false;
+		return NULL;
+	}
+	else
+		return inContext->callStackEntries[inContext->numCallStackEntries -1].script;
+}
+
+
+void	LEOContextPopHandlerAndScript( LEOContext* inContext )
+{
+	if( inContext->numCallStackEntries < 1 )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Error: Script attempted to return from handler that has never been called." );
+		inContext->keepRunning = false;
+		return;
+	}
+	
+	inContext->numCallStackEntries--;
+	LEOScriptRelease( inContext->callStackEntries[inContext->numCallStackEntries].script );
+	
+	if( (inContext->numCallStackEntries % LEOCallStackEntriesChunkSize) == 0 && (inContext->numCallStackEntries > 0) )
+	{
+		inContext->callStackEntries = realloc( inContext->callStackEntries, sizeof(struct LEOCallStackEntry) * inContext->numCallStackEntries );
+	}
 }
 
 

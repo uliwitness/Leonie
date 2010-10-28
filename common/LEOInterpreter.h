@@ -76,6 +76,16 @@ typedef struct LEOInstruction
 } LEOInstruction;
 
 
+// Data type used internally to be able to show the call stack to the user and
+//	to look up handlers in the current script, even if the owning object is now
+//	gone.
+typedef struct LEOCallStackEntry
+{
+	struct LEOScript*	script;		// The script that owns 'handler'. The script in here should be retained/released to make sure it doesn't go away.
+	struct LEOHandler*	handler;	// The current handler, so we can show a nice call stack.
+} LEOCallStackEntry;
+
+
 /*! A LEOContext encapsulates all execution state needed to run bytecode. Speaking
 	in CPU terms, it encapsulates the registers, the call stack, and a few
 	thread-globals. Hence, each thread in which you want to run bytecode needs
@@ -112,7 +122,9 @@ typedef struct LEOContext
 	char					errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
 	const char**			stringsTable;			// List of string constants in this script, which we can load.
 	size_t					stringsTableSize;		// Number of items in stringsTable.
-	char					itemDelimiter;
+	char					itemDelimiter;			// item delimiter to use for chunk expressions in values.
+	size_t					numCallStackEntries;	// Number of items in callStackEntries.
+	LEOCallStackEntry*		callStackEntries;		// Array of call stack entries to allow showing a simple backtrace and picking handlers from the current script.
 	LEOInstructionFuncPtr	preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
 	size_t					numSteps;				// Used by LEODebugger's PreInstructionProc to implement single-stepping.
 	LEOInstruction			*currentInstruction;	// PC
@@ -183,6 +195,13 @@ void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstruc
 	@seealso //leo_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
 */
 void	LEODebugPrintContext( LEOContext* ctx );
+
+
+void				LEOContextPushHandlerAndScript( LEOContext* inContext, struct LEOHandler* inHandler, struct LEOScript* inScript );
+struct LEOHandler*	LEOContextPeekCurrentHandler( LEOContext* inContext );
+struct LEOScript*	LEOContextPeekCurrentScript( LEOContext* inContext );
+void				LEOContextPopHandlerAndScript( LEOContext* inContext );
+
 
 
 #endif // LEO_INTERPRETER_H
