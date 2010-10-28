@@ -15,8 +15,8 @@
 	includes safe references to objects and values that may go away.
 */
 
-#ifndef LEO_OBJECT_H
-#define LEO_OBJECT_H		1
+#ifndef LEO_CONTEXT_GROUP_H
+#define LEO_CONTEXT_GROUP_H		1
 
 // -----------------------------------------------------------------------------
 //	Headers:
@@ -121,4 +121,4 @@ void	LEOContextGroupRecycleObjectID( LEOContextGroup* inContext, LEOObjectID inO
 void*	LEOContextGroupGetPointerForObjectIDAndSeed( LEOContextGroup* inContext, LEOObjectID inObjectID, LEOObjectSeed inObjectSeed );
 
 
-#endif // LEO_OBJECT_H
+#endif // LEO_CONTEXT_GROUP_H

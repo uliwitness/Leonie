@@ -7,6 +7,9 @@
  *
  */
 
+#ifndef LEO_SCRIPT_H
+#define	LEO_SCRIPT_H		1
+
 /*!
 	@header LEOScript
 	A script is a reference-counted data type that collects all the methods
@@ -167,3 +170,6 @@ LEOHandler*	LEOScriptFindFunctionHandlerNamed( LEOScript* inScript, const char* 
 	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerNamed LEOScriptAddFunctionHandlerNamed
 */
 void	LEOHandlerAddInstruction( LEOHandler* inHandler, LEOInstruction instr );
+
+
+#endif // LEO_SCRIPT_H

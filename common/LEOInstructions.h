@@ -10,9 +10,17 @@
 #ifndef LEO_INSTRUCTIONS_H
 #define LEO_INSTRUCTIONS_H		1
 
+// -----------------------------------------------------------------------------
+//	Headers:
+// -----------------------------------------------------------------------------
+
 #include "LEOInterpreter.h"
 #include <sys/types.h>
 
+
+// -----------------------------------------------------------------------------
+//	Constants:
+// -----------------------------------------------------------------------------
 
 #define	INVALID_INSTR						0
 #define	EXIT_TO_TOP_INSTR					1
@@ -32,6 +40,10 @@
 #define PUSH_NUMBER_INSTR					15
 #define ADD_NUMBER_INSTR					16
 
+
+// -----------------------------------------------------------------------------
+//	Globals:
+// -----------------------------------------------------------------------------
 
 extern LEOInstructionFuncPtr	gInstructions[];
 extern const char*				gInstructionNames[];

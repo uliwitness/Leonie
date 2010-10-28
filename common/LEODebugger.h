@@ -7,6 +7,9 @@
  *
  */
 
+#ifndef LEO_DEBUGGER_H
+#define LEO_DEBUGGER_H		1
+
 /*!
 	@header LEODebugger
 	These are hooks and utility functions for a little command-line debugger
@@ -16,7 +19,12 @@
 	LEODebuggerPreInstructionProc.
 */
 
+// -----------------------------------------------------------------------------
+//	Headers:
+// -----------------------------------------------------------------------------
+
 #include "LEOInterpreter.h"
+
 
 /*! Use this function as the PreInstructionProc of your LEOContext to activate
 	the debugger. */
@@ -31,3 +39,8 @@ void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction );
 /*! Remove a breakpoint set using LEODebuggerAddBreakpoint().
 	@seealso //leo_ref/c/func/LEODebuggerAddBreakpoint LEODebuggerAddBreakpoint */
 void LEODebuggerRemoveBreakpoint( LEOInstruction* targetInstruction );
+
+
+
+#endif // LEO_DEBUGGER_H
+
