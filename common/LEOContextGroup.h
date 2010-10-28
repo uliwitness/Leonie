@@ -29,24 +29,17 @@
 //	Types:
 // -----------------------------------------------------------------------------
 
-
-/*! What a LEOObjectID refers to, used by reference values. These are kept in a
-	big array of "master pointers" named "references" in the LEOContextGroup.
-	@field	value	The actual pointer to the referenced value. NULL for unused object entries.
-	@field	seed	Whenever a referenced object entry is re-used, this seed is incremented, so people still referencing it know they're wrong.
-	@seealso //leo_ref/c/tag/LEOValueReference LEOValueReference */
-typedef struct LEOObject	// What a LEOObjectID refers to. These are kept in a big array of "master pointers" in the context.
-{
-	LEOValuePtr		value;	// NULL for unused object entries.
-	LEOObjectSeed	seed;	// Whenever a referenced object entry is re-used, this seed is incremented, so people still referencing it know they're wrong.
-} LEOObject;
+typedef struct LEOObject LEOObject;
 
 
 /*! All LEOContexts belong to a Context group that contains references and other
 	global data they share. You can insulate running scripts from each other by
 	placing them in a different context group.
+	@field	referenceCount		Reference count for this object, i.e. number of contexts still attached to this object.
+	@field	numReferences		Number of items in the <tt>references</tt> array.
 	@field	references			An array of "master pointers" to values to which references have been created.
-	@field	numReferences		Number of items in the <tt>references</tt>. */
+	@seealso //leo_ref/c/func/LEOContextGroupCreate LEOContextGroupCreate
+*/
 typedef struct LEOContextGroup
 {
 	size_t			referenceCount;		// Reference count for this object, i.e. number of contexts still attached to this object.
@@ -56,10 +49,13 @@ typedef struct LEOContextGroup
 
 
 /*!
-	Creates a context group for use with LEOContexts. The LEOContxtGroup* is
+	Creates a context group for use with LEOContexts. The LEOContextGroup* is
 	reference-counted and its reference count is set to 1, so when you're done
 	with it, you can release it. When a context is attached to a context group,
 	the context retains its group to ensure it doesn't go away.
+	@seealso //leo_ref/c/func/LEOInitContext	LEOInitContext
+	@seealso //leo_ref/c/func/LEOContextGroupRetain LEOContextGroupRetain
+	@seealso //leo_ref/c/func/LEOContextGroupRelease LEOContextGroupRelease
 */
 LEOContextGroup*	LEOContextGroupCreate();	// Gives referenceCount of 1.
 
@@ -70,6 +66,8 @@ LEOContextGroup*	LEOContextGroupCreate();	// Gives referenceCount of 1.
 	reference count by 1.
 	@result Returns inGroup so you can assign it to a variable in a struct,
 			or a global, or whatever makes sense.
+	@seealso //leo_ref/c/func/LEOContextGroupCreate LEOContextGroupCreate
+	@seealso //leo_ref/c/func/LEOContextGroupRelease LEOContextGroupRelease
 */
 LEOContextGroup*	LEOContextGroupRetain( LEOContextGroup* inGroup );		// Adds 1 to referenceCount. Returns inGroup.
 
@@ -78,21 +76,49 @@ LEOContextGroup*	LEOContextGroupRetain( LEOContextGroup* inGroup );		// Adds 1 t
 	creating the context group, or by retaining it. Giving up ownership decreases
 	its reference count by 1. When the last owner releases the object (and the
 	reference count reaches 0), the context group is freed.
+	@seealso //leo_ref/c/func/LEOContextGroupCreate LEOContextGroupCreate
+	@seealso //leo_ref/c/func/LEOContextGroupRetain LEOContextGroupRetain
 */
 void	LEOContextGroupRelease( LEOContextGroup* inGroup );	// Subtracts 1 from referenceCount. If it hits 0, disposes of inScript.
 
 
 // Used to implement references to values that can disappear:
 /*!
-	Give up ownership of the given context group. You acquire ownership by either
-	creating the context group, or by retaining it. Giving up ownership decreases
-	its reference count by 1. When the last owner releases the object (and the
-	reference count reaches 0), the context group is freed.
+	Create a new object ID that can be used to reference the given pointer.
+	@seealso //leo_ref/c/func/LEOContextGroupGetSeedForObjectID LEOContextGroupGetSeedForObjectID
+	@seealso //leo_ref/c/func/LEOContextGroupRecycleObjectID LEOContextGroupRecycleObjectID
+	@seealso //leo_ref/c/func/LEOContextGroupGetPointerForObjectIDAndSeed LEOContextGroupGetPointerForObjectIDAndSeed
 */
-LEOObjectID		LEOContextGroupCreateNewObjectIDForValue( LEOContextGroup* inContext, LEOValuePtr theValue );
+LEOObjectID		LEOContextGroupCreateNewObjectIDForPointer( LEOContextGroup* inContext, void* theValue );
+
+/*! Get the seed for the given object ID. References to an object ID must store
+	this seed to ensure they are getting the actual pointer they originally
+	wanted to reference and not a pointer that is in there because the slot has
+	been reused. Use this to get the initial value for storing the seed along
+	with an object ID, not to retrieve the seed for an object ID you've stashed
+	away alone.
+	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDForPointer LEOContextGroupCreateNewObjectIDForPointer
+	@seealso //leo_ref/c/func/LEOContextGroupRecycleObjectID LEOContextGroupRecycleObjectID
+	@seealso //leo_ref/c/func/LEOContextGroupGetPointerForObjectIDAndSeed LEOContextGroupGetPointerForObjectIDAndSeed
+*/
 LEOObjectSeed	LEOContextGroupGetSeedForObjectID( LEOContextGroup* inContext, LEOObjectID inID );
-void			LEOContextGroupRecycleObjectID( LEOContextGroup* inContext, LEOObjectID inObjectID );
-LEOValuePtr		LEOContextGroupGetValueForObjectIDAndSeed( LEOContextGroup* inContext, LEOObjectID inObjectID, LEOObjectSeed inObjectSeed );
+
+/*! If a pointer to which references exist is going away, it needs to unregister
+	using this call. Anyone requesting the pointer for this object ID and seed
+	will rom then on get NULL back.
+	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDForPointer LEOContextGroupCreateNewObjectIDForPointer
+	@seealso //leo_ref/c/func/LEOContextGroupGetSeedForObjectID LEOContextGroupGetSeedForObjectID
+	@seealso //leo_ref/c/func/LEOContextGroupGetPointerForObjectIDAndSeed LEOContextGroupGetPointerForObjectIDAndSeed
+*/
+void	LEOContextGroupRecycleObjectID( LEOContextGroup* inContext, LEOObjectID inObjectID );
+
+/*! Obtain the pointer that corresponds to the given object ID and seed pair. If
+	the given pointer has already been recycled, this will return NULL.
+	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDForPointer LEOContextGroupCreateNewObjectIDForPointer
+	@seealso //leo_ref/c/func/LEOContextGroupGetSeedForObjectID LEOContextGroupGetSeedForObjectID
+	@seealso //leo_ref/c/func/LEOContextGroupRecycleObjectID LEOContextGroupRecycleObjectID
+*/
+void*	LEOContextGroupGetPointerForObjectIDAndSeed( LEOContextGroup* inContext, LEOObjectID inObjectID, LEOObjectSeed inObjectSeed );
 
 
 #endif // LEO_OBJECT_H

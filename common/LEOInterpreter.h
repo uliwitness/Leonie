@@ -8,21 +8,26 @@
  */
 
 /*!
-	@header LEOInterpreter (Public)
+	@header LEOInterpreter
 	This is the core interpreter logic for the Leonie bytecode interpreter.
 	
-	To compile Leonie bytecode, generate an array of LEOInstruction entries and
-	use the constants in LEOInstructions.h for the instruction IDs.
+	To compile Leonie bytecode, create a LEOScript, add LEOHandlers to it and
+	add LEOInstructions to those using the constants in LEOInstructions.h
+	for the instruction IDs.
 	
-	To run Leonie bytecode, create a LEOContext using LEOInitContext(), then
-	call LEORunInContext() to execute the bytecode. When the call returns, call
-	LEOCleanUpContext() to free associated data again.
+	To run Leonie bytecode, create LEOContextGroup, then create a LEOContext
+	using LEOInitContext() that references this group. You can now release the
+	context group, unless you want to keep using it, the context will have
+	retained it. To execute the bytecode, call LEORunInContext(). When the call
+	returns, call LEOCleanUpContext() to free all associated data again.
 	
 	@seealso //leo_ref/c/tdef/LEOInstruction LEOInstruction
 	@seealso //leo_ref/c/tdef/LEOContext LEOContext
 	@seealso //leo_ref/c/func/LEOInitContext	LEOInitContext
 	@seealso //leo_ref/c/func/LEORunInContext	LEORunInContext
 	@seealso //leo_ref/c/func/LEOCleanUpContext	LEOCleanUpContext
+	@seealso //leo_ref/c/func/LEOContextGroupCreate	LEOContextGroupCreate
+	@seealso //leo_ref/c/func/LEOContextGroupRelease	LEOContextGroupRelease
 */
 
 #ifndef LEO_INTERPRETER_H
@@ -75,6 +80,9 @@ typedef struct LEOInstruction
 	in CPU terms, it encapsulates the registers, the call stack, and a few
 	thread-globals. Hence, each thread in which you want to run bytecode needs
 	its own LEOContext.
+	@field	group				The LEOContextGroup that collects the global state
+								shared between this context and any others in
+								its group.
 	@field	keepRunning			boolean that instructions like ExitToTop can set
 								to FALSE to stop execution of the script. Also used
 								when script errors occur.
@@ -93,7 +101,9 @@ typedef struct LEOInstruction
 	@field	stack				The stack containing all our local variables, parameters etc.
 								
 	@seealso //leo_ref/c/tag/LEOValueReference LEOValueReference
-	@seealso //leo_ref/c/tdef/LEOValuePtr LEOValuePtr */
+	@seealso //leo_ref/c/tdef/LEOValuePtr LEOValuePtr
+	@seealso //leo_ref/c/tdef/LEOContextGroup LEOContextGroup
+	@seealso //leo_ref/c/tdef/LEOInstruction LEOInstruction */
 
 typedef struct LEOContext
 {
@@ -120,19 +130,32 @@ typedef struct LEOContext
 	The context is added to the provided group, and will retain the context
 	group until the context is cleaned up. So once you have added the context
 	to the context group, you can release it if you don't intend to create any
-	other contexts in that group directly. */
+	other contexts in that group directly.
+	@seealso //leo_ref/c/func/LEOCleanUpContext LEOCleanUpContext
+	@seealso //leo_ref/c/func/LEOContextGroupCreate	LEOContextGroupCreate
+	@seealso //leo_ref/c/func/LEOContextGroupRelease LEOContextGroupRelease
+*/
 void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup );
 
-/*! Shorthand for LEOPrepareContextForRunning and a loop of LEOContinueRunningContext. */
+/*! Shorthand for LEOPrepareContextForRunning and a loop of LEOContinueRunningContext.
+	@seealso //leo_ref/c/func/LEOPrepareContextForRunning LEOPrepareContextForRunning
+	@seealso //leo_ref/c/func/LEOContinueRunningContext LEOContinueRunningContext
+*/
 void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext );
 
 /*! Set the currentInstruction of the given LEOContext to the given instruction 
 	array's first instruction, and initialize the Base pointer and stack end pointer
-	and keepRunning etc. */
+	and keepRunning etc.
+	@seealso //leo_ref/c/func/LEORunInContext LEORunInContext
+	@seealso //leo_ref/c/func/LEOContinueRunningContext LEOContinueRunningContext
+*/
 void	LEOPrepareContextForRunning( LEOInstruction instructions[], LEOContext *inContext );
 
 /*! Execute the next instruction in the context. Returns false if the code has
-	finished executing or exited with an error. */
+	finished executing or exited with an error.
+	@seealso //leo_ref/c/func/LEORunInContext LEORunInContext
+	@seealso //leo_ref/c/func/LEOPrepareContextForRunning LEOPrepareContextForRunning
+*/
 bool	LEOContinueRunningContext( LEOContext *inContext );
 
 // Used internally to unwind the stack and ensure values get destructed correctly.
@@ -140,7 +163,9 @@ void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDel
 
 /*! Dispose of the given context's associated data structures once you're
 	finished, and release the reference to its context group that the context
-	holds. */
+	holds.
+	@seealso //leo_ref/c/func/LEOInitContext LEOInitContext
+*/
 void	LEOCleanUpContext( LEOContext* theContext );
 
 

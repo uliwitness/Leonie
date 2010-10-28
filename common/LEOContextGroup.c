@@ -24,6 +24,20 @@
 
 
 
+// -----------------------------------------------------------------------------
+//	Types:
+// -----------------------------------------------------------------------------
+
+/* What a LEOObjectID refers to, used by reference values. These are kept in a
+	big array of "master pointers" named "references" in the LEOContextGroup. */
+struct LEOObject	// What a LEOObjectID refers to. These are kept in a big array of "master pointers" in the context.
+{
+	void*			value;	// The actual pointer to the referenced value. NULL for unused object entries.
+	LEOObjectSeed	seed;	// Whenever a referenced object entry is re-used, this seed is incremented, so people still referencing it know they're wrong.
+};
+
+
+
 
 LEOContextGroup*	LEOContextGroupCreate()
 {
@@ -58,7 +72,7 @@ void	LEOContextGroupRelease( LEOContextGroup* inGroup )
 }
 
 
-LEOObjectID	LEOContextGroupCreateNewObjectIDForValue( LEOContextGroup* inContext, LEOValuePtr theValue )
+LEOObjectID	LEOContextGroupCreateNewObjectIDForPointer( LEOContextGroup* inContext, void* theValue )
 {
 	LEOObjectID		newObjectID = LEOObjectIDINVALID;
 	if( inContext->references == NULL )
@@ -90,7 +104,6 @@ LEOObjectID	LEOContextGroupCreateNewObjectIDForValue( LEOContextGroup* inContext
 		}
 	}
 	
-	theValue->refObjectID = newObjectID;
 	inContext->references[newObjectID].value = theValue;
 	
 	return newObjectID;
@@ -110,7 +123,7 @@ void	LEOContextGroupRecycleObjectID( LEOContextGroup* inContext, LEOObjectID inO
 }
 
 
-LEOValuePtr	LEOContextGroupGetValueForObjectIDAndSeed( LEOContextGroup* inContext, LEOObjectID inObjectID, LEOObjectSeed inObjectSeed )
+void*	LEOContextGroupGetPointerForObjectIDAndSeed( LEOContextGroup* inContext, LEOObjectID inObjectID, LEOObjectSeed inObjectSeed )
 {
 	if( inContext->references[inObjectID].seed != inObjectSeed )
 		return NULL;
