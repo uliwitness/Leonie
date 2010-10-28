@@ -103,7 +103,11 @@ void	LEOScriptRelease( LEOScript* inScript )
 LEOHandler*	LEOScriptAddCommandHandlerNamed( LEOScript* inScript, const char* inName )
 {
 	inScript->numCommands++;
-	LEOHandler*		commandsArray = realloc( inScript->commands, sizeof(LEOHandler) * inScript->numCommands );
+	LEOHandler*		commandsArray = NULL;
+	if( inScript->commands )
+		commandsArray = realloc( inScript->commands, sizeof(LEOHandler) * inScript->numCommands );
+	else
+		commandsArray = malloc( sizeof(LEOHandler) * inScript->numCommands );
 	if( commandsArray )
 	{
 		LEOInitHandlerNamed( commandsArray +inScript->numCommands -1, inName );
@@ -119,7 +123,11 @@ LEOHandler*	LEOScriptAddCommandHandlerNamed( LEOScript* inScript, const char* in
 LEOHandler*	LEOScriptAddFunctionHandlerNamed( LEOScript* inScript, const char* inName )
 {
 	inScript->numFunctions++;
-	LEOHandler*		commandsArray = realloc( inScript->functions, sizeof(LEOHandler) * inScript->numFunctions );
+	LEOHandler*		commandsArray = NULL;
+	if( inScript->commands )
+		commandsArray = realloc( inScript->commands, sizeof(LEOHandler) * inScript->numFunctions );
+	else
+		commandsArray = malloc( sizeof(LEOHandler) * inScript->numFunctions );
 	if( commandsArray )
 	{
 		LEOInitHandlerNamed( commandsArray +inScript->numFunctions -1, inName );
