@@ -66,7 +66,7 @@ void	LEOCleanUpContext( LEOContext* theContext )
 }
 
 
-void	LEOContextPushHandlerAndScript( LEOContext* inContext, LEOHandler* inHandler, LEOScript* inScript )
+void	LEOContextPushHandlerScriptAndReturnAddress( LEOContext* inContext, LEOHandler* inHandler, LEOScript* inScript, LEOInstruction* returnAddress )
 {
 	size_t		newEntryIndex = 0;
 	if( inContext->callStackEntries == NULL )
@@ -78,8 +78,6 @@ void	LEOContextPushHandlerAndScript( LEOContext* inContext, LEOHandler* inHandle
 	}
 	else
 	{
-		// +++ Optimize: remember the last one we cleared or returned or so and start scanning there.
-		
 		newEntryIndex = inContext->numCallStackEntries;
 		inContext->numCallStackEntries ++;
 		if( (inContext->numCallStackEntries % LEOCallStackEntriesChunkSize) == 1 )	// Just exceeded previous block?
@@ -91,6 +89,7 @@ void	LEOContextPushHandlerAndScript( LEOContext* inContext, LEOHandler* inHandle
 	
 	inContext->callStackEntries[newEntryIndex].handler = inHandler;
 	inContext->callStackEntries[newEntryIndex].script = LEOScriptRetain( inScript );
+	inContext->callStackEntries[newEntryIndex].returnAddress = returnAddress;
 }
 
 
@@ -120,7 +119,20 @@ LEOScript*	LEOContextPeekCurrentScript( LEOContext* inContext )
 }
 
 
-void	LEOContextPopHandlerAndScript( LEOContext* inContext )
+LEOInstruction*	LEOContextPeekReturnAddress( LEOContext* inContext )
+{
+	if( inContext->numCallStackEntries < 1 )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Error: No return address found." );
+		inContext->keepRunning = false;
+		return NULL;
+	}
+	else
+		return inContext->callStackEntries[inContext->numCallStackEntries -1].returnAddress;
+}
+
+
+void	LEOContextPopHandlerScriptAndReturnAddress( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
@@ -226,7 +238,8 @@ void	LEOContextDebugPrintCallStack( LEOContext* inContext )
 	{
 		x--;
 		
-		printf( "%s\n", inContext->callStackEntries[x].handler->handlerName );
+		LEOHandlerID theID = inContext->callStackEntries[x].handler->handlerName;
+		printf( "%s\n", LEOContextGroupHandlerNameForHandlerID( inContext->group, theID ) );
 	} while( x > 0 );
 }
 

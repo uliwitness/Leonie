@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 
 #include "LEOInterpreter.h"
+#include "LEOHandlerID.h"
 
 
 // -----------------------------------------------------------------------------
@@ -45,7 +46,7 @@
 
 typedef struct LEOHandler
 {
-	char			handlerName[256];
+	LEOHandlerID	handlerName;		// Unique ID of handlers with this name.
 	size_t			numInstructions;
 	LEOInstruction	*instructions;
 } LEOHandler;
@@ -68,7 +69,9 @@ typedef struct LEOHandler
 	@field numCommands			The number of command handler entries in the
 								commands array.
 	@field commands				An array of handlers implementing the commands
-								this script implements. */
+								this script implements.
+	@field	strings				List of string constants in this script, which we can load.
+	@field	numStrings			Number of items in stringsTable. */
 // -----------------------------------------------------------------------------
 
 typedef struct LEOScript
@@ -80,8 +83,9 @@ typedef struct LEOScript
 	LEOHandler			*functions;
 	size_t				numCommands;
 	LEOHandler			*commands;
+	size_t				numStrings;			// Number of items in stringsTable.
+	char**				strings;			// List of string constants in this script, which we can load.
 } LEOScript;
-
 
 
 /*!
@@ -123,11 +127,11 @@ void		LEOScriptRelease( LEOScript* inScript );	// Subtracts 1 from referenceCoun
 	returned by this call.
 	
 	Note that handler names are case-INsensitive.
-	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerNamed LEOScriptAddFunctionHandlerNamed
+	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerWithID LEOScriptAddFunctionHandlerWithID
 	@seealso //leo_ref/c/func/LEOHandlerAddInstruction LEOHandlerAddInstruction
-	@seealso //leo_ref/c/func/LEOScriptFindCommandHandlerNamed LEOScriptFindCommandHandlerNamed
+	@seealso //leo_ref/c/func/LEOScriptFindCommandHandlerWithID LEOScriptFindCommandHandlerWithID
 */
-LEOHandler*	LEOScriptAddCommandHandlerNamed( LEOScript* inScript, const char* inName );	// Invalidates all LEOHandler pointers anyone may have into this script.
+LEOHandler*	LEOScriptAddCommandHandlerWithID( LEOScript* inScript, LEOHandlerID inHandlerName );	// Invalidates all LEOHandler pointers anyone may have into this script.
 
 /*!
 	Create a new function handler with the given name and return a pointer to it.
@@ -137,39 +141,46 @@ LEOHandler*	LEOScriptAddCommandHandlerNamed( LEOScript* inScript, const char* in
 	returned by this call.
 	
 	Note that handler names are case-INsensitive.
-	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerNamed LEOScriptAddCommandHandlerNamed
+	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerWithID LEOScriptAddCommandHandlerWithID
 	@seealso //leo_ref/c/func/LEOHandlerAddInstruction LEOHandlerAddInstruction
-	@seealso //leo_ref/c/func/LEOScriptFindFunctionHandlerNamed LEOScriptFindFunctionHandlerNamed
+	@seealso //leo_ref/c/func/LEOScriptFindFunctionHandlerWithID LEOScriptFindFunctionHandlerWithID
 */
-LEOHandler*	LEOScriptAddFunctionHandlerNamed( LEOScript* inScript, const char* inName );	// Invalidates all LEOHandler pointers anyone may have into this script.
+LEOHandler*	LEOScriptAddFunctionHandlerWithID( LEOScript* inScript, LEOHandlerID inHandlerName );	// Invalidates all LEOHandler pointers anyone may have into this script.
 
 /*!
 	Return a pointer to a command handler with the given name.
 	
 	Note that handler names are case-INsensitive.
-	@seealso //leo_ref/c/func/LEOScriptFindFunctionHandlerNamed LEOScriptFindFunctionHandlerNamed
-	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerNamed LEOScriptAddCommandHandlerNamed
+	@seealso //leo_ref/c/func/LEOScriptFindFunctionHandlerWithID LEOScriptFindFunctionHandlerWithID
+	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerWithID LEOScriptAddCommandHandlerWithID
 */
-LEOHandler*	LEOScriptFindCommandHandlerNamed( LEOScript* inScript, const char* inName );
+LEOHandler*	LEOScriptFindCommandHandlerWithID( LEOScript* inScript, LEOHandlerID inHandlerName );
 
 /*!
 	Return a pointer to a function handler with the given name.
 	
 	Note that handler names are case-INsensitive.
-	@seealso //leo_ref/c/func/LEOScriptFindCommandHandlerNamed LEOScriptFindCommandHandlerNamed
-	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerNamed LEOScriptAddFunctionHandlerNamed
+	@seealso //leo_ref/c/func/LEOScriptFindCommandHandlerWithID LEOScriptFindCommandHandlerWithID
+	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerWithID LEOScriptAddFunctionHandlerWithID
 */
-LEOHandler*	LEOScriptFindFunctionHandlerNamed( LEOScript* inScript, const char* inName );
+LEOHandler*	LEOScriptFindFunctionHandlerWithID( LEOScript* inScript, LEOHandlerID inHandlerName );
 
 /*!
-	Add a copy of the given method to the given handler.
+	Add an instruction with the given instruction ID and parameters to a handler.
 	Use this only when initially setting up a script and parsing/compiling
 	bytecode into it. Pointers to instructions inside a handler may not stay
 	valid after a call to this.
-	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerNamed LEOScriptAddCommandHandlerNamed
-	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerNamed LEOScriptAddFunctionHandlerNamed
+	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerWithID LEOScriptAddCommandHandlerWithID
+	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerWithID LEOScriptAddFunctionHandlerWithID
 */
-void	LEOHandlerAddInstruction( LEOHandler* inHandler, LEOInstruction instr );
+void	LEOHandlerAddInstruction( LEOHandler* inHandler, LEOInstructionID instructionID, uint16_t param1, uint32_t param2 );
+
+
+/*!
+	Add a string to our strings table, so you can push it on the stack and operate
+	on it in the script.
+*/
+size_t	LEOScriptAddString( LEOScript* inScript, const char* inString );
 
 
 #endif // LEO_SCRIPT_H

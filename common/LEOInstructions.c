@@ -10,6 +10,8 @@
 #include "LEOInstructions.h"
 #include "LEOValue.h"
 #include "LEOInterpreter.h"
+#include "LEOScript.h"
+#include "LEOContextGroup.h"
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -43,10 +45,11 @@ void	LEONoOpInstruction( LEOContext* inContext )
 void	LEOPushStringFromTableInstruction( LEOContext* inContext )
 {
 	const char*		theString = "";
-	if( inContext->currentInstruction->param2 < inContext->stringsTableSize )
-		theString = inContext->stringsTable[inContext->currentInstruction->param2];
+	LEOScript*		script = LEOContextPeekCurrentScript( inContext );
+	if( inContext->currentInstruction->param2 < script->numStrings )
+		theString = script->strings[inContext->currentInstruction->param2];
 	
-	LEOInitStringConstantValue( (LEOValuePtr) inContext->stackEndPtr, theString, kLEOInvalidateReferences, inContext );
+	LEOInitStringValue( (LEOValuePtr) inContext->stackEndPtr, theString, kLEOInvalidateReferences, inContext );
 	inContext->stackEndPtr++;
 	
 	inContext->currentInstruction++;
@@ -79,8 +82,9 @@ void	LEOAssignStringFromTableInstruction( LEOContext* inContext )
 	bool			onStack = (inContext->currentInstruction->param1 == 0xffff);
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	const char*		theString = "";
-	if( inContext->currentInstruction->param2 < inContext->stringsTableSize )
-		theString = inContext->stringsTable[inContext->currentInstruction->param2];
+	LEOScript*		script = LEOContextPeekCurrentScript( inContext );
+	if( inContext->currentInstruction->param2 < script->numStrings )
+		theString = script->strings[inContext->currentInstruction->param2];
 	
 	LEOSetValueAsString( theValue, theString, inContext );
 	
@@ -194,6 +198,37 @@ void	LEOAddNumberInstruction( LEOContext* inContext )
 }
 
 
+void	LEOCallHandlerInstruction( LEOContext* inContext )
+{
+	LEOHandlerID	handlerName = inContext->currentInstruction->param2;
+	LEOScript*		currScript = LEOContextPeekCurrentScript( inContext );
+	LEOHandler*		foundHandler = NULL;
+	if( currScript )
+	{
+		foundHandler = LEOScriptFindCommandHandlerWithID( currScript, handlerName );
+		if( foundHandler )
+		{
+			LEOContextPushHandlerScriptAndReturnAddress( inContext, foundHandler, currScript, inContext->currentInstruction +1 );
+			inContext->currentInstruction = foundHandler->instructions;
+		}
+	}
+	
+	if( !foundHandler )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Couldn't find handler \"%s\".", LEOContextGroupHandlerNameForHandlerID( inContext->group, handlerName ) );
+		inContext->keepRunning = false;
+		inContext->currentInstruction++;
+	}
+}
+
+
+void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
+{
+	inContext->currentInstruction = LEOContextPeekReturnAddress( inContext );
+	LEOContextPopHandlerScriptAndReturnAddress( inContext );
+}
+
+
 #pragma mark -
 #pragma mark Instruction table
 
@@ -215,7 +250,9 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOJumpRelativeIfGreaterSameThanZeroInstruction,
 	LEOJumpRelativeIfLessSameThanZeroInstruction,
 	LEOPushNumberInstruction,
-	LEOAddNumberInstruction
+	LEOAddNumberInstruction,
+	LEOCallHandlerInstruction,
+	LEOReturnFromHandlerInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -236,7 +273,9 @@ const char*	gInstructionNames[] =
 	"JumpRelativeIfGreaterSameThanZero",
 	"JumpRelativeIfLessSameThanZero",
 	"PushNumber",
-	"AddNumber"
+	"AddNumber",
+	"CallHandler",
+	"ReturnFromHandler"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

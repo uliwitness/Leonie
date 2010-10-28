@@ -12,11 +12,12 @@
 #import "LEODebugger.h"
 #import "LEOChunks.h"
 #import "LEOContextGroup.h"
+#import "LEOScript.h"
 #import <stdio.h>
 
 
-#define ACTIVATE_DEBUGGER		0
-#define PRINT_BYTECODE			0
+#define ACTIVATE_DEBUGGER		1
+#define PRINT_BYTECODE			1
 
 
 @implementation LeonieAppDelegate
@@ -32,51 +33,43 @@
 	
 	[busyIndicator startAnimation: self];
 	
+	// --- Start of code to run some raw code:
+	LEOContextGroup*	group = LEOContextGroupCreate();
+	LEOContext			context;
+	LEOInitContext( &context, group );
+	LEOContextGroupRelease(group);	// Context retains it.
+
 	// === start of stuff that a parser/compiler would generate:
-	LEOInstruction		instructions[] =
-	{
-		{ PUSH_NUMBER_INSTR, 0, 10000 },			// Create our loop counter local var and init to 10'000 iterations.
-		{ JUMP_RELATIVE_IF_LT_ZERO_INSTR, 0, 4 },	// 0 at BP-relative offset, our counter. Jump past this loop if counter goes below 0.
-			{ PRINT_VALUE_INSTR, 0, 0 },				// Print counter.
-			{ ADD_NUMBER_INSTR, 0, -1 },				// Subtract 1 from counter
-		{ JUMP_RELATIVE_INSTR, 0, -3 },				// Jump back to loop condition.
-		{ PUSH_STR_FROM_TABLE_INSTR, 0xffff, 1 },	// Get a string.
-		{ PRINT_VALUE_INSTR, 0xffff, 0 },			// Output that string & pop off the stack.
-		{ EXIT_TO_TOP_INSTR, 0, 0 },				// *** Exit, don't execute the following commands.
-		{ PUSH_BOOLEAN_INSTR, 0, true },				// Create a boolean on the stack.
-		{ ASSIGN_STRING_FROM_TABLE_INSTR, 0xffff, 2 },	// Assign a string to the last item on the stack (that's a boolean, so it'll fail).
-		{ POP_VALUE_INSTR, 0, 0 },						// Remove the boolean from the stack again.
-		{ INVALID_INSTR, 0, 0 },		// Directly produce effect of invalid instruction.
-		{ 77, 9, 8 },					// Completely invalid.
-	};
-	const char*			strings[] =
-	{
-		"Hi, world!",
-		"Top 'o the mornin' to ya, sir!",
-		"I am the very model of a modern major-general",
-		"Everybody loves you, honey!"
-	};
+	LEOScript*			script = LEOScriptCreateForOwner(0,0);	
+	LEOHandlerID		startUpHandlerID = LEOContextGroupHandlerIDForHandlerName( group, "startUp" );
+	LEOHandler*			startUpHandler = LEOScriptAddCommandHandlerWithID( script, startUpHandlerID );
+	LEOHandlerAddInstruction( startUpHandler, PUSH_NUMBER_INSTR, 0, 5 );				// Create our loop counter local var and init to 10'000 iterations.
+	LEOHandlerAddInstruction( startUpHandler, JUMP_RELATIVE_IF_LT_ZERO_INSTR, 0, 4 );	// 0 at BP-relative offset, our counter. Jump past this loop if counter goes below 0.
+	LEOHandlerAddInstruction( startUpHandler, PRINT_VALUE_INSTR, 0, 0 );				// Print counter.
+	LEOHandlerAddInstruction( startUpHandler, ADD_NUMBER_INSTR, 0, -1 );				// Subtract 1 from counter
+	LEOHandlerAddInstruction( startUpHandler, JUMP_RELATIVE_INSTR, 0, -3 );				// Jump back to loop condition.
+	LEOHandlerAddInstruction( startUpHandler, PUSH_STR_FROM_TABLE_INSTR, 0xffff, LEOScriptAddString( script, "Top 'o the mornin' to ya, sir!" ) );	// Get a string.
+	LEOHandlerAddInstruction( startUpHandler, PRINT_VALUE_INSTR, 0xffff, 0 );			// Output that string & pop off the stack.
+	LEOHandlerAddInstruction( startUpHandler, RETURN_FROM_HANDLER_INSTR, 0, 0 );		// This handler is finished.
 	// === end of stuff that a parser/compiler would generate:
-	
+		
 	#if PRINT_BYTECODE
-	LEODebugPrintInstructions( instructions, sizeof(instructions) / sizeof(LEOInstruction) );
+	LEODebugPrintInstructions( startUpHandler->instructions, startUpHandler->numInstructions );
 	#endif // PRINT_BYTECODE
 	
 	NSTimeInterval		startTime = [NSDate timeIntervalSinceReferenceDate];
 	
-	// --- Start of code to run some raw code:
-	LEOContext			context;
-	LEOContextGroup*	group = LEOContextGroupCreate();
-	LEOInitContext( &context, group );
-	LEOContextGroupRelease(group);
-	context.stringsTable = strings;
-	context.stringsTableSize = sizeof(strings) / sizeof(const char*);
-	
 	#if ACTIVATE_DEBUGGER
 	context.preInstructionProc = LEODebuggerPreInstructionProc;	// Activate the debugger (not needed unless you want to debug).
-	LEODebuggerAddBreakpoint( instructions );	// Set a breakpoint on the first instruction, so we can step through everything with the debugger.
+	LEODebuggerAddBreakpoint( startUpHandler->instructions );	// Set a breakpoint on the first instruction, so we can step through everything with the debugger.
 	#endif // ACTIVATE_DEBUGGER
-	LEORunInContext( instructions, &context );
+	
+	LEOContextPushHandlerScriptAndReturnAddress( &context, startUpHandler, script, NULL );	// NULL return address is same as exit to top.
+	LEORunInContext( startUpHandler->instructions, &context );
+	
+	#if ACTIVATE_DEBUGGER
+	LEODebugPrintContext( &context );
+	#endif
 	
 	[busyIndicator stopAnimation: self];
 	
@@ -88,18 +81,11 @@
 	
 	[busyIndicator startAnimation: self];
 	LEOCleanUpContext( &context );
+	LEOScriptRelease( script );
 	[busyIndicator stopAnimation: self];
 	// --- End  of code to run some raw code:
 	
 	NSLog( @"Time taken: %f seconds.", [NSDate timeIntervalSinceReferenceDate] -startTime );
-	
-
-//	char				buf[1024];
-//	LEOValueString		theStr;
-//	LEOInitStringConstantValue( (LEOValuePtr)&theStr, "Top 'o the mornin' to ya!", &ctx );
-//	LEOGetValueAsString( &theStr, buf, sizeof(buf) );
-//	
-//	NSLog( @"%s", buf );
 }
 
 

@@ -56,6 +56,7 @@
 		550A2A5A12607C7F00C6DB9D /* LEOInstructionsMac.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LEOInstructionsMac.m; sourceTree = "<group>"; };
 		550A2A5F12607D4100C6DB9D /* LEOInstructionsGeneric.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOInstructionsGeneric.c; path = ../generic/LEOInstructionsGeneric.c; sourceTree = "<group>"; };
 		550A2A6F12607EAC00C6DB9D /* TestsMain.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = TestsMain.c; path = ../common/TestsMain.c; sourceTree = "<group>"; };
+		552565C11279F889000D8325 /* LEOHandlerID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOHandlerID.h; path = ../common/LEOHandlerID.h; sourceTree = SOURCE_ROOT; };
 		55303C311243EC7100062EB5 /* LEOInterpreter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOInterpreter.h; path = ../common/LEOInterpreter.h; sourceTree = "<group>"; };
 		55303C321243EC7100062EB5 /* LEOInterpreter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOInterpreter.c; path = ../common/LEOInterpreter.c; sourceTree = "<group>"; };
 		55303C561243F69000062EB5 /* LEOInstructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOInstructions.h; path = ../common/LEOInstructions.h; sourceTree = "<group>"; };
@@ -188,6 +189,7 @@
 				55E140DB124805E8008EDC7C /* LEOChunks.c */,
 				55BB77901278CD5B006A7F62 /* LEOContextGroup.h */,
 				55BB77911278CD5B006A7F62 /* LEOContextGroup.c */,
+				552565C11279F889000D8325 /* LEOHandlerID.h */,
 				550A2A6F12607EAC00C6DB9D /* TestsMain.c */,
 			);
 			name = common;

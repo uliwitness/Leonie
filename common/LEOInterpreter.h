@@ -81,8 +81,9 @@ typedef struct LEOInstruction
 //	gone.
 typedef struct LEOCallStackEntry
 {
-	struct LEOScript*	script;		// The script that owns 'handler'. The script in here should be retained/released to make sure it doesn't go away.
-	struct LEOHandler*	handler;	// The current handler, so we can show a nice call stack.
+	struct LEOScript*	script;			// The script that owns 'handler'. The script in here should be retained/released to make sure it doesn't go away.
+	struct LEOHandler*	handler;		// The current handler, so we can show a nice call stack.
+	LEOInstruction*		returnAddress;	// Instruction at which we are to continue when this handler returns.
 } LEOCallStackEntry;
 
 
@@ -98,8 +99,6 @@ typedef struct LEOCallStackEntry
 								when script errors occur.
 	@field	errMsg				Error message to display when keepRunning has
 								been set to FALSE.
-	@field	stringsTable		List of string constants in this script, which we can load.
-	@field	stringsTableSize	Number of items in stringsTable.
 	@field	itemDelimiter		The delimiter to use for the "item" chunk expression. Defaults to comma (',').
 	@field	preInstructionProc	A function to call on each instruction before it
 								is executed. Useful as a hook-up-point for a debugger,
@@ -120,8 +119,6 @@ typedef struct LEOContext
 	struct LEOContextGroup	*group;					// The group this context belongs to, containing its global state, references etc.
 	bool					keepRunning;			// ExitToShell and errors set this to FALSE to stop interpreting of code.
 	char					errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
-	const char**			stringsTable;			// List of string constants in this script, which we can load.
-	size_t					stringsTableSize;		// Number of items in stringsTable.
 	char					itemDelimiter;			// item delimiter to use for chunk expressions in values.
 	size_t					numCallStackEntries;	// Number of items in callStackEntries.
 	LEOCallStackEntry*		callStackEntries;		// Array of call stack entries to allow showing a simple backtrace and picking handlers from the current script.
@@ -204,10 +201,11 @@ void	LEODebugPrintContext( LEOContext* ctx );
 void	LEOContextDebugPrintCallStack( LEOContext* inContext );
 
 
-void				LEOContextPushHandlerAndScript( LEOContext* inContext, struct LEOHandler* inHandler, struct LEOScript* inScript );
+void				LEOContextPushHandlerScriptAndReturnAddress( LEOContext* inContext, struct LEOHandler* inHandler, struct LEOScript* inScript, LEOInstruction* returnAddress );
 struct LEOHandler*	LEOContextPeekCurrentHandler( LEOContext* inContext );
 struct LEOScript*	LEOContextPeekCurrentScript( LEOContext* inContext );
-void				LEOContextPopHandlerAndScript( LEOContext* inContext );
+LEOInstruction*		LEOContextPeekReturnAddress( LEOContext* inContext );
+void				LEOContextPopHandlerScriptAndReturnAddress( LEOContext* inContext );
 
 
 

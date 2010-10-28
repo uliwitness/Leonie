@@ -40,39 +40,52 @@ void	ASSERT_RANGE_MATCHES_STRING( const char* theStr, size_t chunkStart, size_t 
 
 void	DoScriptTest()
 {
-	LEOScript	*	theScript = LEOScriptCreateForOwner( 0, 0 );
-	LEOHandler	*	newHandler = NULL;
-	LEOHandler	*	foundHandler = NULL;
+	LEOContextGroup	*	group = LEOContextGroupCreate();
+	LEOScript		*	theScript = LEOScriptCreateForOwner( 0, 0 );
+	LEOHandler		*	newHandler = NULL;
+	LEOHandler		*	foundHandler = NULL;
 	
 	// Add 1st handler:
-	newHandler = LEOScriptAddCommandHandlerNamed( theScript, "mouseDown" );
+	LEOHandlerID	mouseDownID = LEOContextGroupHandlerIDForHandlerName( group, "mouseDown" );
+	newHandler = LEOScriptAddCommandHandlerWithID( theScript, mouseDownID );
 	ASSERT( theScript->numCommands == 1 );
 	ASSERT( newHandler != NULL );
-	ASSERT( strcasecmp(newHandler->handlerName,"mouseDown") == 0 );
+	ASSERT( newHandler->handlerName == mouseDownID );
 	
-	foundHandler = LEOScriptFindCommandHandlerNamed( theScript, "mouseDown" );
+	foundHandler = LEOScriptFindCommandHandlerWithID( theScript, mouseDownID );
 	ASSERT( foundHandler != NULL );
-	ASSERT( strcasecmp(foundHandler->handlerName,"mouseDown") == 0 );
+	ASSERT( foundHandler->handlerName == mouseDownID );
 
 	// Add 2nd handler:
-	newHandler = LEOScriptAddCommandHandlerNamed( theScript, "mouseUp" );
+	LEOHandlerID	mouseUpID = LEOContextGroupHandlerIDForHandlerName( group, "mouseUp" );
+	newHandler = LEOScriptAddCommandHandlerWithID( theScript, mouseUpID );
 	ASSERT( theScript->numCommands == 2 );
 	ASSERT( newHandler != NULL );
-	ASSERT( strcasecmp(newHandler->handlerName,"mouseUp") == 0 );
+	ASSERT( newHandler->handlerName == mouseUpID );
 	
-	foundHandler = LEOScriptFindCommandHandlerNamed( theScript, "mousedown" );
+	LEOHandlerID	mousedownID = LEOContextGroupHandlerIDForHandlerName( group, "mousedown" );
+	foundHandler = LEOScriptFindCommandHandlerWithID( theScript, mousedownID );
 	ASSERT( foundHandler != NULL );
-	ASSERT( strcasecmp(foundHandler->handlerName,"mouseDown") == 0 );
+	ASSERT( foundHandler->handlerName == mousedownID );
+	ASSERT( mouseDownID == mousedownID );
 
-	foundHandler = LEOScriptFindCommandHandlerNamed( theScript, "MOUSEUP" );
+	LEOHandlerID	MOUSEUPID = LEOContextGroupHandlerIDForHandlerName( group, "MOUSEUP" );
+	foundHandler = LEOScriptFindCommandHandlerWithID( theScript, MOUSEUPID );
 	ASSERT( foundHandler != NULL );
-	ASSERT( strcasecmp(foundHandler->handlerName,"mouseUp") == 0 );
+	ASSERT( foundHandler->handlerName == MOUSEUPID );
+	ASSERT( mouseUpID == MOUSEUPID );
 
 	// Look for a handler that doesn't exist:
-	foundHandler = LEOScriptFindCommandHandlerNamed( theScript, "nonexistentHandler" );
+	LEOHandlerID	nonexistentHandlerID = LEOContextGroupHandlerIDForHandlerName( group, "nonexistentHandler" );
+	foundHandler = LEOScriptFindCommandHandlerWithID( theScript, nonexistentHandlerID );
 	ASSERT( foundHandler == NULL );
+
+	ASSERT( mouseUpID != mouseDownID );
+	ASSERT( mouseUpID != nonexistentHandlerID );
+	ASSERT( mouseDownID != nonexistentHandlerID );
 	
 	LEOScriptRelease( theScript );
+	LEOContextGroupRelease( group );
 }
 
 

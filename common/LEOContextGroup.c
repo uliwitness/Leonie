@@ -12,6 +12,7 @@
 // -----------------------------------------------------------------------------
 
 #include "LEOContextGroup.h"
+#include "LEOHandlerID.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -21,6 +22,7 @@
 // -----------------------------------------------------------------------------
 
 #define LEOReferencesTableChunkSize			16
+#define LEOHandlerNamesChunkSize			16
 
 
 
@@ -131,6 +133,60 @@ void*	LEOContextGroupGetPointerForObjectIDAndSeed( LEOContextGroup* inContext, L
 	return inContext->references[inObjectID].value;
 }
 
+
+LEOHandlerID	LEOContextGroupHandlerIDForHandlerName( LEOContextGroup* inContext, const char* handlerName )
+{
+	LEOHandlerID	foundID = LEOHandlerIDINVALID;
+	
+	if( inContext->handlerNames && inContext->numHandlerNames > 0 )
+	{
+		for( size_t x = 0; x < inContext->numHandlerNames; x++ )
+		{
+			if( strcasecmp(handlerName, inContext->handlerNames[x] ) == 0 )
+			{
+				foundID = x;
+				break;
+			}
+		}
+	}
+	
+	if( foundID == LEOHandlerIDINVALID )
+	{
+		if( inContext->handlerNames == NULL )
+		{
+			inContext->numHandlerNames = 1;
+			inContext->handlerNames = calloc( LEOHandlerNamesChunkSize, sizeof(char*) );
+			
+			foundID = 0;	// Can start with first item right away.
+		}
+		else
+		{
+			foundID = inContext->numHandlerNames;
+			inContext->numHandlerNames ++;
+			if( (inContext->numHandlerNames % LEOHandlerNamesChunkSize) == 1 )	// Just exceeded previous block?
+			{
+				size_t	numSlots = inContext->numHandlerNames +LEOHandlerNamesChunkSize -1;
+				inContext->handlerNames = realloc( inContext->handlerNames, sizeof(char*) * numSlots );
+			}
+		}
+		
+		size_t	handlerNameLen = strlen(handlerName) +1;
+		inContext->handlerNames[foundID] = malloc( handlerNameLen );
+		memmove( inContext->handlerNames[foundID], handlerName, handlerNameLen );
+	}
+	
+	return foundID;
+}
+
+const char*		LEOContextGroupHandlerNameForHandlerID( LEOContextGroup* inContext, LEOHandlerID inHandlerID )
+{
+	if( !inContext->handlerNames )
+		return NULL;
+	if( inHandlerID >= inContext->numHandlerNames )
+		return NULL;
+	
+	return inContext->handlerNames[inHandlerID];
+}
 
 
 

@@ -39,6 +39,8 @@
 #define JUMP_RELATIVE_IF_LT_SAME_ZERO_INSTR	14
 #define PUSH_NUMBER_INSTR					15
 #define ADD_NUMBER_INSTR					16
+#define CALL_HANDLER_INSTR					17
+#define RETURN_FROM_HANDLER_INSTR			18
 
 
 // -----------------------------------------------------------------------------

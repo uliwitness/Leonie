@@ -23,6 +23,7 @@
 // -----------------------------------------------------------------------------
 
 #include "LEOValue.h"
+#include "LEOHandlerID.h"
 
 
 // -----------------------------------------------------------------------------
@@ -43,6 +44,8 @@ typedef struct LEOObject LEOObject;
 typedef struct LEOContextGroup
 {
 	size_t			referenceCount;		// Reference count for this object, i.e. number of contexts still attached to this object.
+	size_t			numHandlerNames;	// Number of slots in handlerNames array.
+	char**			handlerNames;		// Array of handler names. The indexes into this array are 'handler IDs' used throughout the bytecode.
 	size_t			numReferences;		// Available slots in "references" array.
 	LEOObject		*references;		// "Master pointer" table for references so we can detect when a reference goes away.
 } LEOContextGroup;
@@ -119,6 +122,13 @@ void	LEOContextGroupRecycleObjectID( LEOContextGroup* inContext, LEOObjectID inO
 	@seealso //leo_ref/c/func/LEOContextGroupRecycleObjectID LEOContextGroupRecycleObjectID
 */
 void*	LEOContextGroupGetPointerForObjectIDAndSeed( LEOContextGroup* inContext, LEOObjectID inObjectID, LEOObjectSeed inObjectSeed );
+
+
+LEOHandlerID	LEOContextGroupHandlerIDForHandlerName( LEOContextGroup* inContext, const char* handlerName );
+
+const char*		LEOContextGroupHandlerNameForHandlerID( LEOContextGroup* inContext, LEOHandlerID inHandlerID );
+
+
 
 
 #endif // LEO_CONTEXT_GROUP_H
