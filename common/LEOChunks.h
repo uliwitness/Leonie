@@ -22,6 +22,8 @@
 // -----------------------------------------------------------------------------
 
 #include <sys/types.h>
+#include <stdint.h>
+
 
 /*! @enum LEOChunkType
 	There are different kinds of chunks that are parsed differently, depending
@@ -58,7 +60,7 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 						size_t inRangeStart, size_t inRangeEnd,
 						size_t *outChunkStart, size_t *outChunkEnd,
 						size_t *outDelChunkStart, size_t *outDelChunkEnd,
-						char itemDelimiter );
+						uint32_t itemDelimiter );
 
 
 #endif // LEO_CHUNKS_H

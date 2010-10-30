@@ -12,6 +12,75 @@
 #include <stdbool.h>
 
 
+size_t	LEOGetLengthOfUTF8SequenceStartingWith( unsigned char inChar )
+{
+	size_t		outLength = 0;
+	inChar >>= 3;
+	
+	if( inChar == 0x1e )
+		outLength = 4;
+	else
+	{
+		inChar >>= 1;
+		if( inChar == 0x0e )
+		{
+			outLength = 3;
+		}
+		else
+		{
+			inChar >>= 1;
+			if( inChar == 0x06 )
+				outLength = 2;
+			else
+				outLength = 1;
+		}
+	}
+	return outLength;
+}
+
+
+
+uint32_t	LEOUTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset )
+{
+	const uint8_t		*currUTF8Byte = (const uint8_t*) utf8 + (*ioOffset);
+	uint32_t			utf32Char = 0L;
+	size_t				numBytesInSequence = 0;
+	numBytesInSequence = LEOGetLengthOfUTF8SequenceStartingWith( *currUTF8Byte );
+
+	switch( numBytesInSequence )
+	{
+		case 4:
+			utf32Char = ((*currUTF8Byte) ^ 0xf0);
+			break;
+			
+		case 3:
+			utf32Char = ((*currUTF8Byte) ^ 0xe0);
+			break;
+			
+		case 2:
+			utf32Char = ((*currUTF8Byte) ^ 0xc0);
+			break;
+			
+		case 1:
+			utf32Char = (*currUTF8Byte);
+			break;
+	}
+	
+	currUTF8Byte ++;
+	
+	for( size_t y = numBytesInSequence; y > 1; y-- )
+	{
+		utf32Char <<= 6;
+		utf32Char |= ((*currUTF8Byte) ^ 0x80);
+		currUTF8Byte ++;;
+	}
+	
+	(*ioOffset) += numBytesInSequence;
+	
+	return utf32Char;
+}
+
+
 // Gives us both the actual range of a chunk, and the range that should be deleted
 //	when deleting a chunk, since for items or lines, there may be an extra delimiter
 //	that needs to be deleted to completely get rid of a line, and not just set it
@@ -21,23 +90,49 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 							size_t inRangeStart, size_t inRangeEnd,
 							size_t *outChunkStart, size_t *outChunkEnd,
 							size_t *outDelChunkStart, size_t *outDelChunkEnd,
-							char itemDelimiter )
+							uint32_t itemDelimiter )
 {
 	size_t		theLen = strlen(inStr);
 	
 	if( inType == kLEOChunkTypeCharacter )
 	{
-		if( theLen < inRangeEnd )
-			inRangeEnd = theLen;
-		if( inRangeStart < 0 )
-			inRangeStart = 0;
-		if( inRangeEnd < inRangeStart )
-			inRangeEnd = inRangeStart;
+		*outChunkStart = 0;
+		*outChunkEnd = 0;
+		*outDelChunkStart = theLen;
+		*outDelChunkEnd = theLen;
 		
-		*outChunkStart = inRangeStart;
-		*outChunkEnd = inRangeEnd;
-		*outDelChunkStart = inRangeStart;
-		*outDelChunkEnd = inRangeEnd;
+		size_t	currOffset = 0;
+		size_t	currChar = 0;
+		while( currOffset < theLen )
+		{
+			if( currChar == inRangeStart )
+			{
+				*outChunkStart = currOffset;
+				*outDelChunkStart = currOffset;
+			}
+			
+			if( currChar == inRangeEnd )
+			{
+				*outChunkEnd = currOffset;
+				*outDelChunkEnd = currOffset;
+			}
+			
+			(uint32_t) LEOUTF8StringParseUTF32CharacterAtOffset( inStr, theLen, &currOffset );
+			
+			currChar ++;
+		}
+		
+		if( currChar == inRangeStart )
+		{
+			*outChunkStart = currOffset;
+			*outDelChunkStart = currOffset;
+		}
+		
+		if( currChar == inRangeEnd )
+		{
+			*outChunkEnd = currOffset;
+			*outDelChunkEnd = currOffset;
+		}
 	}
 	else if( inType == kLEOChunkTypeItem || inType == kLEOChunkTypeLine )
 	{
@@ -52,13 +147,16 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 		*outChunkEnd = 0;
 		*outDelChunkEnd = 0;
 		
-		for( size_t x = 0; x < theLen; x++ )
+		size_t x = 0;
+		for( ; x < theLen; )
 		{
-			bool	foundDelimiter = false;
+			size_t		newX = x;
+			uint32_t	currCh = LEOUTF8StringParseUTF32CharacterAtOffset( inStr, theLen, &newX );
+			bool		foundDelimiter = false;
 			if( inType == kLEOChunkTypeItem )
-				foundDelimiter = (inStr[x] == itemDelimiter);
+				foundDelimiter = (currCh == itemDelimiter);
 			else if( inType == kLEOChunkTypeLine )
-				foundDelimiter = (inStr[x] == '\n' || inStr[x] == '\r');
+				foundDelimiter = (currCh == '\n' || currCh == '\r');
 			if( foundDelimiter )
 			{
 				currChunkEnd = x;
@@ -84,6 +182,8 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 				currChunkEnd = x;
 				currDelChunkEnd = x;
 			}
+			
+			x = newX;
 		}
 		
 		// Last item is start or end of chunk?
@@ -101,14 +201,19 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 	else if( inType == kLEOChunkTypeWord )
 	{
 		size_t		wordNum = 0;
-		bool		isInWord = !(inStr[0] == ' ' || inStr[0] == '\t' || inStr[0] == '\r' || inStr[0] == '\n');
+		bool		isInWord = true;	// Ignored, initialized when we know what 1st char is.
 		
 		*outChunkStart = 0;
 		*outDelChunkStart = 0;
 		
-		for( size_t x = 0; x < theLen; x++ )
+		size_t x = 0;
+		for( ; x < theLen; )
 		{
-			bool		isWhitespace = (inStr[x] == ' ' || inStr[x] == '\t' || inStr[x] == '\r' || inStr[x] == '\n');
+			size_t		newX = x;
+			uint32_t	currCh = LEOUTF8StringParseUTF32CharacterAtOffset( inStr, theLen, &newX );
+			bool		isWhitespace = (currCh == ' ' || currCh == '\t' || currCh == '\r' || currCh == '\n');
+			if( x == 0 )
+				isInWord = !isWhitespace;
 			if( isWhitespace && isInWord )
 			{
 				isInWord = false;
@@ -129,6 +234,8 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 					*outDelChunkStart = x;
 				}
 			}
+			
+			x = newX;
 		}
 		
 		if( isInWord && wordNum == inRangeEnd )
