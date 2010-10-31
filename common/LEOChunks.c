@@ -94,7 +94,19 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 {
 	size_t		theLen = strlen(inStr);
 	
-	if( inType == kLEOChunkTypeCharacter )
+	if( inType == kLEOChunkTypeByte )
+	{
+		if( inRangeStart < 0 )
+			inRangeStart = 0;
+		if( inRangeEnd >= theLen )
+			inRangeEnd = theLen -1;
+		
+		*outChunkStart = inRangeStart;
+		*outDelChunkStart = inRangeStart;
+		*outChunkEnd = inRangeEnd;
+		*outDelChunkEnd = inRangeEnd;
+	}
+	else if( inType == kLEOChunkTypeCharacter )
 	{
 		*outChunkStart = 0;
 		*outChunkEnd = 0;

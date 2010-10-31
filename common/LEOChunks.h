@@ -28,7 +28,12 @@
 /*! @enum LEOChunkType
 	There are different kinds of chunks that are parsed differently, depending
 	on which of these flags you pass in.
-	@const kLEOChunkTypeCharacter	Characters
+	@const kLEOChunkTypeByte		Take a byte out of the string. This may
+									tear a byte out of the middle of a UTF8
+									string and make it invalid.
+	@const kLEOChunkTypeCharacter	UTF8-characters. One character may use
+									several bytes, e.g. for a Chinese or
+									Japanese character.
 	@const kLEOChunkTypeItem		Items are delimited by a certain character
 									(by default, a comma). If there are several
 									delimiters immediately in sequence, the
@@ -44,6 +49,7 @@
 */
 typedef enum
 {
+	kLEOChunkTypeByte,
 	kLEOChunkTypeCharacter,
 	kLEOChunkTypeItem,
 	kLEOChunkTypeLine,
