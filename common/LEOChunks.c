@@ -98,8 +98,8 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 	{
 		if( inRangeStart < 0 )
 			inRangeStart = 0;
-		if( inRangeEnd >= theLen )
-			inRangeEnd = theLen -1;
+		if( inRangeEnd > theLen )
+			inRangeEnd = theLen;
 		
 		*outChunkStart = inRangeStart;
 		*outDelChunkStart = inRangeStart;
