@@ -86,8 +86,12 @@ struct LEOValueType
 	void		(*SetRangeAsString)( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext );
-	void		(*InitCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// dest is an uninitialized value.
 	
+	void		(*InitCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// dest is an uninitialized value.
+	void		(*DetermineChunkRangeOfSubstring)( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
+													size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
+													LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
+													struct LEOContext* inContext );
 	void		(*CleanUp)( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 };
 
@@ -179,12 +183,22 @@ typedef struct LEOValueBoolean	LEOValueBoolean;
 						the slot's seed is incremented, and by comparing it to
 						this one, we can detect that even if the slot has been
 						reused in the meantime.
+	@field	chunkType	The type of chunk of the original value this references,
+						or kLEOChunkTypeINVALID if this references the full
+						value.
+	@field	chunkStart	If chunkType isn't kLEOChunkTypeINVALID, this specifies
+						the start of the chunk range of the referenced object.
+	@field	chunkEnd	If chunkType isn't kLEOChunkTypeINVALID, this specifies
+						the end of the chunk range of the referenced object.
 */
 struct LEOValueReference
 {
 	struct LEOValueBase	base;
 	LEOObjectID			objectID;
 	LEOObjectSeed		objectSeed;
+	LEOChunkType		chunkType;
+	size_t				chunkStart;
+	size_t				chunkEnd;
 };
 typedef struct LEOValueReference	LEOValueReference;
 
@@ -267,10 +281,14 @@ void		LEOInitBooleanValue( LEOValuePtr inStorage, bool inBoolean, LEOKeepReferen
 	fail with an error message and abort execution of the current LEOContext.
 	
 	However, the destructor of the value is safe to call, as is InitCopy.
+	
+	Pass kLEOChunkTypeINVALID if you want to reference the whole value and not
+	only a chunk of it.
 
 	@seealso //leo_ref/c/macro/LEOGetReferenceValueSize LEOGetReferenceValueSize
 */
-void		LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+void		LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences,
+									LEOChunkType inType, size_t startOffs, size_t endOffs, struct LEOContext* inContext );
 
 
 /*!
@@ -506,6 +524,32 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 
 
 /*!
+	@function LEODetermineChunkRangeOfSubstring
+	Parses the given substring of a value for the given chunk, and then returns
+	the absolute range of that chunk.
+	@param	v	The value you wish to examine.
+	@param	bs	On input, a pointer to a size_t containing the start offset (in
+				bytes) of the substring to examine. On output, it will be set to
+				the chunk's absolute start offset.
+	@param	be	On input, a pointer to a size_t containing the end offset (in
+				bytes) of the substring to examine. On output, it will be set to
+				the chunk's absolute end offset.
+	@param	bds	The size_t pointed to by this will be set to the chunk's
+				absolute start offset for deletion.
+	@param	bde	The size_t pointed to by this will be set to the chunk's
+				absolute end offset for deletion.
+	@param	t	The chunk type to use for parsing this chunk.
+	@param	rs	The start offset of the chunk (in whatever unit the 't' parameter
+				defines) to find in the substring.
+	@param	re	The end offset of the chunk (in whatever unit the 't' parameter
+				defines) to find in the substring.
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+*/
+#define 	LEODetermineChunkRangeOfSubstring(v,bs,be,bds,bde,t,rs,re,c)		((LEOValuePtr)(v))->isa->DetermineChunkRangeOfSubstring(((LEOValuePtr)(v)),(bs),(be),(bds),(bde),(t),(rs),(re),(c))
+
+
+/*!
 	@function LEOCleanUpValue
 	Dispose of any additional storage the value has allocated to hold its data.
 	If there are references to this value, this will cause the references to fail
@@ -533,6 +577,10 @@ void		LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 void		LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									char* outBuf, long bufSize, struct LEOContext* inContext );	// If it can be converted to string, this gets a range from it.
+void		LEODetermineChunkRangeOfSubstringOfAnyValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
+														size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
+														LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
+														struct LEOContext* inContext );
 
 // Number instance methods:
 double		LEOGetNumberValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
@@ -557,6 +605,10 @@ void		LEOSetStringValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 												size_t inRangeStart, size_t inRangeEnd,
 												const char* inBuf, struct LEOContext* inContext );
 void		LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+void		LEODetermineChunkRangeOfSubstringOfStringValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
+															size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
+															LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
+															struct LEOContext* inContext );
 void		LEOCleanUpStringValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
 // Replacement assignment methods and destructors for constant-referencing strings:
@@ -592,6 +644,10 @@ void		LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
 											const char* inBuf, struct LEOContext* inContext );
 void		LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+void		LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
+																size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
+																LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
+																struct LEOContext* inContext );
 void		LEOCleanUpReferenceValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
 

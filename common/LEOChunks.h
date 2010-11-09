@@ -28,6 +28,9 @@
 /*! @enum LEOChunkType
 	There are different kinds of chunks that are parsed differently, depending
 	on which of these flags you pass in.
+	@const kLEOChunkTypeINVALID		Used in some cases to indicate something
+									that *can* be a chunk reference is *not*
+									a chunk.
 	@const kLEOChunkTypeByte		Take a byte out of the string. This may
 									tear a byte out of the middle of a UTF8
 									string and make it invalid.
@@ -49,6 +52,7 @@
 */
 typedef enum
 {
+	kLEOChunkTypeINVALID,
 	kLEOChunkTypeByte,
 	kLEOChunkTypeCharacter,
 	kLEOChunkTypeItem,

@@ -50,6 +50,7 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOCantSetValueRangeAsString,
 	
 	LEOInitNumberValueCopy,
+	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpNumberValue
 };
@@ -71,6 +72,7 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOSetStringValueRangeAsString,
 	
 	LEOInitStringValueCopy,
+	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringValue
 };
@@ -92,6 +94,7 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOSetStringConstantValueRangeAsString,
 	
 	LEOInitStringConstantValueCopy,
+	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringConstantValue
 };
@@ -115,6 +118,7 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOCantSetValueRangeAsString,
 	
 	LEOInitBooleanValueCopy,
+	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpBooleanValue
 };
@@ -136,6 +140,7 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOSetReferenceValueRangeAsString,
 	
 	LEOInitReferenceValueCopy,
+	LEODetermineChunkRangeOfSubstringOfReferenceValue,
 	
 	LEOCleanUpReferenceValue
 };
@@ -157,6 +162,7 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOSetVariantValueRangeAsString,
 	
 	LEOInitNumberVariantValueCopy,
+	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpNumberValue
 };
@@ -178,6 +184,7 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOSetVariantValueRangeAsString,
 	
 	LEOInitStringVariantValueCopy,
+	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringValue
 };
@@ -199,6 +206,7 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOSetVariantValueRangeAsString,
 	
 	LEOInitBooleanVariantValueCopy,
+	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpBooleanValue
 };
@@ -313,6 +321,32 @@ void	LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 		len = bufSize -1;
 	memmove( outBuf, str +outChunkStart, len );
 	outBuf[len] = 0;
+}
+
+
+void	LEODetermineChunkRangeOfSubstringOfAnyValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
+														size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
+														LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
+														struct LEOContext* inContext )
+{
+	char		strBuf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
+	char*		str = strBuf;
+	LEOGetValueAsString( self, strBuf, sizeof(strBuf), inContext );
+	if( (*ioBytesEnd) < sizeof(strBuf) )
+		str[(*ioBytesEnd)] = '\0';
+	str += (*ioBytesStart);
+	
+	size_t		chunkStart, chunkEnd, delChunkStart, delChunkEnd;
+	
+	LEOGetChunkRanges( str, inType,
+						inRangeStart, inRangeEnd,
+						&chunkStart, &chunkEnd,
+						&delChunkStart, &delChunkEnd,
+						inContext->itemDelimiter );
+	(*ioBytesStart) += chunkStart;
+	(*ioBytesEnd) = (*ioBytesStart) + (chunkEnd -chunkStart);
+	(*ioBytesDelStart) = (*ioBytesStart) +delChunkStart;
+	(*ioBytesDelEnd) = (*ioBytesDelStart) + (delChunkEnd -delChunkStart);
 }
 
 
@@ -459,7 +493,7 @@ void	LEOSetStringValueAsNumber( LEOValuePtr self, double inNumber, struct LEOCon
 	if( ((struct LEOValueString*)self)->string )
 		free( ((struct LEOValueString*)self)->string );
 	((struct LEOValueString*)self)->string = malloc( 40 );
-	snprintf( ((struct LEOValueString*)self)->string, 40, "%f", inNumber );
+	snprintf( ((struct LEOValueString*)self)->string, 40, "%g", inNumber );
 }
 
 
@@ -562,6 +596,37 @@ void	LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 }
 
 
+void	LEODetermineChunkRangeOfSubstringOfStringValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
+														size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
+														LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
+														struct LEOContext* inContext )
+{
+	char*		str = ((struct LEOValueString*)self)->string;
+	size_t		maxOffs = *ioBytesEnd -((size_t)str);
+	str += (*ioBytesStart);
+	
+	size_t		chunkStart, chunkEnd, delChunkStart, delChunkEnd;
+	
+	LEOGetChunkRanges( str, inType,
+						inRangeStart, inRangeEnd,
+						&chunkStart, &chunkEnd,
+						&delChunkStart, &delChunkEnd,
+						inContext->itemDelimiter );
+	if( chunkStart > maxOffs )
+		chunkStart = maxOffs;
+	if( chunkEnd > maxOffs )
+		chunkEnd = maxOffs;
+	(*ioBytesStart) += chunkStart;
+	(*ioBytesEnd) = (*ioBytesStart) + (chunkEnd -chunkStart);
+	if( delChunkStart > maxOffs )
+		delChunkStart = maxOffs;
+	if( delChunkEnd > maxOffs )
+		delChunkEnd = maxOffs;
+	(*ioBytesDelStart) = (*ioBytesStart) +delChunkStart;
+	(*ioBytesDelEnd) = (*ioBytesDelStart) + (delChunkEnd -delChunkStart);
+}
+
+
 /*!
 	Implementation of SetRangeAsString for string values.
 */
@@ -643,7 +708,7 @@ void	LEOSetStringConstantValueAsNumber( LEOValuePtr self, double inNumber, struc
 	// Turn this into a non-constant string:
 	self->isa = &kLeoValueTypeString;
 	((struct LEOValueString*)self)->string = malloc( 40 );
-	snprintf( ((struct LEOValueString*)self)->string, 40, "%f", inNumber );
+	snprintf( ((struct LEOValueString*)self)->string, 40, "%g", inNumber );
 }
 
 
@@ -840,7 +905,8 @@ void	LEOCleanUpBooleanValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferen
 	@functiongroup LEOValueReference
 */
 
-void	LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr originalValue, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+void	LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr originalValue, LEOKeepReferencesFlag keepReferences,
+								LEOChunkType inType, size_t startOffs, size_t endOffs, struct LEOContext* inContext )
 {
 	self->isa = &kLeoValueTypeReference;
 	if( keepReferences == kLEOInvalidateReferences )
@@ -853,6 +919,10 @@ void	LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr originalValue, LEOKeep
 	
 	((LEOValueReference*)self)->objectID = originalValue->refObjectID;
 	((LEOValueReference*)self)->objectSeed = LEOContextGroupGetSeedForObjectID( inContext->group, originalValue->refObjectID );
+	
+	((LEOValueReference*)self)->chunkType = inType;
+	((LEOValueReference*)self)->chunkStart = startOffs;
+	((LEOValueReference*)self)->chunkEnd = endOffs;
 }
 
 
@@ -868,6 +938,8 @@ void	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, long bufSize,
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
 		inContext->keepRunning = false;
 	}
+	else if( ((struct LEOValueReference*)self)->chunkType != kLEOChunkTypeINVALID )
+		LEOGetValueAsRangeOfString( theValue, ((struct LEOValueReference*)self)->chunkType, ((struct LEOValueReference*)self)->chunkStart, ((struct LEOValueReference*)self)->chunkEnd, outBuf, bufSize, inContext );
 	else
 		LEOGetValueAsString( theValue, outBuf, bufSize, inContext );
 }
@@ -885,6 +957,16 @@ double	LEOGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inCont
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
 		inContext->keepRunning = false;
 		return 0.0;
+	}
+	else if( ((struct LEOValueReference*)self)->chunkType != kLEOChunkTypeINVALID )
+	{
+		char		str[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
+		LEOGetValueAsRangeOfString( theValue, ((struct LEOValueReference*)self)->chunkType, ((struct LEOValueReference*)self)->chunkStart, ((struct LEOValueReference*)self)->chunkEnd, str, sizeof(str), inContext );
+		char*		endPtr = NULL;
+		double		num = strtod( str, &endPtr );
+		if( endPtr != (str +strlen(str)) )
+			LEOCantGetValueAsNumber( self, inContext );
+		return num;
 	}
 	else
 		return LEOGetValueAsNumber( theValue, inContext );
@@ -904,6 +986,17 @@ bool	LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inConte
 		inContext->keepRunning = false;
 		return false;
 	}
+	else if( ((struct LEOValueReference*)self)->chunkType != kLEOChunkTypeINVALID )
+	{
+		char		str[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
+		LEOGetValueAsRangeOfString( theValue, ((struct LEOValueReference*)self)->chunkType, ((struct LEOValueReference*)self)->chunkStart, ((struct LEOValueReference*)self)->chunkEnd, str, sizeof(str), inContext );
+		if( strcasecmp( str, "true" ) == 0 )
+			return true;
+		else if( strcasecmp( str, "false" ) == 0 )
+			return false;
+		else
+			return LEOCantGetValueAsBoolean( self, inContext );
+	}
 	else
 		return LEOGetValueAsBoolean( theValue, inContext );
 }
@@ -914,14 +1007,21 @@ bool	LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inConte
 */
 
 void	LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
-									size_t inRangeStart, size_t inRangeEnd,
-									char* outBuf, long bufSize, struct LEOContext* inContext )
+											size_t inRangeStart, size_t inRangeEnd,
+											char* outBuf, long bufSize, struct LEOContext* inContext )
 {
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
 	if( theValue == NULL )
 	{
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
 		inContext->keepRunning = false;
+	}
+	else if( ((struct LEOValueReference*)self)->chunkType != kLEOChunkTypeINVALID )
+	{
+		size_t		chunkStart = 0, chunkEnd = SIZE_MAX, chunkDelStart, chunkDelEnd;
+		LEODetermineChunkRangeOfSubstring( self, &chunkStart, &chunkEnd, &chunkDelStart, &chunkDelEnd,
+											inType, inRangeStart, inRangeEnd, inContext );
+		LEOGetValueAsRangeOfString( theValue, kLEOChunkTypeByte, chunkStart, chunkEnd, outBuf, bufSize, inContext );
 	}
 	else
 		LEOGetValueAsRangeOfString( theValue, inType, inRangeStart, inRangeEnd, outBuf, bufSize, inContext );
@@ -940,6 +1040,13 @@ void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, struc
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
 		inContext->keepRunning = false;
 	}
+	else if( ((struct LEOValueReference*)self)->chunkType != kLEOChunkTypeINVALID )
+	{
+		size_t		chunkStart = 0, chunkEnd = SIZE_MAX, chunkDelStart, chunkDelEnd;
+		LEODetermineChunkRangeOfSubstring( self, &chunkStart, &chunkEnd, &chunkDelStart, &chunkDelEnd,
+											((struct LEOValueReference*)self)->chunkType, ((struct LEOValueReference*)self)->chunkStart, ((struct LEOValueReference*)self)->chunkEnd, inContext );
+		LEOSetValueRangeAsString( theValue, kLEOChunkTypeByte, chunkStart, chunkEnd, inString, inContext );
+	}
 	else
 		LEOSetValueAsString( theValue, inString, inContext );
 }
@@ -957,6 +1064,11 @@ void	LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEO
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
 		inContext->keepRunning = false;
 	}
+	else if( ((struct LEOValueReference*)self)->chunkType != kLEOChunkTypeINVALID )
+	{
+		LEOSetValueRangeAsString( theValue, ((struct LEOValueReference*)self)->chunkType, ((struct LEOValueReference*)self)->chunkStart, ((struct LEOValueReference*)self)->chunkEnd,
+									(inBoolean) ? "true" : "false", inContext );
+	}
 	else
 		LEOSetValueAsBoolean( theValue, inBoolean, inContext );
 }
@@ -973,6 +1085,13 @@ void	LEOSetReferenceValueAsNumber( LEOValuePtr self, double inNumber, struct LEO
 	{
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
 		inContext->keepRunning = false;
+	}
+	else if( ((struct LEOValueReference*)self)->chunkType != kLEOChunkTypeINVALID )
+	{
+		char		str[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
+		snprintf( str, sizeof(str), "%g", inNumber );
+		LEOSetValueRangeAsString( theValue, ((struct LEOValueReference*)self)->chunkType, ((struct LEOValueReference*)self)->chunkStart, ((struct LEOValueReference*)self)->chunkEnd,
+									str, inContext );
 	}
 	else
 		LEOSetValueAsNumber( theValue, inNumber, inContext );
@@ -993,6 +1112,13 @@ void	LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
 		inContext->keepRunning = false;
 	}
+	else if( ((struct LEOValueReference*)self)->chunkType != kLEOChunkTypeINVALID )
+	{
+		size_t		chunkStart = 0, chunkEnd = SIZE_MAX, chunkDelStart, chunkDelEnd;
+		LEODetermineChunkRangeOfSubstring( self, &chunkStart, &chunkEnd, &chunkDelStart, &chunkDelEnd,
+											inType, inRangeStart, inRangeEnd, inContext );
+		LEOSetValueRangeAsString( theValue, kLEOChunkTypeByte, chunkStart, chunkEnd, inBuf, inContext );
+	}
 	else
 		LEOSetValueRangeAsString( theValue, inType, inRangeStart, inRangeEnd, inBuf, inContext );
 }
@@ -1010,6 +1136,44 @@ void	LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepRefer
 		dest->refObjectID = LEOObjectIDINVALID;
 	((struct LEOValueReference*)dest)->objectID = ((struct LEOValueReference*)self)->objectID;
 	((struct LEOValueReference*)dest)->objectSeed = ((struct LEOValueReference*)self)->objectSeed;
+	
+	((struct LEOValueReference*)dest)->chunkType = ((struct LEOValueReference*)self)->chunkType;
+	((struct LEOValueReference*)dest)->chunkStart = ((struct LEOValueReference*)self)->chunkStart;
+	((struct LEOValueReference*)dest)->chunkEnd = ((struct LEOValueReference*)self)->chunkEnd;
+}
+
+
+void	LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
+															size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
+															LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
+															struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
+	if( theValue == NULL )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
+		inContext->keepRunning = false;
+	}
+	else if( ((struct LEOValueReference*)self)->chunkType != kLEOChunkTypeINVALID )
+	{
+		size_t		bytesStart = 0, bytesEnd = SIZE_MAX,
+					bytesDelStart, bytesDelEnd; 
+		LEODetermineChunkRangeOfSubstring( theValue, &bytesStart, &bytesEnd, &bytesDelStart, &bytesDelEnd,
+											((struct LEOValueReference*)self)->chunkType, ((struct LEOValueReference*)self)->chunkStart, ((struct LEOValueReference*)self)->chunkEnd, inContext );
+		LEODetermineChunkRangeOfSubstring( theValue, &bytesStart, &bytesEnd, &bytesDelStart, &bytesDelEnd,
+											kLEOChunkTypeByte, *ioBytesStart, *ioBytesEnd, inContext );
+		LEODetermineChunkRangeOfSubstring( theValue, &bytesStart, &bytesEnd, &bytesDelStart, &bytesDelEnd,
+											inType, inRangeStart, inRangeEnd, inContext );
+		*ioBytesStart = bytesStart;
+		*ioBytesEnd = bytesEnd;
+		*ioBytesDelStart = bytesDelStart;
+		*ioBytesDelEnd = bytesDelEnd;
+	}
+	else
+	{
+		LEODetermineChunkRangeOfSubstring( theValue, ioBytesStart, ioBytesEnd, ioBytesDelStart, ioBytesDelEnd,
+											inType, inRangeStart, inRangeEnd, inContext );
+	}
 }
 
 
