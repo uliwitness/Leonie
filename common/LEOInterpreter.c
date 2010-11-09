@@ -42,6 +42,7 @@ void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup )
 	theContext->preInstructionProc = LEODoNothingPreInstructionProc;
 	theContext->itemDelimiter = ',';
 	theContext->group = LEOContextGroupRetain( inGroup );
+	theContext->keepRunning = true;
 }
 
 
