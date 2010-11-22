@@ -48,6 +48,7 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOSetNumberValueAsString,
 	LEOCantSetValueAsBoolean,
 	LEOCantSetValueRangeAsString,
+	LEOCantSetValuePredeterminedRangeAsString,
 	
 	LEOInitNumberValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
@@ -70,6 +71,7 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOSetStringValueAsString,
 	LEOSetStringValueAsBoolean,
 	LEOSetStringValueRangeAsString,
+	LEOSetStringValuePredeterminedRangeAsString,
 	
 	LEOInitStringValueCopy,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
@@ -92,6 +94,7 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOSetStringConstantValueAsString,
 	LEOSetStringConstantValueAsBoolean,
 	LEOSetStringConstantValueRangeAsString,
+	LEOSetStringConstantValuePredeterminedRangeAsString,
 	
 	LEOInitStringConstantValueCopy,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
@@ -116,6 +119,7 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOSetBooleanValueAsString,
 	LEOSetBooleanValueAsBoolean,
 	LEOCantSetValueRangeAsString,
+	LEOCantSetValuePredeterminedRangeAsString,
 	
 	LEOInitBooleanValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
@@ -138,6 +142,7 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOSetReferenceValueAsString,
 	LEOSetReferenceValueAsBoolean,
 	LEOSetReferenceValueRangeAsString,
+	LEOSetReferenceValuePredeterminedRangeAsString,
 	
 	LEOInitReferenceValueCopy,
 	LEODetermineChunkRangeOfSubstringOfReferenceValue,
@@ -160,6 +165,7 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOSetVariantValueAsString,
 	LEOSetVariantValueAsBoolean,
 	LEOSetVariantValueRangeAsString,
+	LEOSetVariantValuePredeterminedRangeAsString,
 	
 	LEOInitNumberVariantValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
@@ -182,6 +188,7 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOSetVariantValueAsString,
 	LEOSetVariantValueAsBoolean,
 	LEOSetVariantValueRangeAsString,
+	LEOSetVariantValuePredeterminedRangeAsString,
 	
 	LEOInitStringVariantValueCopy,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
@@ -204,6 +211,7 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOSetVariantValueAsString,
 	LEOSetVariantValueAsBoolean,
 	LEOSetVariantValueRangeAsString,
+	LEOSetVariantValuePredeterminedRangeAsString,
 	
 	LEOInitBooleanVariantValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
@@ -292,6 +300,14 @@ void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext
 void	LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext )
+{
+	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found string", self->isa->displayTypeName );
+	inContext->keepRunning = false;
+}
+
+
+void	LEOCantSetValuePredeterminedRangeAsString( LEOValuePtr self, size_t inRangeStart, size_t inRangeEnd,
+													const char* inBuf, struct LEOContext* inContext )
 {
 	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found string", self->isa->displayTypeName );
 	inContext->keepRunning = false;
@@ -667,6 +683,32 @@ void	LEOSetStringValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 
 
 /*!
+	Implementation of SetPredeterminedRangeAsString for string values.
+*/
+
+void	LEOSetStringValuePredeterminedRangeAsString( LEOValuePtr self,
+											size_t inRangeStart, size_t inRangeEnd,
+											const char* inBuf, struct LEOContext* inContext )
+{
+	size_t		inBufLen = inBuf ? strlen(inBuf) : 0,
+				selfLen = strlen( ((struct LEOValueString*)self)->string ),
+				finalLen = 0,
+				chunkLen = inRangeEnd -inRangeStart;
+	finalLen = selfLen -chunkLen +inBufLen;
+		
+	char*		newStr = malloc( finalLen +1 );
+	memmove( newStr, ((struct LEOValueString*)self)->string, inRangeStart );	// Copy before chunk.
+	if( inBufLen > 0 )
+		memmove( newStr +inRangeStart, inBuf, inBufLen );	// Copy new value of chunk.
+	memmove( newStr +inRangeStart +inBufLen, ((struct LEOValueString*)self)->string +inRangeEnd, selfLen -inRangeEnd );	// Copy after chunk.
+	newStr[finalLen] = 0;
+	
+	free( ((struct LEOValueString*)self)->string );
+	((struct LEOValueString*)self)->string = newStr;
+}
+
+
+/*!
 	Destructor for string values. If this value has references, this makes sure
 	that they will produce an error message if they ever try to access it again.
 */
@@ -751,7 +793,7 @@ void	LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeep
 
 
 /*!
-	Implementation of SetRangeAsString for string values. This turns the
+	Implementation of SetRangeAsString for string constant values. This turns the
 	value into a regular (dynamic) string value.
 */
 
@@ -788,6 +830,18 @@ void	LEOSetStringConstantValueRangeAsString( LEOValuePtr self, LEOChunkType inTy
 	// Turn this into a non-constant string:
 	self->isa = &kLeoValueTypeString;
 	((struct LEOValueString*)self)->string = newStr;
+}
+
+
+/*!
+	Implementation of SetPredeterminedRangeAsString for string constant values.
+*/
+
+void	LEOSetStringConstantValuePredeterminedRangeAsString( LEOValuePtr self,
+											size_t inRangeStart, size_t inRangeEnd,
+											const char* inBuf, struct LEOContext* inContext )
+{
+	LEOSetStringConstantValueRangeAsString( self, kLEOChunkTypeByte, inRangeStart, inRangeEnd, inBuf, inContext );
 }
 
 
@@ -1043,9 +1097,9 @@ void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, struc
 	else if( ((struct LEOValueReference*)self)->chunkType != kLEOChunkTypeINVALID )
 	{
 		size_t		chunkStart = 0, chunkEnd = SIZE_MAX, chunkDelStart, chunkDelEnd;
-		LEODetermineChunkRangeOfSubstring( self, &chunkStart, &chunkEnd, &chunkDelStart, &chunkDelEnd,
+		LEODetermineChunkRangeOfSubstring( theValue, &chunkStart, &chunkEnd, &chunkDelStart, &chunkDelEnd,
 											((struct LEOValueReference*)self)->chunkType, ((struct LEOValueReference*)self)->chunkStart, ((struct LEOValueReference*)self)->chunkEnd, inContext );
-		LEOSetValueRangeAsString( theValue, kLEOChunkTypeByte, chunkStart, chunkEnd, inString, inContext );
+		LEOSetValuePredeterminedRangeAsString( theValue, chunkStart, chunkEnd, inString, inContext );
 	}
 	else
 		LEOSetValueAsString( theValue, inString, inContext );
@@ -1117,10 +1171,28 @@ void	LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 		size_t		chunkStart = 0, chunkEnd = SIZE_MAX, chunkDelStart, chunkDelEnd;
 		LEODetermineChunkRangeOfSubstring( self, &chunkStart, &chunkEnd, &chunkDelStart, &chunkDelEnd,
 											inType, inRangeStart, inRangeEnd, inContext );
-		LEOSetValueRangeAsString( theValue, kLEOChunkTypeByte, chunkStart, chunkEnd, inBuf, inContext );
+		LEOSetValuePredeterminedRangeAsString( theValue, chunkStart, chunkEnd, inBuf, inContext );
 	}
 	else
 		LEOSetValueRangeAsString( theValue, inType, inRangeStart, inRangeEnd, inBuf, inContext );
+}
+
+
+/*!
+	Implementation of SetPredeterminedRangeAsString for reference values.
+*/
+
+void	LEOSetReferenceValuePredeterminedRangeAsString( LEOValuePtr self, size_t inRangeStart, size_t inRangeEnd,
+														const char* inBuf, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, ((struct LEOValueReference*)self)->objectID, ((struct LEOValueReference*)self)->objectSeed );
+	if( theValue == NULL )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
+		inContext->keepRunning = false;
+	}
+	else
+		LEOSetValuePredeterminedRangeAsString( theValue, inRangeStart, inRangeEnd, inBuf, inContext );
 }
 
 
@@ -1255,6 +1327,16 @@ void	LEOSetVariantValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 		self->isa = &kLeoValueTypeStringVariant;
 	}
 	LEOSetStringValueRangeAsString( self, inType, inRangeStart, inRangeEnd, inBuf, inContext );
+}
+
+
+void	LEOSetVariantValuePredeterminedRangeAsString( LEOValuePtr self,
+													size_t inRangeStart, size_t inRangeEnd,
+													const char* inBuf, struct LEOContext* inContext )
+{
+	LEOSetVariantValueRangeAsString( self, kLEOChunkTypeByte,
+										inRangeStart, inRangeEnd,
+										inBuf, inContext );
 }
 
 

@@ -86,6 +86,9 @@ struct LEOValueType
 	void		(*SetRangeAsString)( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext );
+	void		(*SetPredeterminedRangeAsString)( LEOValuePtr self,
+									size_t inRangeStart, size_t inRangeEnd,
+									const char* inBuf, struct LEOContext* inContext );
 	
 	void		(*InitCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// dest is an uninitialized value.
 	void		(*DetermineChunkRangeOfSubstring)( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
@@ -508,6 +511,23 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 
 
 /*!
+	@function LEOSetValuePredeterminedRangeAsString
+	Assigns the given string to the specified range of the given value, converting
+	it, if necessary.
+	If conversion isn't possible, it will fail with an error message and stop
+	execution in the current LEOContext.
+	@param	v	The value you wish to change.
+	@param	rs	The starting index of the range to get, as obtained from LEODetermineChunkRangeOfSubstring.
+	@param	re	The ending index of the range to get, as obtained from LEODetermineChunkRangeOfSubstring.
+	@param	s	The string to insert, or NULL to delete the given range (and any delimiters).
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+	@seealso //leo_ref/c/func/LEODetermineChunkRangeOfSubstring LEODetermineChunkRangeOfSubstring
+*/
+#define 	LEOSetValuePredeterminedRangeAsString(v,rs,re,s,c)	((LEOValuePtr)(v))->isa->SetPredeterminedRangeAsString(((LEOValuePtr)(v)),(rs),(re),(s),(c))
+
+
+/*!
 	@function LEOInitCopy
 	Initializes the given storage to be an exact copy of the given value. If the
 	value is a reference, you will get a second reference to the original value,
@@ -572,6 +592,9 @@ void		LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContex
 void		LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext );
+void		LEOCantSetValuePredeterminedRangeAsString( LEOValuePtr self,
+									size_t inRangeStart, size_t inRangeEnd,
+									const char* inBuf, struct LEOContext* inContext );
 
 // Other methods reusable across several types:
 void		LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
@@ -604,6 +627,9 @@ void 		LEOSetStringValueAsStringConstant( LEOValuePtr self, const char* inString
 void		LEOSetStringValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 												size_t inRangeStart, size_t inRangeEnd,
 												const char* inBuf, struct LEOContext* inContext );
+void		LEOSetStringValuePredeterminedRangeAsString( LEOValuePtr self,
+												size_t inRangeStart, size_t inRangeEnd,
+												const char* inBuf, struct LEOContext* inContext );
 void		LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEODetermineChunkRangeOfSubstringOfStringValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
 															size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
@@ -616,6 +642,9 @@ void		LEOSetStringConstantValueAsNumber( LEOValuePtr self, double inNumber, stru
 void		LEOSetStringConstantValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );	// Makes it a dynamically allocated string.
 void		LEOSetStringConstantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
 void		LEOSetStringConstantValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
+												size_t inRangeStart, size_t inRangeEnd,
+												const char* inBuf, struct LEOContext* inContext );						// Makes it a dynamically allocated string.
+void		LEOSetStringConstantValuePredeterminedRangeAsString( LEOValuePtr self,
 												size_t inRangeStart, size_t inRangeEnd,
 												const char* inBuf, struct LEOContext* inContext );						// Makes it a dynamically allocated string.
 void		LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
@@ -643,6 +672,9 @@ void		LEOSetReferenceValueAsNumber( LEOValuePtr self, double inNumber, struct LE
 void		LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
 											const char* inBuf, struct LEOContext* inContext );
+void		LEOSetReferenceValuePredeterminedRangeAsString( LEOValuePtr self,
+											size_t inRangeStart, size_t inRangeEnd,
+											const char* inBuf, struct LEOContext* inContext );
 void		LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
 																size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
@@ -656,6 +688,9 @@ void		LEOSetVariantValueAsNumber( LEOValuePtr self, double inNumber, struct LEOC
 void		LEOSetVariantValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );
 void		LEOSetVariantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
 void		LEOSetVariantValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
+											size_t inRangeStart, size_t inRangeEnd,
+											const char* inBuf, struct LEOContext* inContext );
+void		LEOSetVariantValuePredeterminedRangeAsString( LEOValuePtr self,
 											size_t inRangeStart, size_t inRangeEnd,
 											const char* inBuf, struct LEOContext* inContext );
 void		LEOInitNumberVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
