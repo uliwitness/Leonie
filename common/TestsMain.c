@@ -480,8 +480,8 @@ void	DoReferenceTest( void )
 	LEOInitContext( &ctx, group );
 	LEOContextGroupRelease( group );
 	
-	LEOInitStringConstantValue( &originalValue.base, "I am as real as it gets.", kLEOInvalidateReferences, &ctx );
-	LEOInitReferenceValue( &theValue.base, &originalValue.base, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, &ctx );
+	LEOInitStringConstantValue( &originalValue, "I am as real as it gets.", kLEOInvalidateReferences, &ctx );
+	LEOInitReferenceValue( &theValue, &originalValue, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
@@ -505,10 +505,10 @@ void	DoReferenceTest( void )
 	
 	printf( "\nnote: Reference to int value tests\n" );
 		
-	LEOCleanUpValue( &originalValue.base, kLEOInvalidateReferences, &ctx );	// Invalidates theValue's reference.
-	LEOInitNumberValue( &originalValue.base, 42, kLEOInvalidateReferences, &ctx );
+	LEOCleanUpValue( &originalValue, kLEOInvalidateReferences, &ctx );	// Invalidates theValue's reference.
+	LEOInitNumberValue( &originalValue, 42, kLEOInvalidateReferences, &ctx );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
-	LEOInitReferenceValue( &theValue.base, &originalValue.base, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, &ctx );
+	LEOInitReferenceValue( &theValue, &originalValue, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, &ctx );
 	
 	double	theNum = LEOGetValueAsNumber( &theValue, &ctx );
 	ASSERT( theNum == 42.0 );
@@ -518,15 +518,15 @@ void	DoReferenceTest( void )
 	
 	printf( "\nnote: Reference to bool value tests\n" );
 		
-	LEOCleanUpValue( &originalValue.base, kLEOInvalidateReferences, &ctx );	// Invalidates theValue's reference.
-	LEOInitBooleanValue( &originalValue.base, true, kLEOInvalidateReferences, &ctx );
+	LEOCleanUpValue( &originalValue, kLEOInvalidateReferences, &ctx );	// Invalidates theValue's reference.
+	LEOInitBooleanValue( &originalValue, true, kLEOInvalidateReferences, &ctx );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
-	LEOInitReferenceValue( &theValue.base, &originalValue.base, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, &ctx );
+	LEOInitReferenceValue( &theValue, &originalValue, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, &ctx );
 
 	bool	theBool = LEOGetValueAsBoolean( &theValue, &ctx );
 	ASSERT( theBool == true );
 	
-	LEOSetValueAsString( &theValue.base, "false", &ctx );
+	LEOSetValueAsString( &theValue, "false", &ctx );
 	theBool = LEOGetValueAsBoolean( &originalValue, &ctx );
 	ASSERT( theBool == false );
 	
@@ -535,7 +535,7 @@ void	DoReferenceTest( void )
 	printf( "\nnote: Reference to disposed value tests\n" );
 		
 	// Verify we got an error about disposed original:
-	LEOSetValueAsNumber( &theValue.base, 1, &ctx );
+	LEOSetValueAsNumber( &theValue, 1, &ctx );
 	ASSERT( ctx.errMsg[0] != 0 );
 	ASSERT( strcmp(ctx.errMsg, "The referenced value doesn't exist anymore." ) == 0 );
 	ASSERT( ctx.keepRunning == false );

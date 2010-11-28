@@ -94,7 +94,7 @@ void	LEOAssignStringFromTableInstruction( LEOContext* inContext )
 
 void	LEOJumpRelativeInstruction( LEOContext* inContext )
 {
-	inContext->currentInstruction += *(int32_t*)&inContext->currentInstruction->param2;
+	inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 }
 
 
@@ -103,7 +103,7 @@ void	LEOJumpRelativeIfTrueInstruction( LEOContext* inContext )
 	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( LEOGetValueAsBoolean( theValue, inContext ) )
-		inContext->currentInstruction += *(int32_t*)&inContext->currentInstruction->param2;
+		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	else
 		inContext->currentInstruction++;
 	if( popOffStack )
@@ -116,7 +116,7 @@ void	LEOJumpRelativeIfFalseInstruction( LEOContext* inContext )
 	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( !LEOGetValueAsBoolean( theValue, inContext ) )
-		inContext->currentInstruction += *(int32_t*)&inContext->currentInstruction->param2;
+		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	else
 		inContext->currentInstruction++;
 	if( popOffStack )
@@ -129,7 +129,7 @@ void	LEOJumpRelativeIfGreaterThanZeroInstruction( LEOContext* inContext )
 	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( LEOGetValueAsNumber( theValue, inContext ) > 0 )
-		inContext->currentInstruction += *(int32_t*)&inContext->currentInstruction->param2;
+		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	else
 		inContext->currentInstruction++;
 	if( popOffStack )
@@ -142,7 +142,7 @@ void	LEOJumpRelativeIfLessThanZeroInstruction( LEOContext* inContext )
 	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( LEOGetValueAsNumber( theValue, inContext ) < 0 )
-		inContext->currentInstruction += *(int32_t*)&inContext->currentInstruction->param2;
+		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	else
 		inContext->currentInstruction++;
 	if( popOffStack )
@@ -155,7 +155,7 @@ void	LEOJumpRelativeIfGreaterSameThanZeroInstruction( LEOContext* inContext )
 	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( LEOGetValueAsNumber( theValue, inContext ) >= 0 )
-		inContext->currentInstruction += *(int32_t*)&inContext->currentInstruction->param2;
+		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	else
 		inContext->currentInstruction++;
 	if( popOffStack )
@@ -168,7 +168,7 @@ void	LEOJumpRelativeIfLessSameThanZeroInstruction( LEOContext* inContext )
 	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( LEOGetValueAsNumber( theValue, inContext ) <= 0 )
-		inContext->currentInstruction += *(int32_t*)&inContext->currentInstruction->param2;
+		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	else
 		inContext->currentInstruction++;
 	if( popOffStack )
@@ -192,7 +192,7 @@ void	LEOAddNumberInstruction( LEOContext* inContext )
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	double	theNum = LEOGetValueAsNumber( theValue, inContext );
 	
-	theNum += *(int32_t*)&inContext->currentInstruction->param2;
+	theNum += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	LEOSetValueAsNumber( theValue, theNum, inContext );
 	inContext->currentInstruction++;
 }
@@ -200,6 +200,8 @@ void	LEOAddNumberInstruction( LEOContext* inContext )
 
 void	LEOCallHandlerInstruction( LEOContext* inContext )
 {
+	LEODebugPrintContext( inContext );
+	
 	LEOHandlerID	handlerName = inContext->currentInstruction->param2;
 	LEOScript*		currScript = LEOContextPeekCurrentScript( inContext );
 	LEOHandler*		foundHandler = NULL;
@@ -208,8 +210,9 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 		foundHandler = LEOScriptFindCommandHandlerWithID( currScript, handlerName );
 		if( foundHandler )
 		{
-			LEOContextPushHandlerScriptAndReturnAddress( inContext, foundHandler, currScript, inContext->currentInstruction +1 );
+			LEOContextPushHandlerScriptReturnAddressAndBasePtr( inContext, foundHandler, currScript, inContext->currentInstruction +1, inContext->stackBasePtr );
 			inContext->currentInstruction = foundHandler->instructions;
+			inContext->stackBasePtr = inContext->stackEndPtr;
 		}
 	}
 	
@@ -219,14 +222,61 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 		inContext->keepRunning = false;
 		inContext->currentInstruction++;
 	}
+	
+	LEODebugPrintContext( inContext );
 }
 
 
 void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 {
+	LEODebugPrintContext( inContext );
+
 	inContext->currentInstruction = LEOContextPeekReturnAddress( inContext );
-	LEOContextPopHandlerScriptAndReturnAddress( inContext );
+	inContext->stackBasePtr = LEOContextPeekBasePtr( inContext );
+	LEOContextPopHandlerScriptReturnAddressAndBasePtr( inContext );
+	
+	LEODebugPrintContext( inContext );
 }
+
+
+void	LEOPushReferenceInstruction( LEOContext* inContext )
+{
+	bool			onStack = (inContext->currentInstruction->param1 == 0xffff);
+	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
+	union LEOValue	tmpRefValue = { 0 };
+	LEOValuePtr		refValueOnStack = NULL;
+	
+	LEOInitReferenceValue( theValue, &tmpRefValue, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
+	refValueOnStack = LEOPushValueOnStack( inContext, &tmpRefValue );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
+{
+	LEOValuePtr		chunkTarget = (inContext->stackBasePtr +inContext->currentInstruction->param1);
+	LEOValuePtr		chunkEnd = inContext->stackEndPtr;
+	LEOValuePtr		chunkStart = inContext->stackEndPtr -1;
+	union LEOValue	tmpRefValue = { 0 };
+	LEOValuePtr		refValueOnStack = NULL;
+	
+	size_t	chunkStartOffs = LEOGetValueAsNumber(chunkStart,inContext);
+	if( !inContext->keepRunning )
+		return;
+	
+	size_t	chunkEndOffs = LEOGetValueAsNumber(chunkEnd,inContext);
+	if( !inContext->keepRunning )
+		return;
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOInitReferenceValue( chunkTarget, &tmpRefValue, kLEOInvalidateReferences, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, inContext );
+	refValueOnStack = LEOPushValueOnStack( inContext, &tmpRefValue );
+	
+	inContext->currentInstruction++;
+}
+
 
 
 #pragma mark -
@@ -252,7 +302,8 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOPushNumberInstruction,
 	LEOAddNumberInstruction,
 	LEOCallHandlerInstruction,
-	LEOReturnFromHandlerInstruction
+	LEOReturnFromHandlerInstruction,
+	LEOPushReferenceInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -275,7 +326,8 @@ const char*	gInstructionNames[] =
 	"PushNumber",
 	"AddNumber",
 	"CallHandler",
-	"ReturnFromHandler"
+	"ReturnFromHandler",
+	"PushReference"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

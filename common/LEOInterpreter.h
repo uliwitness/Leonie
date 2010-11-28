@@ -76,6 +76,12 @@ typedef struct LEOInstruction
 } LEOInstruction;
 
 
+inline int32_t	LEOCastUInt32ToInt32( uint32_t inNum )	__attribute__((always_inline));
+inline int32_t	LEOCastUInt32ToInt32( uint32_t inNum )	{ return *(int32_t*)&inNum; }
+inline int16_t	LEOCastUInt16ToInt16( uint16_t inNum )	__attribute__((always_inline));
+inline int16_t	LEOCastUInt16ToInt16( uint16_t inNum )	{ return *(int16_t*)&inNum; }
+
+
 // Data type used internally to be able to show the call stack to the user and
 //	to look up handlers in the current script, even if the owning object is now
 //	gone.
@@ -84,6 +90,7 @@ typedef struct LEOCallStackEntry
 	struct LEOScript*	script;			// The script that owns 'handler'. The script in here should be retained/released to make sure it doesn't go away.
 	struct LEOHandler*	handler;		// The current handler, so we can show a nice call stack.
 	LEOInstruction*		returnAddress;	// Instruction at which we are to continue when this handler returns.
+	LEOValuePtr			oldBasePtr;		// The base pointer relative to which we calculate our parameters' and local variables' addresses.
 } LEOCallStackEntry;
 
 
@@ -167,6 +174,18 @@ void	LEOPrepareContextForRunning( LEOInstruction instructions[], LEOContext *inC
 */
 bool	LEOContinueRunningContext( LEOContext *inContext );
 
+/*! Push a copy of the given value onto the stack, returning a pointer to it.
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushIntegerOnStack LEOPushIntegerOnStack
+ */
+LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCopy );
+
+/*! Push a copy of the given integer onto the stack, returning a pointer to it.
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ */
+LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger );
+
 // Used internally to unwind the stack and ensure values get destructed correctly.
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete );
 
@@ -201,11 +220,12 @@ void	LEODebugPrintContext( LEOContext* ctx );
 void	LEOContextDebugPrintCallStack( LEOContext* inContext );
 
 
-void				LEOContextPushHandlerScriptAndReturnAddress( LEOContext* inContext, struct LEOHandler* inHandler, struct LEOScript* inScript, LEOInstruction* returnAddress );
+void				LEOContextPushHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext, struct LEOHandler* inHandler, struct LEOScript* inScript, LEOInstruction* returnAddress, LEOValuePtr oldBP );
 struct LEOHandler*	LEOContextPeekCurrentHandler( LEOContext* inContext );
 struct LEOScript*	LEOContextPeekCurrentScript( LEOContext* inContext );
 LEOInstruction*		LEOContextPeekReturnAddress( LEOContext* inContext );
-void				LEOContextPopHandlerScriptAndReturnAddress( LEOContext* inContext );
+LEOValuePtr			LEOContextPeekBasePtr( LEOContext* inContext );
+void				LEOContextPopHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext );
 
 
 

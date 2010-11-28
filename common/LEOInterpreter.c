@@ -67,7 +67,7 @@ void	LEOCleanUpContext( LEOContext* theContext )
 }
 
 
-void	LEOContextPushHandlerScriptAndReturnAddress( LEOContext* inContext, LEOHandler* inHandler, LEOScript* inScript, LEOInstruction* returnAddress )
+void	LEOContextPushHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext, LEOHandler* inHandler, LEOScript* inScript, LEOInstruction* returnAddress, LEOValuePtr oldBP )
 {
 	size_t		newEntryIndex = 0;
 	if( inContext->callStackEntries == NULL )
@@ -91,6 +91,7 @@ void	LEOContextPushHandlerScriptAndReturnAddress( LEOContext* inContext, LEOHand
 	inContext->callStackEntries[newEntryIndex].handler = inHandler;
 	inContext->callStackEntries[newEntryIndex].script = LEOScriptRetain( inScript );
 	inContext->callStackEntries[newEntryIndex].returnAddress = returnAddress;
+	inContext->callStackEntries[newEntryIndex].oldBasePtr = oldBP;
 }
 
 
@@ -133,7 +134,20 @@ LEOInstruction*	LEOContextPeekReturnAddress( LEOContext* inContext )
 }
 
 
-void	LEOContextPopHandlerScriptAndReturnAddress( LEOContext* inContext )
+LEOValuePtr	LEOContextPeekBasePtr( LEOContext* inContext )
+{
+	if( inContext->numCallStackEntries < 1 )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Error: No base pointer found." );
+		inContext->keepRunning = false;
+		return NULL;
+	}
+	else
+		return inContext->callStackEntries[inContext->numCallStackEntries -1].oldBasePtr;
+}
+
+
+void	LEOContextPopHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
@@ -152,8 +166,38 @@ void	LEOContextPopHandlerScriptAndReturnAddress( LEOContext* inContext )
 }
 
 
+LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCopy )
+{
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitCopy( inValueToCopy, theValue, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
+LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger )
+{
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitIntegerValue( theValue, inInteger, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete )
 {
+	if( theContext->stack > lastItemToDelete )
+	{
+		printf("Error: Attempt to pop nonexistent elements off the stack.\n");
+		return;
+	}
+	
 	while( theContext->stackEndPtr > lastItemToDelete )
 	{
 		theContext->stackEndPtr--;
@@ -166,6 +210,13 @@ void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext )
 {
 	LEOPrepareContextForRunning( instructions, inContext );
 	
+	LEODebugPrintContext( inContext );
+
+	LEOValuePtr	theSavedBasePtr = LEOPushIntegerOnStack( inContext, 0 );	// Base pointer to restore at end. Dummy value so 'return' statement works even for bottom-most handler.
+	inContext->stackBasePtr = theSavedBasePtr;
+
+	LEODebugPrintContext( inContext );
+
 	while( LEOContinueRunningContext( inContext ) )
 		;
 }
@@ -265,7 +316,7 @@ void	LEODebugPrintContext( LEOContext* ctx )
 			
 			char		str[1024] = { 0 };
 			LEOGetValueAsString( currValue, str, sizeof(str), ctx );
-			printf( "\"%s\"\n", str );
+			printf( "\"%s\" (%s)\n", str, currValue->base.isa->displayTypeName );
 			
 			currValue ++;
 		}

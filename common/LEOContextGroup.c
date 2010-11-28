@@ -76,7 +76,7 @@ void	LEOContextGroupRelease( LEOContextGroup* inGroup )
 
 LEOObjectID	LEOContextGroupCreateNewObjectIDForPointer( LEOContextGroup* inContext, void* theValue )
 {
-	LEOObjectID		newObjectID = LEOObjectIDINVALID;
+	LEOObjectID		newObjectID = kLEOObjectIDINVALID;
 	if( inContext->references == NULL )
 	{
 		inContext->numReferences = LEOReferencesTableChunkSize;
@@ -94,7 +94,7 @@ LEOObjectID	LEOContextGroupCreateNewObjectIDForPointer( LEOContextGroup* inConte
 				newObjectID = x;
 		}
 		
-		if( newObjectID == LEOObjectIDINVALID )
+		if( newObjectID == kLEOObjectIDINVALID )
 		{
 			// No free slots left?
 			size_t		oldNumReferences = inContext->numReferences;

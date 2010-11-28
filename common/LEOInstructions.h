@@ -41,6 +41,7 @@
 #define ADD_NUMBER_INSTR					16
 #define CALL_HANDLER_INSTR					17
 #define RETURN_FROM_HANDLER_INSTR			18
+#define PUSH_REFERENCE_INSTR				19
 
 
 // -----------------------------------------------------------------------------

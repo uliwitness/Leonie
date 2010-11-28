@@ -16,7 +16,7 @@
 #import <stdio.h>
 
 
-#define ACTIVATE_DEBUGGER		1
+#define ACTIVATE_DEBUGGER		0
 #define PRINT_BYTECODE			1
 
 
@@ -64,7 +64,7 @@
 	LEODebuggerAddBreakpoint( startUpHandler->instructions );	// Set a breakpoint on the first instruction, so we can step through everything with the debugger.
 	#endif // ACTIVATE_DEBUGGER
 	
-	LEOContextPushHandlerScriptAndReturnAddress( &context, startUpHandler, script, NULL );	// NULL return address is same as exit to top.
+	LEOContextPushHandlerScriptReturnAddressAndBasePtr( &context, startUpHandler, script, NULL, NULL );	// NULL return address is same as exit to top. basePtr is set to NULL as well.
 	LEORunInContext( startUpHandler->instructions, &context );
 	
 	#if ACTIVATE_DEBUGGER
