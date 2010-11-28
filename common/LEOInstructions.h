@@ -38,10 +38,13 @@
 #define JUMP_RELATIVE_IF_GT_SAME_ZERO_INSTR	13
 #define JUMP_RELATIVE_IF_LT_SAME_ZERO_INSTR	14
 #define PUSH_NUMBER_INSTR					15
-#define ADD_NUMBER_INSTR					16
-#define CALL_HANDLER_INSTR					17
-#define RETURN_FROM_HANDLER_INSTR			18
-#define PUSH_REFERENCE_INSTR				19
+#define PUSH_INTEGER_INSTR					16
+#define ADD_NUMBER_INSTR					17
+#define ADD_INTEGER_INSTR					18
+#define CALL_HANDLER_INSTR					19
+#define RETURN_FROM_HANDLER_INSTR			20
+#define PUSH_REFERENCE_INSTR				21
+#define PUSH_CHUNK_REFERENCE_INSTR			22
 
 
 // -----------------------------------------------------------------------------

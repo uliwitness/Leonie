@@ -39,6 +39,7 @@
 
 #include "LEOValue.h"
 #include <stdint.h>
+#include <assert.h>
 
 
 // -----------------------------------------------------------------------------
@@ -76,10 +77,14 @@ typedef struct LEOInstruction
 } LEOInstruction;
 
 
-inline int32_t	LEOCastUInt32ToInt32( uint32_t inNum )	__attribute__((always_inline));
-inline int32_t	LEOCastUInt32ToInt32( uint32_t inNum )	{ return *(int32_t*)&inNum; }
-inline int16_t	LEOCastUInt16ToInt16( uint16_t inNum )	__attribute__((always_inline));
-inline int16_t	LEOCastUInt16ToInt16( uint16_t inNum )	{ return *(int16_t*)&inNum; }
+inline int32_t		LEOCastUInt32ToInt32( uint32_t inNum ) __attribute__((always_inline));
+inline int32_t		LEOCastUInt32ToInt32( uint32_t inNum )		{ return *(int32_t*)&inNum; }
+
+inline int16_t		LEOCastUInt16ToInt16( uint16_t inNum ) __attribute__((always_inline));
+inline int16_t		LEOCastUInt16ToInt16( uint16_t inNum )		{ return *(int16_t*)&inNum; }
+
+inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum ) __attribute__((always_inline));
+inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum )	{ assert(sizeof(LEONumber) <= sizeof(uint32_t));  return *(LEONumber*)&inNum; }
 
 
 // Data type used internally to be able to show the call stack to the user and

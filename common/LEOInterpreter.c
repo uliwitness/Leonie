@@ -210,13 +210,6 @@ void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext )
 {
 	LEOPrepareContextForRunning( instructions, inContext );
 	
-	LEODebugPrintContext( inContext );
-
-	LEOValuePtr	theSavedBasePtr = LEOPushIntegerOnStack( inContext, 0 );	// Base pointer to restore at end. Dummy value so 'return' statement works even for bottom-most handler.
-	inContext->stackBasePtr = theSavedBasePtr;
-
-	LEODebugPrintContext( inContext );
-
 	while( LEOContinueRunningContext( inContext ) )
 		;
 }
