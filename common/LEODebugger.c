@@ -60,6 +60,7 @@ void LEODebuggerPrompt( struct LEOContext* inContext )
 			{
 				printf( "LDB, the Leonie Debugger, Version 1.0.\nList of commands:\n" );
 				printf( "    continue   - continue running the program until the next breakpoint.\n" );
+				printf( "    c   		- Short form of 'continue'.\n" );
 				printf( "    stepi      - Execute the current byte-code instruction, then break into the debugger again.\n" );
 				printf( "    si         - Short form of 'stepi'.\n" );
 				printf( "    backtrace  - Display information about the current context, including a stack backtrace.\n" );
