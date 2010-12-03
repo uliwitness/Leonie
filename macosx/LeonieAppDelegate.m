@@ -55,16 +55,18 @@
 	LEOHandlerAddInstruction( startUpHandler, PRINT_VALUE_INSTR, 0, 0 );				// Print counter.
 	LEOHandlerAddInstruction( startUpHandler, ADD_INTEGER_INSTR, 0, -1 );				// Subtract 1 from counter
 	LEOHandlerAddInstruction( startUpHandler, JUMP_RELATIVE_INSTR, 0, -3 );				// Jump back to loop condition.
-	LEOHandlerAddInstruction( startUpHandler, PUSH_INTEGER_INSTR, 0, 0 );				// Push a 0 on the stack (for the parameter count).
+	LEOHandlerAddInstruction( startUpHandler, PUSH_STR_FROM_TABLE_INSTR, 0xffff, LEOScriptAddString( script, "Top 'o the mornin' to ya, sir!" ) );	// Push a string as a parameter.
+	LEOHandlerAddInstruction( startUpHandler, PUSH_INTEGER_INSTR, 0, 1 );				// Push a 1 on the stack (for the parameter count).
 	LEOHandlerAddInstruction( startUpHandler, CALL_HANDLER_INSTR, 0, testMeHandlerID );	// Run the Handler.
-	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, 0, 0 );					// Remove the parameters again (well, the 0 param count).
+	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, 0, 0 );					// Remove the parameter.
+	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, 0, 0 );					// Remove the parameters count.
 	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, 0, 0 );					// Remove our local counter variable.
 	LEOHandlerAddInstruction( startUpHandler, RETURN_FROM_HANDLER_INSTR, 0, 0 );		// This handler is finished.
 	
 	LEOHandler*			testMeHandler = LEOScriptAddCommandHandlerWithID( script, testMeHandlerID );
 	startUpHandler = LEOScriptFindCommandHandlerWithID( script, startUpHandlerID );	// Need to fetch again since adding testMeHandler may have invalidated the pointer.
-	LEOHandlerAddInstruction( testMeHandler, PUSH_STR_FROM_TABLE_INSTR, 0xffff, LEOScriptAddString( script, "Top 'o the mornin' to ya, sir!" ) );	// Get a string.
-	LEOHandlerAddInstruction( testMeHandler, PRINT_VALUE_INSTR, 0xffff, 0 );			// Output that string & pop off the stack.
+	LEOHandlerAddInstruction( testMeHandler, PARAMETER_INSTR, 0xffff, 1 );			// Push the first parameter on the stack.
+	LEOHandlerAddInstruction( testMeHandler, PRINT_VALUE_INSTR, 0xffff, 0 );		// Output that string & pop off the stack.
 	LEOHandlerAddInstruction( testMeHandler, RETURN_FROM_HANDLER_INSTR, 0, 0 );		// This handler is finished.
 	// === end of stuff that a parser/compiler would generate:
 		
@@ -107,17 +109,13 @@
 
 -(void)	printMessage: (NSString*)inMessage
 {
-	static NSTimeInterval		lastUpdateTime = 0;
-	
 	NSWindow*	msgBox = [messageBoxField window];
 	[messageBoxField setStringValue: inMessage];
 	if( ![msgBox isVisible] )
 		[msgBox makeKeyAndOrderFront: self];
-	if( lastUpdateTime < [NSDate timeIntervalSinceReferenceDate] )
-	{
-		[messageBoxField displayIfNeeded];
-		lastUpdateTime = [NSDate timeIntervalSinceReferenceDate] + 0.25;	// Update at most every quarter second.
-	}
+	NSEvent	*	evt = [NSApp nextEventMatchingMask: NSAnyEventMask untilDate: [NSDate date] inMode: NSModalPanelRunLoopMode dequeue: YES];
+	if( evt )
+		[NSApp sendEvent: evt];
 }
 
 @end

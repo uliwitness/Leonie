@@ -45,6 +45,8 @@
 #define RETURN_FROM_HANDLER_INSTR			20
 #define PUSH_REFERENCE_INSTR				21
 #define PUSH_CHUNK_REFERENCE_INSTR			22
+#define PARAMETER_INSTR						23
+#define PARAMETER_COUNT_INSTR				24
 
 
 // -----------------------------------------------------------------------------

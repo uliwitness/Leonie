@@ -13,12 +13,13 @@
 
 void	LEOPrintInstruction( LEOContext* inContext )
 {
-	char			buf[1024] = { 0 };
+	char				buf[1024] = { 0 };
 	
-	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
-	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
+	bool				popOffStack = (inContext->currentInstruction->param1 == 0xffff);
+	union LEOValue*		theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	LEOGetValueAsString( theValue, buf, sizeof(buf), inContext );
-	[(LeonieAppDelegate*)[NSApp delegate] printMessage: [NSString stringWithCString: buf encoding: NSUTF8StringEncoding]];
+	NSString		*	theStr = [NSString stringWithUTF8String: buf];
+	[(LeonieAppDelegate*)[NSApp delegate] printMessage: theStr];
 	if( popOffStack )
 		LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
 	
