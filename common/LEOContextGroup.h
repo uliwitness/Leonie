@@ -10,7 +10,7 @@
 /*!
 	@header LEOContextGroup
 	A context group is a crude, basic security mechanism that can insulate
-	scripts running in the same context from each other. Every context belongs
+	scripts running in different contexts from each other. Every context belongs
 	to a group, which holds global data shared by all its contexts, which
 	includes safe references to objects and values that may go away.
 */
@@ -108,7 +108,7 @@ LEOObjectSeed	LEOContextGroupGetSeedForObjectID( LEOContextGroup* inContext, LEO
 
 /*! If a pointer to which references exist is going away, it needs to unregister
 	using this call. Anyone requesting the pointer for this object ID and seed
-	will rom then on get NULL back.
+	will from then on get NULL back.
 	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDForPointer LEOContextGroupCreateNewObjectIDForPointer
 	@seealso //leo_ref/c/func/LEOContextGroupGetSeedForObjectID LEOContextGroupGetSeedForObjectID
 	@seealso //leo_ref/c/func/LEOContextGroupGetPointerForObjectIDAndSeed LEOContextGroupGetPointerForObjectIDAndSeed
@@ -124,8 +124,19 @@ void	LEOContextGroupRecycleObjectID( LEOContextGroup* inContext, LEOObjectID inO
 void*	LEOContextGroupGetPointerForObjectIDAndSeed( LEOContextGroup* inContext, LEOObjectID inObjectID, LEOObjectSeed inObjectSeed );
 
 
+/*!
+	Convert the provided handler-name into a LEOHandlerID. All different spellings
+	of the (case-insensitive) handler name map to the same handler ID.
+	@seealso //leo_ref/c/func/LEOContextGroupHandlerNameForHandlerID LEOContextGroupHandlerNameForHandlerID
+*/
 LEOHandlerID	LEOContextGroupHandlerIDForHandlerName( LEOContextGroup* inContext, const char* handlerName );
 
+/*!
+	Convert the provided LEOHandlerID back into a handler name. Note that, since
+	handler names are case insensitive, you may get a different string than you
+	originally passed to <tt>LEOContextGroupHandlerIDForHandlerName</tt>.
+	@seealso //leo_ref/c/func/LEOContextGroupHandlerIDForHandlerName LEOContextGroupHandlerIDForHandlerName
+*/
 const char*		LEOContextGroupHandlerNameForHandlerID( LEOContextGroup* inContext, LEOHandlerID inHandlerID );
 
 

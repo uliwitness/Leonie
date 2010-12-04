@@ -55,7 +55,7 @@
 	LEOHandlerAddInstruction( startUpHandler, PRINT_VALUE_INSTR, 0, 0 );				// Print counter.
 	LEOHandlerAddInstruction( startUpHandler, ADD_INTEGER_INSTR, 0, -1 );				// Subtract 1 from counter
 	LEOHandlerAddInstruction( startUpHandler, JUMP_RELATIVE_INSTR, 0, -3 );				// Jump back to loop condition.
-	LEOHandlerAddInstruction( startUpHandler, PUSH_STR_FROM_TABLE_INSTR, 0xffff, LEOScriptAddString( script, "Top 'o the mornin' to ya, sir!" ) );	// Push a string as a parameter.
+	LEOHandlerAddInstruction( startUpHandler, PUSH_STR_FROM_TABLE_INSTR, BACK_OF_STACK, LEOScriptAddString( script, "Top 'o the mornin' to ya, sir!" ) );	// Push a string as a parameter.
 	LEOHandlerAddInstruction( startUpHandler, PUSH_INTEGER_INSTR, 0, 1 );				// Push a 1 on the stack (for the parameter count).
 	LEOHandlerAddInstruction( startUpHandler, CALL_HANDLER_INSTR, 0, testMeHandlerID );	// Run the Handler.
 	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, 0, 0 );					// Remove the parameter.
@@ -64,10 +64,10 @@
 	LEOHandlerAddInstruction( startUpHandler, RETURN_FROM_HANDLER_INSTR, 0, 0 );		// This handler is finished.
 	
 	LEOHandler*			testMeHandler = LEOScriptAddCommandHandlerWithID( script, testMeHandlerID );
-	startUpHandler = LEOScriptFindCommandHandlerWithID( script, startUpHandlerID );	// Need to fetch again since adding testMeHandler may have invalidated the pointer.
-	LEOHandlerAddInstruction( testMeHandler, PARAMETER_INSTR, 0xffff, 1 );			// Push the first parameter on the stack.
-	LEOHandlerAddInstruction( testMeHandler, PRINT_VALUE_INSTR, 0xffff, 0 );		// Output that string & pop off the stack.
-	LEOHandlerAddInstruction( testMeHandler, RETURN_FROM_HANDLER_INSTR, 0, 0 );		// This handler is finished.
+	startUpHandler = LEOScriptFindCommandHandlerWithID( script, startUpHandlerID );		// Need to fetch again since adding testMeHandler may have invalidated the pointer.
+	LEOHandlerAddInstruction( testMeHandler, PARAMETER_INSTR, BACK_OF_STACK, 1 );		// Push the first parameter on the stack.
+	LEOHandlerAddInstruction( testMeHandler, PRINT_VALUE_INSTR, BACK_OF_STACK, 0 );		// Output that string & pop off the stack.
+	LEOHandlerAddInstruction( testMeHandler, RETURN_FROM_HANDLER_INSTR, 0, 0 );			// This handler is finished.
 	// === end of stuff that a parser/compiler would generate:
 		
 	#if PRINT_BYTECODE

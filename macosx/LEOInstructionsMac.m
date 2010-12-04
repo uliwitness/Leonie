@@ -15,7 +15,7 @@ void	LEOPrintInstruction( LEOContext* inContext )
 {
 	char				buf[1024] = { 0 };
 	
-	bool				popOffStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool				popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*		theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	LEOGetValueAsString( theValue, buf, sizeof(buf), inContext );
 	NSString		*	theStr = [NSString stringWithUTF8String: buf];

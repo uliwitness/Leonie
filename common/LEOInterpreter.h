@@ -49,6 +49,14 @@
 /*! How many LEOValues can be on the stack before we run out of stack space. */
 #define LEO_STACK_SIZE			1024
 
+/*!
+	Pass this as param1 to some instructions that take a
+	basePtr-relative address to make it pop the last
+	value off the stack instead of reading a value from that
+	address.
+*/
+#define BACK_OF_STACK			((uint16_t) INT16_MIN)
+
 
 // -----------------------------------------------------------------------------
 //	Types:
@@ -77,15 +85,21 @@ typedef struct LEOInstruction
 } LEOInstruction;
 
 
+/*! @functiongroup Static typecasting functions */
+/*! Reinterpret the given unsigned uint32_t as a signed int32_t. E.g. useful for an instruction's param2 field. */
 inline int32_t		LEOCastUInt32ToInt32( uint32_t inNum ) __attribute__((always_inline));
 inline int32_t		LEOCastUInt32ToInt32( uint32_t inNum )		{ return *(int32_t*)&inNum; }
 
+/*! Reinterpret the given unsigned uint16_t as a signed int16_t. E.g. useful for an instruction's param1 field. */
 inline int16_t		LEOCastUInt16ToInt16( uint16_t inNum ) __attribute__((always_inline));
 inline int16_t		LEOCastUInt16ToInt16( uint16_t inNum )		{ return *(int16_t*)&inNum; }
 
+/*! Reinterpret the given unsigned uint32_t as a LEONumber floating point quantity. E.g. useful for an instruction's param2 field. */
 inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum ) __attribute__((always_inline));
 inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum )	{ assert(sizeof(LEONumber) <= sizeof(uint32_t));  return *(LEONumber*)&inNum; }
 
+
+/*! @functiongroup LEOContext methods */
 
 // Data type used internally to be able to show the call stack to the user and
 //	to look up handlers in the current script, even if the owning object is now
@@ -225,11 +239,65 @@ void	LEODebugPrintContext( LEOContext* ctx );
 void	LEOContextDebugPrintCallStack( LEOContext* inContext );
 
 
+/*!
+	@functiongroup LEOContext calls for call stack management
+	These are used by the CALL_HANDLER_INSTR and RETURN_FROM_HANDLER_INSTR
+	instructions.
+*/
+
+/*!
+	Push a reference to the current script, the handler in it that is current,
+	the return address and the previous base pointer to restore onto a special
+	stack so the call instruction can retain the script/handler while it is
+	running even if the owning object goes away, and so the return instruction
+	can restore the base pointer and knows what instruction to return to.
+	
+	@seealso //leo_ref/c/func/LEOContextPeekCurrentHandler	LEOContextPeekCurrentHandler
+	@seealso //leo_ref/c/func/LEOContextPeekCurrentScript	LEOContextPeekCurrentScript
+	@seealso //leo_ref/c/func/LEOContextPeekReturnAddress	LEOContextPeekReturnAddress
+	@seealso //leo_ref/c/func/LEOContextPeekBasePtr	LEOContextPeekBasePtr
+	@seealso //leo_ref/c/func/LEOContextPopHandlerScriptReturnAddressAndBasePtr	LEOContextPopHandlerScriptReturnAddressAndBasePtr
+*/
 void				LEOContextPushHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext, struct LEOHandler* inHandler, struct LEOScript* inScript, LEOInstruction* returnAddress, LEOValuePtr oldBP );
+
+/*!
+	Retrieve the object representing the handler currently in progress, which
+	was pushed last onto a special stack.
+	@seealso //leo_ref/c/func/LEOContextPushHandlerScriptReturnAddressAndBasePtr	LEOContextPushHandlerScriptReturnAddressAndBasePtr
+*/
 struct LEOHandler*	LEOContextPeekCurrentHandler( LEOContext* inContext );
+
+/*!
+	Retrieve the object representing the script owning the handler currently in
+	progress, which was pushed last onto a special stack.
+	@seealso //leo_ref/c/func/LEOContextPushHandlerScriptReturnAddressAndBasePtr	LEOContextPushHandlerScriptReturnAddressAndBasePtr
+*/
 struct LEOScript*	LEOContextPeekCurrentScript( LEOContext* inContext );
+
+/*!
+	Retrieve the address of the instruction that follows the CALL_HANDLER_INSTR
+	instruction that brought you to this handler, and to which we are expected
+	to return after this handler call. Note that this may be NULL to indicate
+	you are the first handler pushed on the call stack (in C that would e.g. be
+	main()).
+	@seealso //leo_ref/c/func/LEOContextPushHandlerScriptReturnAddressAndBasePtr	LEOContextPushHandlerScriptReturnAddressAndBasePtr
+*/
 LEOInstruction*		LEOContextPeekReturnAddress( LEOContext* inContext );
+
+/*!
+	Retrieve the address of the base pointer as it was before this handler was
+	called. Used to restore the calling handler's base pointer when this handler
+	returns.
+	@seealso //leo_ref/c/func/LEOContextPushHandlerScriptReturnAddressAndBasePtr	LEOContextPushHandlerScriptReturnAddressAndBasePtr
+*/
 LEOValuePtr			LEOContextPeekBasePtr( LEOContext* inContext );
+
+/*!
+	Remove the reference to the current handler, current script, return address
+	and base pointer before the current handler was called from the special
+	stack. This is called when returning from the current handler.
+	@seealso //leo_ref/c/func/LEOContextPushHandlerScriptReturnAddressAndBasePtr	LEOContextPushHandlerScriptReturnAddressAndBasePtr
+*/
 void				LEOContextPopHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext );
 
 

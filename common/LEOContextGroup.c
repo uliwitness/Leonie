@@ -136,7 +136,7 @@ void*	LEOContextGroupGetPointerForObjectIDAndSeed( LEOContextGroup* inContext, L
 
 LEOHandlerID	LEOContextGroupHandlerIDForHandlerName( LEOContextGroup* inContext, const char* handlerName )
 {
-	LEOHandlerID	foundID = LEOHandlerIDINVALID;
+	LEOHandlerID	foundID = kLEOHandlerIDINVALID;
 	
 	if( inContext->handlerNames && inContext->numHandlerNames > 0 )
 	{
@@ -150,7 +150,7 @@ LEOHandlerID	LEOContextGroupHandlerIDForHandlerName( LEOContextGroup* inContext,
 		}
 	}
 	
-	if( foundID == LEOHandlerIDINVALID )
+	if( foundID == kLEOHandlerIDINVALID )
 	{
 		if( inContext->handlerNames == NULL )
 		{

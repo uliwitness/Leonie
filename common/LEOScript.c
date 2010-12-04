@@ -37,7 +37,7 @@ void	LEOCleanUpHandler( LEOHandler* inStorage )
 		inStorage->instructions = NULL;
 	}
 	
-	inStorage->handlerName = LEOHandlerIDINVALID;
+	inStorage->handlerName = kLEOHandlerIDINVALID;
 }
 
 

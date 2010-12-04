@@ -58,9 +58,9 @@ typedef int		LEOKeepReferencesFlag;
 typedef struct LEOValueType *	LEOValueTypePtr;
 /*! A LEOValuePtr is a generic pointer to a LEOValue or one of its subclasses. */
 typedef union LEOValue	*		LEOValuePtr;
-// Object IDs are indexes used internally by reference values to look up the referenced value in a way that's safe even after the original has been disposed of.
+/*! Object IDs are indexes used internally by reference values to look up the referenced value in a way that's safe even after the original has been disposed of. */
 typedef unsigned long			LEOObjectID;
-// An Object Seed is a value used internally to allow reference values to detect whether the slot in which their value used to be has already been reused.
+/*! An Object Seed is a value used internally to allow reference values to detect whether the slot in which their value used to be has already been reused. */
 typedef unsigned long			LEOObjectSeed;
 
 /*! The type of integers in the language. This is guaranteed to be signed, but large enough to hold a pointer. */

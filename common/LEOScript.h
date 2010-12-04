@@ -120,48 +120,52 @@ LEOScript*	LEOScriptRetain( LEOScript* inScript );		// Adds 1 to referenceCount.
 void		LEOScriptRelease( LEOScript* inScript );	// Subtracts 1 from referenceCount. If it hits 0, disposes of inScript.
 
 /*!
-	Create a new command handler with the given name and return a pointer to it.
+	Create a new command handler with the given handler ID and return a pointer to it.
 	Use this only when initially setting up a script and parsing/compiling
 	bytecode into it. Whenever you add a new handler to a script, all pointers
 	to existing LEOHandlers in the script may be invalidated, including the ones
-	returned by this call.
+	previously returned by this call.
 	
-	Note that handler names are case-INsensitive.
 	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerWithID LEOScriptAddFunctionHandlerWithID
 	@seealso //leo_ref/c/func/LEOHandlerAddInstruction LEOHandlerAddInstruction
 	@seealso //leo_ref/c/func/LEOScriptFindCommandHandlerWithID LEOScriptFindCommandHandlerWithID
+	@seealso //leo_ref/c/func/LEOContextGroupHandlerIDForHandlerName LEOContextGroupHandlerIDForHandlerName
 */
 LEOHandler*	LEOScriptAddCommandHandlerWithID( LEOScript* inScript, LEOHandlerID inHandlerName );	// Invalidates all LEOHandler pointers anyone may have into this script.
 
 /*!
-	Create a new function handler with the given name and return a pointer to it.
+	Create a new function handler with the given handler ID and return a pointer to it.
 	Use this only when initially setting up a script and parsing/compiling
 	bytecode into it. Whenever you add a new handler to a script, all pointers
 	to existing LEOHandlers in the script may be invalidated, including the ones
-	returned by this call.
+	previously returned by this call.
 	
-	Note that handler names are case-INsensitive.
 	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerWithID LEOScriptAddCommandHandlerWithID
 	@seealso //leo_ref/c/func/LEOHandlerAddInstruction LEOHandlerAddInstruction
 	@seealso //leo_ref/c/func/LEOScriptFindFunctionHandlerWithID LEOScriptFindFunctionHandlerWithID
+	@seealso //leo_ref/c/func/LEOContextGroupHandlerIDForHandlerName LEOContextGroupHandlerIDForHandlerName
 */
 LEOHandler*	LEOScriptAddFunctionHandlerWithID( LEOScript* inScript, LEOHandlerID inHandlerName );	// Invalidates all LEOHandler pointers anyone may have into this script.
 
 /*!
-	Return a pointer to a command handler with the given name.
+	Return a pointer to a command handler with the given handler ID (i.e. handler name).
 	
-	Note that handler names are case-INsensitive.
+	Returns <tt>NULL</tt> if no such handler exists.
+	
 	@seealso //leo_ref/c/func/LEOScriptFindFunctionHandlerWithID LEOScriptFindFunctionHandlerWithID
 	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerWithID LEOScriptAddCommandHandlerWithID
+	@seealso //leo_ref/c/func/LEOContextGroupHandlerIDForHandlerName LEOContextGroupHandlerIDForHandlerName
 */
 LEOHandler*	LEOScriptFindCommandHandlerWithID( LEOScript* inScript, LEOHandlerID inHandlerName );
 
 /*!
-	Return a pointer to a function handler with the given name.
+	Return a pointer to a function handler with the given handler ID (i.e. handler name).
 	
-	Note that handler names are case-INsensitive.
+	Returns <tt>NULL</tt> if no such handler exists.
+	
 	@seealso //leo_ref/c/func/LEOScriptFindCommandHandlerWithID LEOScriptFindCommandHandlerWithID
 	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerWithID LEOScriptAddFunctionHandlerWithID
+	@seealso //leo_ref/c/func/LEOContextGroupHandlerIDForHandlerName LEOContextGroupHandlerIDForHandlerName
 */
 LEOHandler*	LEOScriptFindFunctionHandlerWithID( LEOScript* inScript, LEOHandlerID inHandlerName );
 
@@ -177,8 +181,14 @@ void	LEOHandlerAddInstruction( LEOHandler* inHandler, LEOInstructionID instructi
 
 
 /*!
-	Add a string to our strings table, so you can push it on the stack and operate
-	on it in the script.
+	Add a string to our strings table, so you can push it on the stack using the
+	PUSH_STR_FROM_TABLE_INSTR instruction and operate on it in the script.
+	
+	@param	inScript	The script to whose strings table you want to add a string.
+	@param	inString	The string to be copied to the script's strings table.
+	@result the index into the strings table at which the string can now be found.
+	
+	@seealso //leo_ref/c/func/LEOPushStringFromTableInstruction LEOPushStringFromTableInstruction
 */
 size_t	LEOScriptAddString( LEOScript* inScript, const char* inString );
 

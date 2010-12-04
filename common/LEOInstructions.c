@@ -7,6 +7,13 @@
  *
  */
 
+/*!
+	@header LEOInstructions
+	These functions implement the actual instructions the Leonie bytecode
+	interpreter actually understands. Or at least those that are portable between
+	platforms.
+*/
+
 #include "LEOInstructions.h"
 #include "LEOValue.h"
 #include "LEOInterpreter.h"
@@ -20,6 +27,12 @@
 #pragma mark -
 #pragma mark Instruction Functions
 
+/*!
+	Whenever an invalid instruction opcode is encountered in bytecode, this
+	instruction will be executed. It terminates execution and provides an error
+	message indicating what instruction opcode was invalid.	(INVALID_INSTR)
+*/
+
 void	LEOInvalidInstruction( LEOContext* inContext )
 {
 	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Unknown instruction %u", inContext->currentInstruction->instructionID );
@@ -28,11 +41,20 @@ void	LEOInvalidInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Abort execution of the current script without an error.	(EXIT_TO_TOP_INSTR)
+*/
+
 void	LEOExitToTopInstruction( LEOContext* inContext )
 {
 	inContext->keepRunning = false;	// Causes interpreter loop to exit.
 }
 
+
+/*!
+	This instruction does nothing. It just advances to the next instruction.
+	(NO_OP_INSTR)
+*/
 
 void	LEONoOpInstruction( LEOContext* inContext )
 {
@@ -41,6 +63,13 @@ void	LEONoOpInstruction( LEOContext* inContext )
 	inContext->currentInstruction++;
 }
 
+
+/*!
+	Take a string in the current script's string table and push it on the stack
+	as a LEOStringValue. (PUSH_STR_FROM_TABLE_INSTR)
+	
+	param2	-	The index of the string table entry to retrieve.
+*/
 
 void	LEOPushStringFromTableInstruction( LEOContext* inContext )
 {
@@ -59,6 +88,10 @@ void	LEOPushStringFromTableInstruction( LEOContext* inContext )
 void	LEOPrintInstruction( LEOContext* inContext );
 
 
+/*!
+	Pop the last value off the stack. (POP_VALUE_INSTR)
+*/
+
 void	LEOPopInstruction( LEOContext* inContext )
 {
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
@@ -66,6 +99,12 @@ void	LEOPopInstruction( LEOContext* inContext )
 	inContext->currentInstruction++;
 }
 
+
+/*!
+	Push a boolean on the stack. (PUSH_BOOLEAN_INSTR)
+	
+	param2	-	The boolean to push on the stack.
+*/
 
 void	LEOPushBooleanInstruction( LEOContext* inContext )
 {
@@ -77,9 +116,19 @@ void	LEOPushBooleanInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Take a string from a strings table and assign it to the value in the given
+	slot on the stack, or on the back of the stack. (ASSIGN_STRING_FROM_TABLE_INSTR)
+	
+	param1	-	The basePtr-relative offset of the instruction, or BACK_OF_STACK.
+	
+	param2	-	The index of the given string in the current context group's
+				strings table.
+*/
+
 void	LEOAssignStringFromTableInstruction( LEOContext* inContext )
 {
-	bool			onStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	const char*		theString = "";
 	LEOScript*		script = LEOContextPeekCurrentScript( inContext );
@@ -92,15 +141,31 @@ void	LEOAssignStringFromTableInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Jump to another instruction relative to this one (JUMP_RELATIVE_INSTR)
+	
+	param2	-	The number of instructions to jump by. A value of 1 would make
+				this identical to NO_OP_INSTR.
+*/
+
 void	LEOJumpRelativeInstruction( LEOContext* inContext )
 {
 	inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 }
 
 
+/*!
+	Jump to another instruction relative to this one if the given value is
+	TRUE (JUMP_RELATIVE_IF_TRUE_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to examine, or BACK_OF_STACK.
+	
+	param2	-	The number of instructions to jump by.
+*/
+
 void	LEOJumpRelativeIfTrueInstruction( LEOContext* inContext )
 {
-	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( LEOGetValueAsBoolean( theValue, inContext ) )
 		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
@@ -111,9 +176,18 @@ void	LEOJumpRelativeIfTrueInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Jump to another instruction relative to this one if the given value is
+	FALSE (JUMP_RELATIVE_IF_FALSE_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to examine, or BACK_OF_STACK.
+	
+	param2	-	The number of instructions to jump by.
+*/
+
 void	LEOJumpRelativeIfFalseInstruction( LEOContext* inContext )
 {
-	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( !LEOGetValueAsBoolean( theValue, inContext ) )
 		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
@@ -124,9 +198,18 @@ void	LEOJumpRelativeIfFalseInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Jump to another instruction relative to this one if the given value is
+	&gt; 0 (JUMP_RELATIVE_IF_GT_ZERO_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to examine, or BACK_OF_STACK.
+	
+	param2	-	The number of instructions to jump by.
+*/
+
 void	LEOJumpRelativeIfGreaterThanZeroInstruction( LEOContext* inContext )
 {
-	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( LEOGetValueAsNumber( theValue, inContext ) > 0 )
 		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
@@ -137,9 +220,18 @@ void	LEOJumpRelativeIfGreaterThanZeroInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Jump to another instruction relative to this one if the given value is
+	&lt; 0 (JUMP_RELATIVE_IF_LT_ZERO_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to examine, or BACK_OF_STACK.
+	
+	param2	-	The number of instructions to jump by.
+*/
+
 void	LEOJumpRelativeIfLessThanZeroInstruction( LEOContext* inContext )
 {
-	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( LEOGetValueAsNumber( theValue, inContext ) < 0 )
 		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
@@ -150,9 +242,18 @@ void	LEOJumpRelativeIfLessThanZeroInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Jump to another instruction relative to this one if the given value is
+	&gt;= 0 (JUMP_RELATIVE_IF_GT_SAME_ZERO_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to examine, or BACK_OF_STACK.
+	
+	param2	-	The number of instructions to jump by.
+*/
+
 void	LEOJumpRelativeIfGreaterSameThanZeroInstruction( LEOContext* inContext )
 {
-	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( LEOGetValueAsNumber( theValue, inContext ) >= 0 )
 		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
@@ -163,9 +264,18 @@ void	LEOJumpRelativeIfGreaterSameThanZeroInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Jump to another instruction relative to this one if the given value is
+	&lt;= 0 (JUMP_RELATIVE_IF_LT_SAME_ZERO_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to examine, or BACK_OF_STACK.
+	
+	param2	-	The number of instructions to jump by.
+*/
+
 void	LEOJumpRelativeIfLessSameThanZeroInstruction( LEOContext* inContext )
 {
-	bool			popOffStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( LEOGetValueAsNumber( theValue, inContext ) <= 0 )
 		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
@@ -175,6 +285,12 @@ void	LEOJumpRelativeIfLessSameThanZeroInstruction( LEOContext* inContext )
 		LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
 }
 
+
+/*!
+	Push the given LEONumber floating point quantity on the stack (PUSH_NUMBER_INSTR)
+	
+	param2	-	The LEONumber (typecast to a uint32_t) to push.
+*/
 
 void	LEOPushNumberInstruction( LEOContext* inContext )
 {
@@ -186,6 +302,12 @@ void	LEOPushNumberInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Push the given LEOInteger on the stack (PUSH_INTEGER_INSTR)
+	
+	param2	-	The LEOInteger (typecast to a uint32_t) to push.
+*/
+
 void	LEOPushIntegerInstruction( LEOContext* inContext )
 {
 	LEOInitIntegerValue( (LEOValuePtr) inContext->stackEndPtr, inContext->currentInstruction->param2,
@@ -196,29 +318,59 @@ void	LEOPushIntegerInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Add a LEONumber to a value (ADD_NUMBER_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to add to, or BACK_OF_STACK.
+	
+	param2	-	The LEONumber to add to the value (typecast to a uint32_t).
+*/
+
 void	LEOAddNumberInstruction( LEOContext* inContext )
 {
-	bool			onStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
-	LEONumber		theNum = LEOGetValueAsInteger( theValue, inContext );
+	LEONumber		theNum = LEOGetValueAsNumber( theValue, inContext );
 	
 	theNum += LEOCastUInt32ToLEONumber( inContext->currentInstruction->param2 );
 	LEOSetValueAsNumber( theValue, theNum, inContext );
+	
 	inContext->currentInstruction++;
 }
 
+
+/*!
+	Add a LEOInteger to a value (ADD_INTEGER_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to add to, or BACK_OF_STACK.
+	
+	param2	-	The int32_t to add to the value (typecast to a uint32_t).
+*/
 
 void	LEOAddIntegerInstruction( LEOContext* inContext )
 {
-	bool			onStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
-	LEOInteger		theNum = LEOGetValueAsNumber( theValue, inContext );
+	LEOInteger		theNum = LEOGetValueAsInteger( theValue, inContext );
 	
 	theNum += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	LEOSetValueAsNumber( theValue, theNum, inContext );
+	
 	inContext->currentInstruction++;
 }
 
+
+/*!
+	Call a given handler (CALL_HANDLER_INSTR)
+	
+	This saves off the current base pointer and the address of the next
+	instruction so returning from the handler can restore the previous state,
+	and retains the current script in case the script deletes its owner.
+	
+	param2	-	The LEOHandlerID of the handler to call.
+	
+	@seealso //leo_ref/c/func/LEOReturnFromHandlerInstruction LEOReturnFromHandlerInstruction
+*/
 
 void	LEOCallHandlerInstruction( LEOContext* inContext )
 {
@@ -249,6 +401,16 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Return to the calling handler (RETURN_FROM_HANDLER_INSTR)
+	
+	This restores the previously-saved base pointer, jumps to the saved return
+	address and releases its ownership of the current script (as established by
+	CALL_HANDLER_INSTR).
+	
+	@seealso //leo_ref/c/func/LEOCallHandlerInstruction LEOCallHandlerInstruction
+*/
+
 void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 {
 	//LEODebugPrintContext( inContext );
@@ -261,9 +423,15 @@ void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Push a reference to the given value onto the stack (PUSH_REFERENCE_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to be referenced, or BACK_OF_STACK.
+*/
+
 void	LEOPushReferenceInstruction( LEOContext* inContext )
 {
-	bool			onStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	union LEOValue	tmpRefValue = { 0 };
 	LEOValuePtr		refValueOnStack = NULL;
@@ -275,19 +443,31 @@ void	LEOPushReferenceInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Push a reference to a chunk out of a larger value onto the stack. (PUSH_CHUNK_REFERENCE_INSTR)
+	
+	The chunk end and chunk start are popped off the back of the stack (in that order).
+	
+	param1	-	The basePtr-relative offset of the value to be referenced.
+	
+	param2	-	The LEOChunkType of this chunk expression.
+	
+	@seealso //leo_ref/c/func/LEOGetChunkRanges LEOGetChunkRanges
+*/
+
 void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
 {
 	LEOValuePtr		chunkTarget = (inContext->stackBasePtr +inContext->currentInstruction->param1);
-	LEOValuePtr		chunkEnd = inContext->stackEndPtr;
-	LEOValuePtr		chunkStart = inContext->stackEndPtr -1;
+	LEOValuePtr		chunkEnd = inContext->stackEndPtr -1;
+	LEOValuePtr		chunkStart = inContext->stackEndPtr -2;
 	union LEOValue	tmpRefValue = { 0 };
 	LEOValuePtr		refValueOnStack = NULL;
 	
-	size_t	chunkStartOffs = LEOGetValueAsNumber(chunkStart,inContext);
+	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext);
 	if( !inContext->keepRunning )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsNumber(chunkEnd,inContext);
+	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext);
 	if( !inContext->keepRunning )
 		return;
 	
@@ -300,16 +480,31 @@ void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Copy the value of the parameter at given index into the given value on the
+	stack. If no parameter of that index has been passed, this returns an empty
+	string. (PARAMETER_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to be overwritten, or
+				BACK_OF_STACK if you want the value to be pushed on the stack.
+	
+	param2	-	The number of the parameter to retrieve, as a 1-based index.
+	
+	@seealso //leo_ref/c/func/LEOParameterCountInstruction LEOParameterCountInstruction
+*/
+
 void	LEOParameterInstruction( LEOContext* inContext )
 {
-	bool		onStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool		onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	LEOValuePtr	valueTarget = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( !onStack )
 		LEOCleanUpValue( valueTarget, kLEOKeepReferences, inContext );
 	LEOInteger	paramCount = LEOGetValueAsNumber( inContext->stackBasePtr -1, inContext );
 	if( inContext->currentInstruction->param2 <= paramCount )
+	{
 		LEOInitCopy( inContext->stackBasePtr -inContext->currentInstruction->param2 -1, valueTarget,
 						(onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
+	}
 	else
 		LEOInitStringConstantValue( valueTarget, "", kLEOKeepReferences, inContext );
 	
@@ -317,14 +512,24 @@ void	LEOParameterInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Determine the number of parameters that have been passed to this function
+	and (PARAMETER_COUNT_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to be overwritten, or
+				BACK_OF_STACK if you want the value to be pushed on the stack.
+	
+	@seealso //leo_ref/c/func/LEOParameterInstruction LEOParameterInstruction
+*/
+
 void	LEOParameterCountInstruction( LEOContext* inContext )
 {
-	bool		onStack = (inContext->currentInstruction->param1 == 0xffff);
+	bool		onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	LEOValuePtr	valueTarget = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	if( !onStack )
 		LEOCleanUpValue( valueTarget, kLEOKeepReferences, inContext );
 	LEOInteger	paramCount = LEOGetValueAsNumber( inContext->stackBasePtr -1, inContext );
-	LEOInitIntegerValue( valueTarget, paramCount, kLEOKeepReferences, inContext );
+	LEOInitIntegerValue( valueTarget, paramCount, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	
 	inContext->currentInstruction++;
 }

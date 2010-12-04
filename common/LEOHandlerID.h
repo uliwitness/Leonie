@@ -10,14 +10,27 @@
 #ifndef LEO_HANDLER_ID_H
 #define LEO_HANDLER_ID_H		1
 
+/*!
+	@header LEOHandlerID
+	A data type used for identifying handlers without tedious string comparisons.
+*/
+
 #include <stdint.h>
 
 
+/*!
+	Every handler name maps to a handler ID. Since handler names are
+	case-insisensitive, "mouseUp", "MOUSEUP" and "mouseup" would all map to the
+	same handler ID.
+	Not unlike a "selector" in Objective C.
+*/
+typedef size_t LEOHandlerID;
 
-typedef size_t LEOHandlerID;		// Every (case-insensitive) handler name maps to a handler ID. Kinda like a "selector" in Objective C.
 
-
-#define LEOHandlerIDINVALID		SIZE_MAX
+/*!
+	Indicate that a handler ID variable has not been set yet.
+*/
+#define kLEOHandlerIDINVALID		SIZE_MAX
 
 
 
