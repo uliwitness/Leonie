@@ -263,8 +263,8 @@ void	LEODebugPrintInstr( LEOInstruction* instruction )
 
 void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions )
 {
-	printf( "%u INSTRUCTIONS:\n", (unsigned int)numInstructions );
-	for( int x = 0; x < numInstructions; x++ )
+	//printf( "%u INSTRUCTIONS:\n", (unsigned int)numInstructions );
+	for( size_t x = 0; x < numInstructions; x++ )
 	{
 		printf( "    " );
 		LEODebugPrintInstr( instructions +x );
