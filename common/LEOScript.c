@@ -12,6 +12,8 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include "LEOContextGroup.h"
 
 
 #define		NUM_INSTRUCTIONS_PER_CHUNK		16
@@ -199,4 +201,19 @@ size_t	LEOScriptAddString( LEOScript* inScript, const char* inString )
 }
 
 
+void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler )
+{
+	printf( "%s:\n", LEOContextGroupHandlerNameForHandlerID( inGroup, inHandler->handlerName ) );
+	LEODebugPrintInstructions( inHandler->instructions, inHandler->numInstructions );
+}
 
+
+void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript )
+{
+	for( size_t x = 0; x < inScript->numFunctions; x++ )
+		LEODebugPrintHandler( inGroup, inScript->functions +x );
+	for( size_t x = 0; x < inScript->numCommands; x++ )
+		LEODebugPrintHandler( inGroup, inScript->commands +x );
+	for( size_t x = 0; x < inScript->numStrings; x++ )
+		printf( "\"%s\"\n", inScript->strings[x] );
+}

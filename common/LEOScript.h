@@ -193,4 +193,9 @@ void	LEOHandlerAddInstruction( LEOHandler* inHandler, LEOInstructionID instructi
 size_t	LEOScriptAddString( LEOScript* inScript, const char* inString );
 
 
+void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript );
+
+void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler );
+
+
 #endif // LEO_SCRIPT_H
