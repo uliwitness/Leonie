@@ -53,7 +53,7 @@ void	LEOCleanUpContext( LEOContext* theContext )
 	theContext->group = NULL;
 	if( theContext->callStackEntries )
 	{
-		for( int x = 0; x < theContext->numCallStackEntries; x++ )
+		for( size_t x = 0; x < theContext->numCallStackEntries; x++ )
 		{
 			LEOScriptRelease( theContext->callStackEntries[x].script );
 			theContext->callStackEntries[x].script = NULL;

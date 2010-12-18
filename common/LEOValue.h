@@ -81,11 +81,11 @@ struct LEOValueType
 	
 	LEONumber	(*GetAsNumber)( LEOValuePtr self, struct LEOContext* inContext );
 	LEOInteger	(*GetAsInteger)( LEOValuePtr self, struct LEOContext* inContext );
-	void		(*GetAsString)( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
+	void		(*GetAsString)( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
 	bool		(*GetAsBoolean)( LEOValuePtr self, struct LEOContext* inContext );
 	void		(*GetAsRangeOfString)( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
-											char* outBuf, long bufSize, struct LEOContext* inContext );
+											char* outBuf, size_t bufSize, struct LEOContext* inContext );
 	
 	void		(*SetAsNumber)( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext );
 	void		(*SetAsInteger)( LEOValuePtr self, LEOInteger inNumber, struct LEOContext* inContext );
@@ -692,7 +692,7 @@ void		LEOCantSetValuePredeterminedRangeAsString( LEOValuePtr self,
 // Other methods reusable across several types:
 void		LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
-									char* outBuf, long bufSize, struct LEOContext* inContext );	// If it can be converted to string, this gets a range from it.
+									char* outBuf, size_t bufSize, struct LEOContext* inContext );	// If it can be converted to string, this gets a range from it.
 void		LEODetermineChunkRangeOfSubstringOfAnyValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
 														size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
 														LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
@@ -701,7 +701,7 @@ void		LEODetermineChunkRangeOfSubstringOfAnyValue( LEOValuePtr self, size_t *ioB
 // Number instance methods:
 LEONumber	LEOGetNumberValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 LEOInteger	LEOGetNumberValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
-void		LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
+void		LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
 void		LEOSetNumberValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext );
 void		LEOSetNumberValueAsInteger( LEOValuePtr self, LEOInteger inNumber, struct LEOContext* inContext );
 void		LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, struct LEOContext* inContext );
@@ -711,7 +711,7 @@ void		LEOCleanUpNumberValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferen
 // Integer instance methods:
 LEONumber	LEOGetIntegerValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 LEOInteger	LEOGetIntegerValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
-void		LEOGetIntegerValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
+void		LEOGetIntegerValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
 void		LEOSetIntegerValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext );
 void		LEOSetIntegerValueAsInteger( LEOValuePtr self, LEOInteger inNumber, struct LEOContext* inContext );
 void		LEOSetIntegerValueAsString( LEOValuePtr self, const char* inNumber, struct LEOContext* inContext );
@@ -722,10 +722,10 @@ void		LEOCleanUpIntegerValue( LEOValuePtr self, LEOKeepReferencesFlag keepRefere
 LEONumber	LEOGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 LEOInteger	LEOGetStringValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
 bool		LEOGetStringValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
-void		LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
+void		LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
 void		LEOGetStringValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
-									char* outBuf, long bufSize, struct LEOContext* inContext );
+									char* outBuf, size_t bufSize, struct LEOContext* inContext );
 void		LEOSetStringValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext );
 void		LEOSetStringValueAsInteger( LEOValuePtr self, LEOInteger inNumber, struct LEOContext* inContext );
 void		LEOSetStringValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );
@@ -759,7 +759,7 @@ void		LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKee
 void		LEOCleanUpStringConstantValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
 // Boolean instance methods:
-void		LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
+void		LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
 bool		LEOGetBooleanValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOSetBooleanValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );
 void		LEOSetBooleanValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
@@ -768,13 +768,13 @@ void		LEOCleanUpBooleanValue( LEOValuePtr self, LEOKeepReferencesFlag keepRefere
 
 
 // Reference instance methods:
-void		LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext );
+void		LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
 LEONumber	LEOGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 LEOInteger	LEOGetReferenceValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
 bool		LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
-											char* outBuf, long bufSize, struct LEOContext* inContext );
+											char* outBuf, size_t bufSize, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext );

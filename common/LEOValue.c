@@ -414,7 +414,7 @@ void	LEOCantSetValuePredeterminedRangeAsString( LEOValuePtr self, size_t inRange
 
 void	LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
-									char* outBuf, long bufSize, struct LEOContext* inContext )
+									char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	char		str[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
 	size_t		outChunkStart = 0,
@@ -505,7 +505,7 @@ LEOInteger LEOGetNumberValueAsInteger( LEOValuePtr self, struct LEOContext* inCo
 	Implementation of GetValueAsString for number values.
 */
 
-void LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext )
+void LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	snprintf( outBuf, bufSize -1, "%g", self->number.number );
 }
@@ -615,7 +615,7 @@ LEOInteger LEOGetIntegerValueAsInteger( LEOValuePtr self, struct LEOContext* inC
 	Implementation of GetValueAsString for integer values.
 */
 
-void LEOGetIntegerValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext )
+void LEOGetIntegerValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	snprintf( outBuf, bufSize -1, "%lld", self->integer.integer );
 }
@@ -703,7 +703,7 @@ void	LEOInitStringValue( LEOValuePtr inStorage, const char* inString, LEOKeepRef
 	inStorage->base.isa = &kLeoValueTypeString;
 	if( keepReferences == kLEOInvalidateReferences )
 		inStorage->base.refObjectID = kLEOObjectIDINVALID;
-	long		theLen = strlen(inString) +1;
+	size_t		theLen = strlen(inString) +1;
 	inStorage->string.string = malloc( theLen );
 	strncpy( inStorage->string.string, inString, theLen );
 }
@@ -745,7 +745,7 @@ LEOInteger	LEOGetStringValueAsInteger( LEOValuePtr self, struct LEOContext* inCo
 	Implementation of GetAsString for string values.
 */
 
-void	LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext )
+void	LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	strncpy( outBuf, self->string.string, bufSize );
 }
@@ -800,7 +800,7 @@ bool	LEOGetStringValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext 
 
 void	LEOGetStringValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
-											char* outBuf, long bufSize, struct LEOContext* inContext )
+											char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	size_t		outChunkStart = 0,
 				outChunkEnd = 0,
@@ -827,7 +827,7 @@ void LEOSetStringValueAsString( LEOValuePtr self, const char* inString, struct L
 {
 	if( self->string.string )
 		free( self->string.string );
-	long		theLen = strlen(inString) +1;
+	size_t		theLen = strlen(inString) +1;
 	self->string.string = malloc( theLen );
 	strncpy( self->string.string, inString, theLen );
 }
@@ -870,7 +870,7 @@ void	LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 	dest->base.isa = &kLeoValueTypeString;
 	if( keepReferences == kLEOInvalidateReferences )
 		dest->base.refObjectID = kLEOObjectIDINVALID;
-	long		theLen = strlen( self->string.string ) +1;
+	size_t		theLen = strlen( self->string.string ) +1;
 	dest->string.string = malloc( theLen );
 	strncpy( dest->string.string, self->string.string, theLen );
 }
@@ -1041,7 +1041,7 @@ void	LEOSetStringConstantValueAsString( LEOValuePtr self, const char* inString, 
 {
 	// Turn this into a non-constant string:
 	self->base.isa = &kLeoValueTypeString;
-	long		theLen = strlen(inString) +1;
+	size_t		theLen = strlen(inString) +1;
 	self->string.string = malloc( theLen );
 	strncpy( self->string.string, inString, theLen );
 }
@@ -1158,7 +1158,7 @@ void	LEOInitBooleanValue( LEOValuePtr self, bool inBoolean, LEOKeepReferencesFla
 	Implementation of GetAsString for boolean values.
 */
 
-void	LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext )
+void	LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	strncpy( outBuf, (self->boolean.boolean ? "true" : "false"), bufSize -1 );
 }
@@ -1262,7 +1262,7 @@ void	LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr originalValue, LEOKeep
 	Implementation of GetAsString for reference values.
 */
 
-void	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, long bufSize, struct LEOContext* inContext )
+void	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
@@ -1368,7 +1368,7 @@ bool	LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inConte
 
 void	LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
-											char* outBuf, long bufSize, struct LEOContext* inContext )
+											char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
