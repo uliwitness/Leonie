@@ -82,13 +82,13 @@ LEOObjectID	LEOContextGroupCreateNewObjectIDForPointer( LEOContextGroup* inConte
 		inContext->numReferences = LEOReferencesTableChunkSize;
 		inContext->references = calloc( inContext->numReferences, sizeof(struct LEOObject) );
 		
-		newObjectID = 0;	// Can start with first item right away.
+		newObjectID = 1;	// Can start with first item right away.
 	}
 	else
 	{
 		// +++ Optimize: remember the last one we cleared or returned or so and start scanning there.
 		
-		for( size_t x = 0; x < inContext->numReferences; x++ )
+		for( size_t x = 1; x < inContext->numReferences; x++ )
 		{
 			if( inContext->references[x].value == NULL )	// Unused slot!
 				newObjectID = x;

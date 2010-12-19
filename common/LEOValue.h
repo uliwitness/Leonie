@@ -38,7 +38,7 @@
 // -----------------------------------------------------------------------------
 
 /*! If an object ID is invalid, it is set to this value. */
-#define kLEOObjectIDINVALID		ULONG_MAX
+#define kLEOObjectIDINVALID		0
 
 
 enum eLEOKeepReferencesFlag

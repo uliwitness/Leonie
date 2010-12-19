@@ -53,7 +53,8 @@
 	Pass this as param1 to some instructions that take a
 	basePtr-relative address to make it pop the last
 	value off the stack instead of reading a value from that
-	address.
+	address. Since they reinterpret the number as an int16_t, it needs to be
+	a value in the middle of the unsigned range.
 */
 #define BACK_OF_STACK			((uint16_t) INT16_MIN)
 

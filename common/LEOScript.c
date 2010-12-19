@@ -105,7 +105,7 @@ void	LEOScriptRelease( LEOScript* inScript )
 		}
 		for( size_t x = 0; x < inScript->numStrings; x++ )
 		{
-			free( inScript->strings +x );
+			free( inScript->strings[x] );
 			inScript->strings[x] = NULL;
 		}
 		
@@ -180,6 +180,17 @@ LEOHandler*	LEOScriptFindFunctionHandlerWithID( LEOScript* inScript, LEOHandlerI
 
 size_t	LEOScriptAddString( LEOScript* inScript, const char* inString )
 {
+	// First, try to re-use an existing string:
+	if( inScript->strings )
+	{
+		for( size_t x = 0; x < inScript->numStrings; x++ )
+		{
+			if( strcmp( inScript->strings[x], inString ) == 0 )	// Absolutel equal, doesn't even differ in case? (wouldn't want to change the case of user's text!)
+				return x;
+		}
+	}
+	
+	// Otherwise, add new entry for this string:
 	inScript->numStrings ++;
 
 	if( inScript->numStrings == 1 && inScript->strings == NULL )

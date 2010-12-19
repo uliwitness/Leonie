@@ -58,9 +58,9 @@
 	LEOHandlerAddInstruction( startUpHandler, PUSH_STR_FROM_TABLE_INSTR, BACK_OF_STACK, LEOScriptAddString( script, "Top 'o the mornin' to ya, sir!" ) );	// Push a string as a parameter.
 	LEOHandlerAddInstruction( startUpHandler, PUSH_INTEGER_INSTR, 0, 1 );				// Push a 1 on the stack (for the parameter count).
 	LEOHandlerAddInstruction( startUpHandler, CALL_HANDLER_INSTR, 0, testMeHandlerID );	// Run the Handler.
-	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, 0, 0 );					// Remove the parameter.
-	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, 0, 0 );					// Remove the parameters count.
-	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, 0, 0 );					// Remove our local counter variable.
+	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, BACK_OF_STACK, 0 );		// Remove the parameter.
+	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, BACK_OF_STACK, 0 );		// Remove the parameters count.
+	LEOHandlerAddInstruction( startUpHandler, POP_VALUE_INSTR, BACK_OF_STACK, 0 );		// Remove our local counter variable.
 	LEOHandlerAddInstruction( startUpHandler, RETURN_FROM_HANDLER_INSTR, 0, 0 );		// This handler is finished.
 	
 	LEOHandler*			testMeHandler = LEOScriptAddCommandHandlerWithID( script, testMeHandlerID );
@@ -71,8 +71,7 @@
 	// === end of stuff that a parser/compiler would generate:
 		
 	#if PRINT_BYTECODE
-	LEODebugPrintInstructions( startUpHandler->instructions, startUpHandler->numInstructions );
-	LEODebugPrintInstructions( testMeHandler->instructions, testMeHandler->numInstructions );
+	LEODebugPrintScript( group, script );
 	#endif // PRINT_BYTECODE
 	
 	NSTimeInterval		startTime = [NSDate timeIntervalSinceReferenceDate];
