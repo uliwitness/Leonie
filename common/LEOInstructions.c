@@ -507,10 +507,12 @@ void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
 void	LEOParameterInstruction( LEOContext* inContext )
 {
 	bool		onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
-	LEOValuePtr	valueTarget = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
+	int16_t		offset = (*(int16_t*)&inContext->currentInstruction->param1);
+	LEOValuePtr	valueTarget = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +offset);
 	if( !onStack )
 		LEOCleanUpValue( valueTarget, kLEOKeepReferences, inContext );
-	LEOInteger	paramCount = LEOGetValueAsNumber( inContext->stackBasePtr -1, inContext );
+	LEOValuePtr	paramCountValue = inContext->stackBasePtr -1;
+	LEOInteger	paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
 	if( inContext->currentInstruction->param2 <= paramCount )
 	{
 		LEOInitCopy( inContext->stackBasePtr -inContext->currentInstruction->param2 -1, valueTarget,
