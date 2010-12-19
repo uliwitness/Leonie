@@ -20,8 +20,6 @@
 #define		NUM_STRINGS_PER_CHUNK			16
 
 
-
-
 void	LEOInitHandlerWithID( LEOHandler* inStorage, LEOHandlerID inHandlerName )
 {
 	inStorage->handlerName = inHandlerName;
@@ -48,13 +46,17 @@ void	LEOHandlerAddInstruction( LEOHandler* inHandler, LEOInstructionID instructi
 	inHandler->numInstructions ++;
 	if( (inHandler->numInstructions % NUM_INSTRUCTIONS_PER_CHUNK) == 1 && inHandler->numInstructions != 1 )
 	{
-		LEOInstruction*	instructionArray = realloc( inHandler->instructions, inHandler->numInstructions -1 +NUM_INSTRUCTIONS_PER_CHUNK );
+		size_t			numSlots = inHandler->numInstructions -1 +NUM_INSTRUCTIONS_PER_CHUNK;
+		LEOInstruction*	instructionArray = realloc( inHandler->instructions, numSlots *sizeof(LEOInstruction) );
 		if( instructionArray )
 			inHandler->instructions = instructionArray;
 		else
+		{
+			printf( "*** Failed to allocate instruction! ***\n" );
 			return;
+		}
 	}
-	
+		
 	inHandler->instructions[inHandler->numInstructions -1].instructionID = instructionID;
 	inHandler->instructions[inHandler->numInstructions -1].param1 = param1;
 	inHandler->instructions[inHandler->numInstructions -1].param2 = param2;
@@ -63,7 +65,7 @@ void	LEOHandlerAddInstruction( LEOHandler* inHandler, LEOInstructionID instructi
 
 LEOScript*	LEOScriptCreateForOwner( LEOObjectID ownerObject, LEOObjectSeed ownerSeed )
 {
-	LEOScript	*	theStorage = malloc( sizeof(LEOScript) );
+	LEOScript	*	theStorage = calloc( 1, sizeof(LEOScript) );
 	
 	if( theStorage )
 	{
@@ -121,7 +123,7 @@ LEOHandler*	LEOScriptAddCommandHandlerWithID( LEOScript* inScript, LEOHandlerID 
 	if( inScript->commands )
 		commandsArray = realloc( inScript->commands, sizeof(LEOHandler) * inScript->numCommands );
 	else
-		commandsArray = malloc( sizeof(LEOHandler) * inScript->numCommands );
+		commandsArray = calloc( sizeof(LEOHandler) * inScript->numCommands, 1 );
 	if( commandsArray )
 	{
 		LEOInitHandlerWithID( commandsArray +inScript->numCommands -1, inHandlerName );
@@ -141,7 +143,7 @@ LEOHandler*	LEOScriptAddFunctionHandlerWithID( LEOScript* inScript, LEOHandlerID
 	if( inScript->commands )
 		commandsArray = realloc( inScript->functions, sizeof(LEOHandler) * inScript->numFunctions );
 	else
-		commandsArray = malloc( sizeof(LEOHandler) * inScript->numFunctions );
+		commandsArray = calloc( sizeof(LEOHandler) * inScript->numFunctions, 1 );
 	if( commandsArray )
 	{
 		LEOInitHandlerWithID( commandsArray +inScript->numFunctions -1, inHandlerName );
@@ -185,7 +187,8 @@ size_t	LEOScriptAddString( LEOScript* inScript, const char* inString )
 	{
 		for( size_t x = 0; x < inScript->numStrings; x++ )
 		{
-			if( strcmp( inScript->strings[x], inString ) == 0 )	// Absolutel equal, doesn't even differ in case? (wouldn't want to change the case of user's text!)
+			const char*	possibleMatch = inScript->strings[x];
+			if( strcmp( possibleMatch, inString ) == 0 )	// Absolutely equal, doesn't even differ in case? (wouldn't want to change the case of user's text!)
 				return x;
 		}
 	}
@@ -194,19 +197,26 @@ size_t	LEOScriptAddString( LEOScript* inScript, const char* inString )
 	inScript->numStrings ++;
 
 	if( inScript->numStrings == 1 && inScript->strings == NULL )
-		inScript->strings = malloc( NUM_STRINGS_PER_CHUNK *sizeof(char*) );
+	{
+		inScript->strings = calloc( NUM_STRINGS_PER_CHUNK, sizeof(char*) );
+	}
 	else if( (inScript->numStrings % NUM_STRINGS_PER_CHUNK) == 1 && inScript->numStrings != 1 )
 	{
-		char**	stringsArray = realloc( inScript->strings, (inScript->numStrings -1 +NUM_STRINGS_PER_CHUNK) *sizeof(char*) );
+		size_t		numSlots = (inScript->numStrings -1 +NUM_STRINGS_PER_CHUNK);
+		char**	stringsArray = realloc( inScript->strings, numSlots * sizeof(char*) );
 		if( stringsArray )
 			inScript->strings = stringsArray;
 		else
+		{
+			printf( "*** Failed to allocate string! ***\n" );
 			return SIZE_MAX;
+		}
 	}
 	
 	size_t		inStringLen = strlen(inString) +1;
-	inScript->strings[inScript->numStrings -1] = malloc( inStringLen );
-	memmove( inScript->strings[inScript->numStrings -1], inString, inStringLen );
+	char*		newStr = calloc( inStringLen, sizeof(char) );
+	inScript->strings[inScript->numStrings -1] = newStr;
+	memmove( newStr, inString, inStringLen );
 	
 	return inScript->numStrings -1;
 }
