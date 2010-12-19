@@ -168,6 +168,9 @@ void	LEOContextPopHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext )
 
 LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCopy )
 {
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+
 	LEOValuePtr		theValue = theContext->stackEndPtr;
 	
 	theContext->stackEndPtr++;
@@ -178,8 +181,26 @@ LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCo
 }
 
 
+LEOValuePtr	LEOPushEmptyValueOnStack( LEOContext* theContext )
+{
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitStringConstantValue( theValue, "", kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
 LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger )
 {
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+
 	LEOValuePtr		theValue = theContext->stackEndPtr;
 	
 	theContext->stackEndPtr++;
@@ -219,8 +240,9 @@ void	LEOPrepareContextForRunning( LEOInstruction instructions[], LEOContext *inC
 {
 	inContext->keepRunning = true;
 	inContext->currentInstruction = instructions;
-	inContext->stackBasePtr = inContext->stack;
-	inContext->stackEndPtr = inContext->stack;
+	if( !inContext->stackEndPtr )
+		inContext->stackEndPtr = inContext->stack;
+	inContext->stackBasePtr = inContext->stackEndPtr;
 	inContext->errMsg[0] = 0;
 	
 	// +++ Should we call LEOCleanUpStackToPtr here? Would be necessary for reusing a context.
