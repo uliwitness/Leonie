@@ -106,7 +106,7 @@ void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction )
 	gLEONumDebuggerBreakpoints += 1;
 	
 	if( !gLEODebuggerBreakpoints )
-		gLEODebuggerBreakpoints = malloc( sizeof(LEOInstruction*) );
+		gLEODebuggerBreakpoints = calloc( 1, sizeof(LEOInstruction*) );
 	else
 		gLEODebuggerBreakpoints = realloc( gLEODebuggerBreakpoints, sizeof(LEOInstruction*) * gLEONumDebuggerBreakpoints );
 	

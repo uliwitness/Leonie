@@ -43,8 +43,7 @@ struct LEOObject	// What a LEOObjectID refers to. These are kept in a big array 
 
 LEOContextGroup*	LEOContextGroupCreate()
 {
-	LEOContextGroup*	theGroup = malloc( sizeof(LEOContextGroup) );
-	memset( theGroup, 0, sizeof(LEOContextGroup) );
+	LEOContextGroup*	theGroup = calloc( 1, sizeof(LEOContextGroup) );
 	theGroup->referenceCount = 1;
 	
 	return theGroup;
@@ -171,7 +170,7 @@ LEOHandlerID	LEOContextGroupHandlerIDForHandlerName( LEOContextGroup* inContext,
 		}
 		
 		size_t	handlerNameLen = strlen(handlerName) +1;
-		inContext->handlerNames[foundID] = malloc( handlerNameLen );
+		inContext->handlerNames[foundID] = calloc( handlerNameLen, sizeof(char) );
 		memmove( inContext->handlerNames[foundID], handlerName, handlerNameLen );
 	}
 	

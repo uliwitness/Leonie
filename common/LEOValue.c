@@ -704,7 +704,7 @@ void	LEOInitStringValue( LEOValuePtr inStorage, const char* inString, LEOKeepRef
 	if( keepReferences == kLEOInvalidateReferences )
 		inStorage->base.refObjectID = kLEOObjectIDINVALID;
 	size_t		theLen = strlen(inString) +1;
-	inStorage->string.string = malloc( theLen );
+	inStorage->string.string = calloc( theLen, sizeof(char) );
 	strncpy( inStorage->string.string, inString, theLen );
 }
 
@@ -759,7 +759,7 @@ void	LEOSetStringValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEO
 {
 	if( self->string.string )
 		free( self->string.string );
-	self->string.string = malloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH );
+	self->string.string = calloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH, sizeof(char) );
 	snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%g", inNumber );
 }
 
@@ -772,7 +772,7 @@ void	LEOSetStringValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct 
 {
 	if( self->string.string )
 		free( self->string.string );
-	self->string.string = malloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH );
+	self->string.string = calloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH, sizeof(char) );
 	snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%lld", inInteger );
 }
 
@@ -828,7 +828,7 @@ void LEOSetStringValueAsString( LEOValuePtr self, const char* inString, struct L
 	if( self->string.string )
 		free( self->string.string );
 	size_t		theLen = strlen(inString) +1;
-	self->string.string = malloc( theLen );
+	self->string.string = calloc( theLen, sizeof(char) );
 	strncpy( self->string.string, inString, theLen );
 }
 
@@ -871,7 +871,7 @@ void	LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 	if( keepReferences == kLEOInvalidateReferences )
 		dest->base.refObjectID = kLEOObjectIDINVALID;
 	size_t		theLen = strlen( self->string.string ) +1;
-	dest->string.string = malloc( theLen );
+	dest->string.string = calloc( theLen, sizeof(char) );
 	strncpy( dest->string.string, self->string.string, theLen );
 }
 
@@ -934,7 +934,7 @@ void	LEOSetStringValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 	size_t		chunkLen = outChunkEnd -outChunkStart;
 	finalLen = selfLen -chunkLen +inBufLen;
 		
-	char*		newStr = malloc( finalLen +1 );
+	char*		newStr = calloc( finalLen +1, sizeof(char) );
 	memmove( newStr, self->string.string, outChunkStart );	// Copy before chunk.
 	if( inBufLen > 0 )
 		memmove( newStr +outChunkStart, inBuf, inBufLen );	// Copy new value of chunk.
@@ -960,7 +960,7 @@ void	LEOSetStringValuePredeterminedRangeAsString( LEOValuePtr self,
 				chunkLen = inRangeEnd -inRangeStart;
 	finalLen = selfLen -chunkLen +inBufLen;
 		
-	char*		newStr = malloc( finalLen +1 );
+	char*		newStr = calloc( finalLen +1, sizeof(char) );
 	memmove( newStr, self->string.string, inRangeStart );	// Copy before chunk.
 	if( inBufLen > 0 )
 		memmove( newStr +inRangeStart, inBuf, inBufLen );	// Copy new value of chunk.
@@ -1013,7 +1013,7 @@ void	LEOSetStringConstantValueAsNumber( LEOValuePtr self, LEONumber inNumber, st
 {
 	// Turn this into a non-constant string:
 	self->base.isa = &kLeoValueTypeString;
-	self->string.string = malloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH );
+	self->string.string = calloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH, sizeof(char) );
 	snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%g", inNumber );
 }
 
@@ -1027,7 +1027,7 @@ void	LEOSetStringConstantValueAsInteger( LEOValuePtr self, LEOInteger inInteger,
 {
 	// Turn this into a non-constant string:
 	self->base.isa = &kLeoValueTypeString;
-	self->string.string = malloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH );
+	self->string.string = calloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH, sizeof(char) );
 	snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%lld", inInteger );
 }
 
@@ -1042,7 +1042,7 @@ void	LEOSetStringConstantValueAsString( LEOValuePtr self, const char* inString, 
 	// Turn this into a non-constant string:
 	self->base.isa = &kLeoValueTypeString;
 	size_t		theLen = strlen(inString) +1;
-	self->string.string = malloc( theLen );
+	self->string.string = calloc( theLen, sizeof(char) );
 	strncpy( self->string.string, inString, theLen );
 }
 
@@ -1098,7 +1098,7 @@ void	LEOSetStringConstantValueRangeAsString( LEOValuePtr self, LEOChunkType inTy
 	size_t		chunkLen = outChunkEnd -outChunkStart;
 	finalLen = selfLen -chunkLen +inBufLen;
 		
-	char*		newStr = malloc( finalLen +1 );
+	char*		newStr = calloc( finalLen +1, sizeof(char) );
 	memmove( newStr, self->string.string, outChunkStart );	// Copy before chunk.
 	if( inBufLen > 0 )
 		memmove( newStr +outChunkStart, inBuf, inBufLen );	// Copy new value of chunk.
@@ -1729,7 +1729,7 @@ struct LEOArrayEntry	*	LEOAllocNewEntry( const char* inKey, LEOValuePtr inValue,
 {
 	struct LEOArrayEntry	*	newEntry = NULL;
 	size_t						inKeyLen = strlen(inKey);
-	newEntry = malloc( sizeof(struct LEOArrayEntry) +inKeyLen +1 );
+	newEntry = calloc( sizeof(struct LEOArrayEntry) +inKeyLen +1, 1 );
 	memmove( newEntry->key, inKey, inKeyLen +1 ); 
 	LEOInitCopy( inValue, &newEntry->value, kLEOInvalidateReferences, inContext );
 	newEntry->smallerItem = NULL;
