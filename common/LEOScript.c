@@ -231,10 +231,13 @@ void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandle
 
 void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript )
 {
+	printf("FUNCTIONS:\n");
 	for( size_t x = 0; x < inScript->numFunctions; x++ )
 		LEODebugPrintHandler( inGroup, inScript->functions +x );
+	printf("COMMANDS:\n");
 	for( size_t x = 0; x < inScript->numCommands; x++ )
 		LEODebugPrintHandler( inGroup, inScript->commands +x );
+	printf("STRINGS:\n");
 	for( size_t x = 0; x < inScript->numStrings; x++ )
 		printf( "\"%s\"\n", inScript->strings[x] );
 }

@@ -24,7 +24,6 @@
 #include <stdio.h>
 
 
-#pragma mark -
 #pragma mark Instruction Functions
 
 /*!
@@ -378,6 +377,7 @@ void	LEOAddIntegerInstruction( LEOContext* inContext )
 	instruction so returning from the handler can restore the previous state,
 	and retains the current script in case the script deletes its owner.
 	
+	param1	-	0 to call a command, 1 to call a function.
 	param2	-	The LEOHandlerID of the handler to call.
 	
 	@seealso //leo_ref/c/func/LEOReturnFromHandlerInstruction LEOReturnFromHandlerInstruction
@@ -392,7 +392,10 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 	LEOHandler*		foundHandler = NULL;
 	if( currScript )
 	{
-		foundHandler = LEOScriptFindCommandHandlerWithID( currScript, handlerName );
+		if( inContext->currentInstruction->param1 == 0 )
+			foundHandler = LEOScriptFindCommandHandlerWithID( currScript, handlerName );
+		else
+			foundHandler = LEOScriptFindFunctionHandlerWithID( currScript, handlerName );
 		if( foundHandler )
 		{
 			LEOContextPushHandlerScriptReturnAddressAndBasePtr( inContext, foundHandler, currScript, inContext->currentInstruction +1, inContext->stackBasePtr );
