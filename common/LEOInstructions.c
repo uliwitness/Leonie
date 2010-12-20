@@ -432,23 +432,25 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 {
 	//LEODebugPrintContext( inContext );
-
-	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
-	union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
-	LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
-	union LEOValue*	destValue = onStack ? (inContext->stackBasePtr -1 -paramCount -1) : NULL;
-	if( destValue )
-	{
-		LEOCleanUpValue(destValue, kLEOKeepReferences, inContext);
-		LEOInitCopy( inContext->stackEndPtr -1, destValue, kLEOKeepReferences, inContext );
-	}
-	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
-
+	
 	inContext->currentInstruction = LEOContextPeekReturnAddress( inContext );
 	inContext->stackBasePtr = LEOContextPeekBasePtr( inContext );
 	LEOContextPopHandlerScriptReturnAddressAndBasePtr( inContext );
 	
 	//LEODebugPrintContext( inContext );
+}
+
+
+void	LEOSetReturnValueInstruction( LEOContext* inContext )
+{
+	union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
+	LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+	union LEOValue*	destValue = inContext->stackBasePtr -1 -paramCount -1;
+	LEOCleanUpValue( destValue, kLEOKeepReferences, inContext );
+	LEOInitCopy( inContext->stackEndPtr -1, destValue, kLEOKeepReferences, inContext );	// TODO: Follow references somehow???
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	inContext->currentInstruction++;
 }
 
 
@@ -595,7 +597,8 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOPushReferenceInstruction,
 	LEOPushChunkReferenceInstruction,
 	LEOParameterInstruction,
-	LEOParameterCountInstruction
+	LEOParameterCountInstruction,
+	LEOSetReturnValueInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -624,7 +627,8 @@ const char*	gInstructionNames[] =
 	"PushReference",
 	"PushChunkReference",
 	"Parameter",
-	"ParameterCount"
+	"ParameterCount",
+	"SetReturnValue"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);
