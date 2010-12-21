@@ -48,6 +48,7 @@
 #define PARAMETER_INSTR						23
 #define PARAMETER_COUNT_INSTR				24
 #define SET_RETURN_VALUE_INSTR				25
+#define PARAMETER_KEEPREFS_INSTR			26
 
 
 // -----------------------------------------------------------------------------

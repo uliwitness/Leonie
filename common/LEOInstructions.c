@@ -441,13 +441,17 @@ void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Push a reference to the given value onto the stack (SET_RETURN_VALUE_INSTR)
+*/
+
 void	LEOSetReturnValueInstruction( LEOContext* inContext )
 {
 	union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
 	LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
 	union LEOValue*	destValue = inContext->stackBasePtr -1 -paramCount -1;
 	LEOCleanUpValue( destValue, kLEOKeepReferences, inContext );
-	LEOInitCopy( inContext->stackEndPtr -1, destValue, kLEOKeepReferences, inContext );	// TODO: Follow references somehow???
+	LEOInitSimpleCopy( inContext->stackEndPtr -1, destValue, kLEOKeepReferences, inContext );
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
 	
 	inContext->currentInstruction++;
@@ -535,6 +539,40 @@ void	LEOParameterInstruction( LEOContext* inContext )
 	LEOInteger	paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
 	if( inContext->currentInstruction->param2 <= paramCount )
 	{
+		LEOInitSimpleCopy( inContext->stackBasePtr -inContext->currentInstruction->param2 -1, valueTarget,
+							(onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
+	}
+	else
+		LEOInitStringConstantValue( valueTarget, "", kLEOKeepReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+/*!
+	Copy the value of the parameter at given index into the given value on the
+	stack. If no parameter of that index has been passed, this returns an empty
+	string. (PARAMETER_KEEPREFS_INSTR)
+	
+	param1	-	The basePtr-relative offset of the value to be overwritten, or
+				BACK_OF_STACK if you want the value to be pushed on the stack.
+	
+	param2	-	The number of the parameter to retrieve, as a 1-based index.
+	
+	@seealso //leo_ref/c/func/LEOParameterCountInstruction LEOParameterCountInstruction
+*/
+
+void	LEOParameterKeepRefsInstruction( LEOContext* inContext )
+{
+	bool		onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
+	int16_t		offset = (*(int16_t*)&inContext->currentInstruction->param1);
+	LEOValuePtr	valueTarget = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +offset);
+	if( !onStack )
+		LEOCleanUpValue( valueTarget, kLEOKeepReferences, inContext );
+	LEOValuePtr	paramCountValue = inContext->stackBasePtr -1;
+	LEOInteger	paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+	if( inContext->currentInstruction->param2 <= paramCount )
+	{
 		LEOInitCopy( inContext->stackBasePtr -inContext->currentInstruction->param2 -1, valueTarget,
 						(onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	}
@@ -598,7 +636,8 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOPushChunkReferenceInstruction,
 	LEOParameterInstruction,
 	LEOParameterCountInstruction,
-	LEOSetReturnValueInstruction
+	LEOSetReturnValueInstruction,
+	LEOParameterKeepRefsInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -628,7 +667,8 @@ const char*	gInstructionNames[] =
 	"PushChunkReference",
 	"Parameter",
 	"ParameterCount",
-	"SetReturnValue"
+	"SetReturnValue",
+	"ParameterKeepRefs"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

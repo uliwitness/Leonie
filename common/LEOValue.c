@@ -54,6 +54,7 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOCantSetValuePredeterminedRangeAsString,
 	
 	LEOInitNumberValueCopy,
+	LEOInitNumberValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpNumberValue
@@ -78,6 +79,7 @@ struct LEOValueType	kLeoValueTypeInteger =
 	LEOCantSetValueRangeAsString,
 	LEOCantSetValuePredeterminedRangeAsString,
 	
+	LEOInitIntegerValueCopy,
 	LEOInitIntegerValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
@@ -104,6 +106,7 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOSetStringValuePredeterminedRangeAsString,
 	
 	LEOInitStringValueCopy,
+	LEOInitStringValueCopy,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringValue
@@ -128,6 +131,7 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOSetStringConstantValueRangeAsString,
 	LEOSetStringConstantValuePredeterminedRangeAsString,
 	
+	LEOInitStringConstantValueCopy,
 	LEOInitStringConstantValueCopy,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
@@ -156,6 +160,7 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOCantSetValuePredeterminedRangeAsString,
 	
 	LEOInitBooleanValueCopy,
+	LEOInitBooleanValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpBooleanValue
@@ -181,6 +186,7 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOSetReferenceValuePredeterminedRangeAsString,
 	
 	LEOInitReferenceValueCopy,
+	LEOInitReferenceValueSimpleCopy,
 	LEODetermineChunkRangeOfSubstringOfReferenceValue,
 	
 	LEOCleanUpReferenceValue
@@ -206,6 +212,7 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOSetVariantValuePredeterminedRangeAsString,
 	
 	LEOInitNumberVariantValueCopy,
+	LEOInitNumberValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpNumberValue
@@ -231,6 +238,7 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	LEOSetVariantValuePredeterminedRangeAsString,
 	
 	LEOInitIntegerVariantValueCopy,
+	LEOInitIntegerValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpIntegerValue
@@ -256,6 +264,7 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOSetVariantValuePredeterminedRangeAsString,
 	
 	LEOInitStringVariantValueCopy,
+	LEOInitStringValueCopy,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringValue
@@ -281,6 +290,7 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOSetVariantValuePredeterminedRangeAsString,
 	
 	LEOInitBooleanVariantValueCopy,
+	LEOInitBooleanValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpBooleanValue
@@ -1542,6 +1552,24 @@ void	LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepRefer
 	dest->reference.chunkType = self->reference.chunkType;
 	dest->reference.chunkStart = self->reference.chunkStart;
 	dest->reference.chunkEnd = self->reference.chunkEnd;
+}
+
+
+/*!
+	Implementation of InitCopy for reference values. This method is safe to call
+	even if the original value this reference points to has already gone away.
+*/
+
+void	LEOInitReferenceValueSimpleCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
+		inContext->keepRunning = false;
+	}
+	else
+		LEOInitSimpleCopy(theValue, dest, keepReferences, inContext);
 }
 
 

@@ -99,6 +99,7 @@ struct LEOValueType
 									const char* inBuf, struct LEOContext* inContext );
 	
 	void		(*InitCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// dest is an uninitialized value.
+	void		(*InitSimpleCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// dest is an uninitialized value.
 	void		(*DetermineChunkRangeOfSubstring)( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
 													size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
 													LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
@@ -633,6 +634,9 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 #define 	LEOInitCopy(v,d,k,c)				((LEOValuePtr)(v))->base.isa->InitCopy(((LEOValuePtr)(v)),((LEOValuePtr)(d)),(k),(c))
 
 
+#define 	LEOInitSimpleCopy(v,d,k,c)			((LEOValuePtr)(v))->base.isa->InitSimpleCopy(((LEOValuePtr)(v)),((LEOValuePtr)(d)),(k),(c))
+
+
 /*!
 	@function LEODetermineChunkRangeOfSubstring
 	Parses the given substring of a value for the given chunk, and then returns
@@ -786,6 +790,7 @@ void		LEOSetReferenceValuePredeterminedRangeAsString( LEOValuePtr self,
 											size_t inRangeStart, size_t inRangeEnd,
 											const char* inBuf, struct LEOContext* inContext );
 void		LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+void		LEOInitReferenceValueSimpleCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
 																size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
 																LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
