@@ -108,6 +108,8 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 	}
 	else if( inType == kLEOChunkTypeCharacter )
 	{
+		bool		didFindEnd = false,
+					didFindStart = false;
 		*outChunkStart = 0;
 		*outChunkEnd = 0;
 		*outDelChunkStart = theLen;
@@ -121,12 +123,14 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 			{
 				*outChunkStart = currOffset;
 				*outDelChunkStart = currOffset;
+				didFindStart = true;
 			}
 			
 			if( currChar == inRangeEnd )
 			{
 				*outChunkEnd = currOffset;
 				*outDelChunkEnd = currOffset;
+				didFindEnd = true;
 			}
 			
 			(uint32_t) LEOUTF8StringParseUTF32CharacterAtOffset( inStr, theLen, &currOffset );
@@ -134,13 +138,13 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 			currChar ++;
 		}
 		
-		if( currChar == inRangeStart )
+		if( currChar == inRangeStart || !didFindStart )
 		{
 			*outChunkStart = currOffset;
 			*outDelChunkStart = currOffset;
 		}
 		
-		if( currChar == inRangeEnd )
+		if( currChar == inRangeEnd || !didFindEnd )
 		{
 			*outChunkEnd = currOffset;
 			*outDelChunkEnd = currOffset;
