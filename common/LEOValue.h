@@ -607,7 +607,7 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 	@param	v	The value you wish to change.
 	@param	rs	The starting index of the range to get, as obtained from LEODetermineChunkRangeOfSubstring.
 	@param	re	The ending index of the range to get, as obtained from LEODetermineChunkRangeOfSubstring.
-	@param	s	The string to insert, or NULL to delete the given range (and any delimiters).
+	@param	s	The string to insert, or NULL to delete the given range.
 	@param	c	The context in which your script is currently running and in
 				which errors will be stored.
 	@seealso //leo_ref/c/func/LEODetermineChunkRangeOfSubstring LEODetermineChunkRangeOfSubstring

@@ -606,6 +606,29 @@ void	LEOParameterCountInstruction( LEOContext* inContext )
 }
 
 
+void	LEOConcatenateValuesInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	size_t			startOffs = 0, endOffs = SIZE_MAX,
+					startDelOffs, endDelOffs;
+	char			tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
+	LEOGetValueAsString( secondArgumentValue, tempStr, sizeof(tempStr), inContext );
+	
+	LEODetermineChunkRangeOfSubstring(	firstArgumentValue, &startOffs, &endOffs,
+										&startDelOffs, &endDelOffs,
+										kLEOChunkTypeCharacter,
+										SIZE_MAX, SIZE_MAX, inContext );
+	LEOSetValuePredeterminedRangeAsString( firstArgumentValue, endOffs, endOffs, tempStr, inContext );
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	inContext->currentInstruction++;
+}
+
+
+
+
 #pragma mark -
 #pragma mark Instruction table
 
@@ -637,7 +660,8 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOParameterInstruction,
 	LEOParameterCountInstruction,
 	LEOSetReturnValueInstruction,
-	LEOParameterKeepRefsInstruction
+	LEOParameterKeepRefsInstruction,
+	LEOConcatenateValuesInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -668,7 +692,8 @@ const char*	gInstructionNames[] =
 	"Parameter",
 	"ParameterCount",
 	"SetReturnValue",
-	"ParameterKeepRefs"
+	"ParameterKeepRefs",
+	"ConcatenateValues"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);
