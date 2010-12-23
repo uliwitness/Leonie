@@ -211,6 +211,21 @@ LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger 
 }
 
 
+LEOValuePtr	LEOPushBooleanOnStack( LEOContext* theContext, bool inBoolean )
+{
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitBooleanValue( theValue, inBoolean, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete )
 {
 	if( theContext->stack > lastItemToDelete )

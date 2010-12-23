@@ -207,6 +207,9 @@ LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCo
 LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger );
 
 
+LEOValuePtr	LEOPushBooleanOnStack( LEOContext* theContext, bool inBoolean );
+
+
 LEOValuePtr	LEOPushEmptyValueOnStack( LEOContext* theContext );
 
 // Used internally to unwind the stack and ensure values get destructed correctly.

@@ -612,8 +612,17 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	size_t			startOffs = 0, endOffs = SIZE_MAX,
 					startDelOffs, endDelOffs;
+	uint32_t		delimChar = inContext->currentInstruction->param2;
 	char			tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
-	LEOGetValueAsString( secondArgumentValue, tempStr, sizeof(tempStr), inContext );
+	size_t			offs = 0;
+	
+	if( delimChar != 0 )
+	{
+		tempStr[0] = delimChar;		// TODO: Make this work with any Unicode character.
+		offs = 1;
+	}
+	
+	LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
 	
 	LEODetermineChunkRangeOfSubstring(	firstArgumentValue, &startOffs, &endOffs,
 										&startDelOffs, &endDelOffs,
@@ -626,6 +635,66 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 	inContext->currentInstruction++;
 }
 
+
+void	LEOConcatenateValuesWithSpaceInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	size_t			startOffs = 0, endOffs = SIZE_MAX,
+					startDelOffs, endDelOffs;
+	uint32_t		delimChar = inContext->currentInstruction->param2;
+	char			tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
+	size_t			offs = 0;
+	
+	if( delimChar == 0 )
+		delimChar = '0';
+	
+	tempStr[0] = delimChar;		// TODO: Make this work with any Unicode character.
+	offs = 1;
+		
+	LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
+	
+	LEODetermineChunkRangeOfSubstring(	firstArgumentValue, &startOffs, &endOffs,
+										&startDelOffs, &endDelOffs,
+										kLEOChunkTypeCharacter,
+										SIZE_MAX, SIZE_MAX, inContext );
+	LEOSetValuePredeterminedRangeAsString( firstArgumentValue, endOffs, endOffs, tempStr, inContext );
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOAndOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	bool			firstArgument = LEOGetValueAsBoolean(firstArgumentValue,inContext);
+	bool			secondArgument = LEOGetValueAsBoolean(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushBooleanOnStack( inContext, firstArgument && secondArgument );
+	
+	inContext->currentInstruction++;
+}
+
+void	LEOOrOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	bool			firstArgument = LEOGetValueAsBoolean(firstArgumentValue,inContext);
+	bool			secondArgument = LEOGetValueAsBoolean(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushBooleanOnStack( inContext, firstArgument || secondArgument );
+	
+	inContext->currentInstruction++;
+}
 
 
 
@@ -661,7 +730,10 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOParameterCountInstruction,
 	LEOSetReturnValueInstruction,
 	LEOParameterKeepRefsInstruction,
-	LEOConcatenateValuesInstruction
+	LEOConcatenateValuesInstruction,
+	LEOAndOperatorInstruction,
+	LEOOrOperatorInstruction,
+	LEOConcatenateValuesWithSpaceInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -693,7 +765,10 @@ const char*	gInstructionNames[] =
 	"ParameterCount",
 	"SetReturnValue",
 	"ParameterKeepRefs",
-	"ConcatenateValues"
+	"ConcatenateValues",
+	"And",
+	"Or",
+	"ConcatenateValuesWithSpace"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

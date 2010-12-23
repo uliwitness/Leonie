@@ -50,6 +50,9 @@
 #define SET_RETURN_VALUE_INSTR				25
 #define PARAMETER_KEEPREFS_INSTR			26
 #define CONCATENATE_VALUES_INSTR			27
+#define AND_INSTR							28
+#define OR_INSTR							29
+#define CONCATENATE_VALUES_WITH_SPACE_INSTR	30
 
 
 // -----------------------------------------------------------------------------
