@@ -211,6 +211,21 @@ LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger 
 }
 
 
+LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber )
+{
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitNumberValue( theValue, inNumber, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
 LEOValuePtr	LEOPushBooleanOnStack( LEOContext* theContext, bool inBoolean )
 {
 	if( !theContext->stackEndPtr )

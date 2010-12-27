@@ -681,6 +681,7 @@ void	LEOAndOperatorInstruction( LEOContext* inContext )
 	inContext->currentInstruction++;
 }
 
+
 void	LEOOrOperatorInstruction( LEOContext* inContext )
 {
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
@@ -696,6 +697,147 @@ void	LEOOrOperatorInstruction( LEOContext* inContext )
 	inContext->currentInstruction++;
 }
 
+
+void	LEONegateBooleanInstruction( LEOContext* inContext )
+{
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -1;
+	
+	bool			firstArgument = LEOGetValueAsBoolean(firstArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	LEOPushBooleanOnStack( inContext, !firstArgument );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOSubtractOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushNumberOnStack( inContext, firstArgument -secondArgument );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOAddOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushNumberOnStack( inContext, firstArgument +secondArgument );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOMultiplyOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushNumberOnStack( inContext, firstArgument * secondArgument );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEODivideOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushNumberOnStack( inContext, firstArgument / secondArgument );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOGreaterThanOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushBooleanOnStack( inContext, firstArgument > secondArgument );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOLessThanOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushBooleanOnStack( inContext, firstArgument < secondArgument );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOGreaterThanEqualOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushBooleanOnStack( inContext, firstArgument >= secondArgument );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOLessThanEqualOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushBooleanOnStack( inContext, firstArgument <= secondArgument );
+	
+	inContext->currentInstruction++;
+}
 
 
 #pragma mark -
@@ -733,7 +875,16 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOConcatenateValuesInstruction,
 	LEOAndOperatorInstruction,
 	LEOOrOperatorInstruction,
-	LEOConcatenateValuesWithSpaceInstruction
+	LEOConcatenateValuesWithSpaceInstruction,
+	LEONegateBooleanInstruction,
+	LEOSubtractOperatorInstruction,
+	LEOAddOperatorInstruction,
+	LEOMultiplyOperatorInstruction,
+	LEODivideOperatorInstruction,
+	LEOGreaterThanOperatorInstruction,
+	LEOLessThanOperatorInstruction,
+	LEOGreaterThanEqualOperatorInstruction,
+	LEOLessThanEqualOperatorInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -768,7 +919,16 @@ const char*	gInstructionNames[] =
 	"ConcatenateValues",
 	"And",
 	"Or",
-	"ConcatenateValuesWithSpace"
+	"ConcatenateValuesWithSpace",
+	"NegateBoolean",
+	"Subtract",
+	"Add",
+	"Multiply",
+	"Divide",
+	"GreaterThan",
+	"LessThan",
+	"GreaterThanEqual",
+	"LessThanEqual"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

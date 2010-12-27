@@ -207,6 +207,9 @@ LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCo
 LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger );
 
 
+LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber );
+
+
 LEOValuePtr	LEOPushBooleanOnStack( LEOContext* theContext, bool inBoolean );
 
 

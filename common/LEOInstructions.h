@@ -53,6 +53,15 @@
 #define AND_INSTR							28
 #define OR_INSTR							29
 #define CONCATENATE_VALUES_WITH_SPACE_INSTR	30
+#define NEGATE_BOOL_INSTR					31
+#define SUBTRACT_OPERATOR_INSTR				32
+#define ADD_OPERATOR_INSTR					33
+#define MULTIPLY_OPERATOR_INSTR				34
+#define DIVIDE_OPERATOR_INSTR				35
+#define GREATER_THAN_OPERATOR_INSTR			36
+#define LESS_THAN_OPERATOR_INSTR			37
+#define GREATER_THAN_EQUAL_OPERATOR_INSTR	38
+#define LESS_THAN_EQUAL_OPERATOR_INSTR		39
 
 
 // -----------------------------------------------------------------------------
