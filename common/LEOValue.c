@@ -57,7 +57,9 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOInitNumberValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
-	LEOCleanUpNumberValue
+	LEOCleanUpNumberValue,
+	
+	LEOCanGetValueAsNumber
 };
 
 
@@ -83,7 +85,9 @@ struct LEOValueType	kLeoValueTypeInteger =
 	LEOInitIntegerValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
-	LEOCleanUpIntegerValue
+	LEOCleanUpIntegerValue,
+	
+	LEOCanGetValueAsNumber
 };
 
 
@@ -109,7 +113,9 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOInitStringValueCopy,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
-	LEOCleanUpStringValue
+	LEOCleanUpStringValue,
+	
+	LEOCanGetStringValueAsNumber
 };
 
 
@@ -135,7 +141,9 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOInitStringConstantValueCopy,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
-	LEOCleanUpStringConstantValue
+	LEOCleanUpStringConstantValue,
+	
+	LEOCanGetStringValueAsNumber
 };
 
 
@@ -163,7 +171,9 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOInitBooleanValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
-	LEOCleanUpBooleanValue
+	LEOCleanUpBooleanValue,
+	
+	LEOCantCanGetValueAsNumber
 };
 
 
@@ -189,7 +199,9 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOInitReferenceValueSimpleCopy,
 	LEODetermineChunkRangeOfSubstringOfReferenceValue,
 	
-	LEOCleanUpReferenceValue
+	LEOCleanUpReferenceValue,
+	
+	LEOCanGetReferenceValueAsNumber
 };
 
 
@@ -215,7 +227,9 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOInitNumberValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
-	LEOCleanUpNumberValue
+	LEOCleanUpNumberValue,
+	
+	LEOCanGetValueAsNumber
 };
 
 
@@ -241,7 +255,9 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	LEOInitIntegerValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
-	LEOCleanUpIntegerValue
+	LEOCleanUpIntegerValue,
+	
+	LEOCanGetValueAsNumber
 };
 
 
@@ -267,7 +283,9 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOInitStringValueCopy,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
-	LEOCleanUpStringValue
+	LEOCleanUpStringValue,
+	
+	LEOCanGetStringValueAsNumber
 };
 
 
@@ -293,7 +311,9 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOInitBooleanValueCopy,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
-	LEOCleanUpBooleanValue
+	LEOCleanUpBooleanValue,
+	
+	LEOCantCanGetValueAsNumber
 };
 
 
@@ -468,6 +488,17 @@ void	LEODetermineChunkRangeOfSubstringOfAnyValue( LEOValuePtr self, size_t *ioBy
 	(*ioBytesDelEnd) = (*ioBytesDelStart) + (delChunkEnd -delChunkStart);
 }
 
+
+bool	LEOCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return true;
+}
+
+
+bool	LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return false;
+}
 
 #pragma mark -
 #pragma mark Number
@@ -995,6 +1026,18 @@ void	LEOCleanUpStringValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferenc
 	self->string.string = NULL;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+}
+
+
+bool	LEOCanGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContext )
+{
+	for( size_t x = 0; self->string.string[x] != 0; x++ )
+	{
+		if( self->string.string[x] < '0' || self->string.string[x] > '9' )
+			return false;
+	}
+	
+	return true;
 }
 
 
@@ -1607,6 +1650,16 @@ void	LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t
 }
 
 
+bool	LEOCanGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue != NULL )
+		return LEOCanGetAsNumber( theValue, inContext );
+	else
+		return false;
+}
+
+
 /*!
 	Destructor for reference values. If this value has references, this makes sure
 	that they will produce an error message if they ever try to access it again.
@@ -1621,7 +1674,6 @@ void	LEOCleanUpReferenceValue( LEOValuePtr self, LEOKeepReferencesFlag keepRefer
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
 }
-
 
 #pragma mark -
 #pragma mark Variants

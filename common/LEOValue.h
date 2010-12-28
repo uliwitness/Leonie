@@ -105,6 +105,8 @@ struct LEOValueType
 													LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
 													struct LEOContext* inContext );
 	void		(*CleanUp)( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+
+	bool		(*CanGetAsNumber)( LEOValuePtr self, struct LEOContext* inContext );
 };
 
 
@@ -616,6 +618,16 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 
 
 /*!
+	@function LEOCanGetAsNumber
+	Returns TRUE if the value can be converted to a number, FALSE otherwise.
+	@param	v	The value you wish to know about.
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+*/
+#define 	LEOCanGetAsNumber(v,c)		((LEOValuePtr)(v))->base.isa->CanGetAsNumber(((LEOValuePtr)(v)),(c))
+
+
+/*!
 	@function LEOInitCopy
 	Initializes the given storage to be an exact copy of the given value. If the
 	value is a reference, you will get a second reference to the original value,
@@ -692,6 +704,8 @@ void		LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 void		LEOCantSetValuePredeterminedRangeAsString( LEOValuePtr self,
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext );
+bool		LEOCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
+bool		LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 
 // Other methods reusable across several types:
 void		LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
@@ -741,6 +755,7 @@ void		LEOSetStringValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 void		LEOSetStringValuePredeterminedRangeAsString( LEOValuePtr self,
 												size_t inRangeStart, size_t inRangeEnd,
 												const char* inBuf, struct LEOContext* inContext );
+bool		LEOCanGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEODetermineChunkRangeOfSubstringOfStringValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
 															size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
@@ -789,6 +804,7 @@ void		LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 void		LEOSetReferenceValuePredeterminedRangeAsString( LEOValuePtr self,
 											size_t inRangeStart, size_t inRangeEnd,
 											const char* inBuf, struct LEOContext* inContext );
+bool		LEOCanGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitReferenceValueSimpleCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,

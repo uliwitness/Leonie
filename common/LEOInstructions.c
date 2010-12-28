@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+#include <string.h>
 
 
 #pragma mark Instruction Functions
@@ -781,12 +783,28 @@ void	LEOGreaterThanOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	bool			isEqual = false;
+	
+	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	{
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		
+		isEqual = (firstArgument > secondArgument);
+	}
+	else
+	{
+		char			firstArgumentStr[1024] = { 0 };
+		char			secondArgumentStr[1024] = { 0 };
+		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
+		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		
+		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) > 0);
+	}
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
-	LEOPushBooleanOnStack( inContext, firstArgument > secondArgument );
+	LEOPushBooleanOnStack( inContext, isEqual );
 	
 	inContext->currentInstruction++;
 }
@@ -797,12 +815,28 @@ void	LEOLessThanOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	bool			isEqual = false;
+	
+	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	{
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		
+		isEqual = (firstArgument < secondArgument);
+	}
+	else
+	{
+		char			firstArgumentStr[1024] = { 0 };
+		char			secondArgumentStr[1024] = { 0 };
+		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
+		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		
+		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) < 0);
+	}
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
-	LEOPushBooleanOnStack( inContext, firstArgument < secondArgument );
+	LEOPushBooleanOnStack( inContext, isEqual );
 	
 	inContext->currentInstruction++;
 }
@@ -813,12 +847,28 @@ void	LEOGreaterThanEqualOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	bool			isEqual = false;
+	
+	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	{
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		
+		isEqual = (firstArgument >= secondArgument);
+	}
+	else
+	{
+		char			firstArgumentStr[1024] = { 0 };
+		char			secondArgumentStr[1024] = { 0 };
+		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
+		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		
+		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) >= 0);
+	}
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
-	LEOPushBooleanOnStack( inContext, firstArgument >= secondArgument );
+	LEOPushBooleanOnStack( inContext, isEqual );
 	
 	inContext->currentInstruction++;
 }
@@ -829,12 +879,138 @@ void	LEOLessThanEqualOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
+	bool			isEqual = false;
+	
+	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	{
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		
+		isEqual = (firstArgument <= secondArgument);
+	}
+	else
+	{
+		char			firstArgumentStr[1024] = { 0 };
+		char			secondArgumentStr[1024] = { 0 };
+		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
+		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		
+		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) <= 0);
+	}
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushBooleanOnStack( inContext, isEqual );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEONegateNumberInstruction( LEOContext* inContext )
+{
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -1;
+	
+	LEONumber			firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	LEOPushNumberOnStack( inContext, -firstArgument );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOModuloOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
 	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
 	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
-	LEOPushBooleanOnStack( inContext, firstArgument <= secondArgument );
+	LEOPushNumberOnStack( inContext, fmod(firstArgument, secondArgument) );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOPowerOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushNumberOnStack( inContext, pow(firstArgument, secondArgument) );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOEqualOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	bool			isEqual = false;
+	
+	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	{
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		
+		isEqual = (firstArgument == secondArgument);
+	}
+	else
+	{
+		char			firstArgumentStr[1024] = { 0 };
+		char			secondArgumentStr[1024] = { 0 };
+		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
+		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		
+		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) == 0);
+	}
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushBooleanOnStack( inContext, isEqual );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEONotEqualOperatorInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	bool			isEqual = false;
+	
+	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	{
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		
+		isEqual = (firstArgument != secondArgument);
+	}
+	else
+	{
+		char			firstArgumentStr[1024] = { 0 };
+		char			secondArgumentStr[1024] = { 0 };
+		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
+		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		
+		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) != 0);
+	}
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushBooleanOnStack( inContext, isEqual );
 	
 	inContext->currentInstruction++;
 }
@@ -884,7 +1060,12 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOGreaterThanOperatorInstruction,
 	LEOLessThanOperatorInstruction,
 	LEOGreaterThanEqualOperatorInstruction,
-	LEOLessThanEqualOperatorInstruction
+	LEOLessThanEqualOperatorInstruction,
+	LEONegateNumberInstruction,
+	LEOModuloOperatorInstruction,
+	LEOPowerOperatorInstruction,
+	LEOEqualOperatorInstruction,
+	LEONotEqualOperatorInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -928,7 +1109,12 @@ const char*	gInstructionNames[] =
 	"GreaterThan",
 	"LessThan",
 	"GreaterThanEqual",
-	"LessThanEqual"
+	"LessThanEqual",
+	"NegateNumber",
+	"Modulo",
+	"Power",
+	"Equal",
+	"NotEqual"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

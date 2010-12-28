@@ -62,6 +62,11 @@
 #define LESS_THAN_OPERATOR_INSTR			37
 #define GREATER_THAN_EQUAL_OPERATOR_INSTR	38
 #define LESS_THAN_EQUAL_OPERATOR_INSTR		39
+#define NEGATE_NUMBER_INSTR					40
+#define MODULO_OPERATOR_INSTR				41
+#define POWER_OPERATOR_INSTR				42
+#define EQUAL_OPERATOR_INSTR				43
+#define NOT_EQUAL_OPERATOR_INSTR			44
 
 
 // -----------------------------------------------------------------------------
