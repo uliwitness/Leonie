@@ -649,7 +649,7 @@ void	LEOConcatenateValuesWithSpaceInstruction( LEOContext* inContext )
 	size_t			offs = 0;
 	
 	if( delimChar == 0 )
-		delimChar = '0';
+		delimChar = ' ';
 	
 	tempStr[0] = delimChar;		// TODO: Make this work with any Unicode character.
 	offs = 1;
