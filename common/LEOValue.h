@@ -107,6 +107,8 @@ struct LEOValueType
 	void		(*CleanUp)( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
 	bool		(*CanGetAsNumber)( LEOValuePtr self, struct LEOContext* inContext );
+	
+	LEOValuePtr	(*GetValueForKey)( LEOValuePtr self, const char* keyName, struct LEOContext* inContext );
 };
 
 
@@ -678,6 +680,19 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 
 
 /*!
+	@function LEOGetValueForKey
+	Fetches the value with the given key from tha array in the specified value.
+	Returns NULL if there is no value under that key yet.
+	@param	v	The value you wish to examine.
+	@param	k	The key of the array item to fetch.
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+	@result		A LEOValuePtr pointing to the actual value in the array.
+*/
+#define 	LEOGetValueForKey(v,k,c)			((LEOValuePtr)(v))->base.isa->GetValueForKey(((LEOValuePtr)(v)),(k),(c))
+
+
+/*!
 	@function LEOCleanUpValue
 	Dispose of any additional storage the value has allocated to hold its data.
 	If there are references to this value, this will cause the references to fail
@@ -696,6 +711,7 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
 bool		LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
+LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, struct LEOContext* inContext );
 void		LEOCantSetValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext );
 void		LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct LEOContext* inContext );
 void		LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext* inContext );
@@ -814,6 +830,7 @@ void		LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_
 																LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
 																struct LEOContext* inContext );
 void		LEOCleanUpReferenceValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+LEOValuePtr	LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKey, struct LEOContext * inContext );
 
 
 // Variant-specific replacements for certain instance methods:
@@ -844,6 +861,7 @@ void		LEODetermineChunkRangeOfSubstringOfArrayValue( LEOValuePtr self, size_t *i
 															LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
 															struct LEOContext* inContext );
 void		LEOCleanUpArrayValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+LEOValuePtr	LEOGetArrayValueValueForKey( LEOValuePtr self, const char* inKey, struct LEOContext * inContext );
 
 
 // Associative arrays:

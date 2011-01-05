@@ -59,7 +59,9 @@ struct LEOValueType	kLeoValueTypeNumber =
 	
 	LEOCleanUpNumberValue,
 	
-	LEOCanGetValueAsNumber
+	LEOCanGetValueAsNumber,
+	
+	LEOCantGetValueForKey
 };
 
 
@@ -87,7 +89,9 @@ struct LEOValueType	kLeoValueTypeInteger =
 	
 	LEOCleanUpIntegerValue,
 	
-	LEOCanGetValueAsNumber
+	LEOCanGetValueAsNumber,
+	
+	LEOCantGetValueForKey
 };
 
 
@@ -115,7 +119,9 @@ struct LEOValueType	kLeoValueTypeString =
 	
 	LEOCleanUpStringValue,
 	
-	LEOCanGetStringValueAsNumber
+	LEOCanGetStringValueAsNumber,
+	
+	LEOCantGetValueForKey
 };
 
 
@@ -143,7 +149,9 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	
 	LEOCleanUpStringConstantValue,
 	
-	LEOCanGetStringValueAsNumber
+	LEOCanGetStringValueAsNumber,
+	
+	LEOCantGetValueForKey
 };
 
 
@@ -173,7 +181,9 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	
 	LEOCleanUpBooleanValue,
 	
-	LEOCantCanGetValueAsNumber
+	LEOCantCanGetValueAsNumber,
+	
+	LEOCantGetValueForKey
 };
 
 
@@ -201,7 +211,9 @@ struct LEOValueType	kLeoValueTypeReference =
 	
 	LEOCleanUpReferenceValue,
 	
-	LEOCanGetReferenceValueAsNumber
+	LEOCanGetReferenceValueAsNumber,
+	
+	LEOGetReferenceValueValueForKey
 };
 
 
@@ -229,7 +241,9 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	
 	LEOCleanUpNumberValue,
 	
-	LEOCanGetValueAsNumber
+	LEOCanGetValueAsNumber,
+	
+	LEOCantGetValueForKey
 };
 
 
@@ -257,7 +271,9 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	
 	LEOCleanUpIntegerValue,
 	
-	LEOCanGetValueAsNumber
+	LEOCanGetValueAsNumber,
+	
+	LEOCantGetValueForKey
 };
 
 
@@ -285,7 +301,9 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	
 	LEOCleanUpStringValue,
 	
-	LEOCanGetStringValueAsNumber
+	LEOCanGetStringValueAsNumber,
+	
+	LEOCantGetValueForKey
 };
 
 
@@ -313,7 +331,9 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	
 	LEOCleanUpBooleanValue,
 	
-	LEOCantCanGetValueAsNumber
+	LEOCantCanGetValueAsNumber,
+	
+	LEOCantGetValueForKey
 };
 
 
@@ -341,7 +361,9 @@ struct LEOValueType	kLeoValueTypeArray =
 	
 	LEOCleanUpArrayValue,
 	
-	LEOCantCanGetValueAsNumber
+	LEOCantCanGetValueAsNumber,
+	
+	LEOGetArrayValueValueForKey
 };
 
 
@@ -392,6 +414,20 @@ bool	LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext )
 	inContext->keepRunning = false;
 	
 	return false;
+}
+
+
+/*!
+	Generic method implementation used for values to return a "can't get as array"
+	error message and abort execution of the current LEOContext.
+*/
+
+LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, struct LEOContext* inContext )
+{
+	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into an array", self->base.isa->displayTypeName );
+	inContext->keepRunning = false;
+	
+	return NULL;
 }
 
 
@@ -1703,6 +1739,22 @@ void	LEOCleanUpReferenceValue( LEOValuePtr self, LEOKeepReferencesFlag keepRefer
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
 }
 
+
+LEOValuePtr		LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKey, struct LEOContext * inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
+		inContext->keepRunning = false;
+		
+		return NULL;
+	}
+	else
+		return LEOGetValueForKey( theValue, inKey, inContext );
+}
+
+
 #pragma mark -
 #pragma mark Variants
 
@@ -1875,6 +1927,12 @@ void	LEOCleanUpArrayValue( LEOValuePtr self, LEOKeepReferencesFlag keepReference
 	self->array.array = NULL;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+}
+
+
+LEOValuePtr		LEOGetArrayValueValueForKey( LEOValuePtr self, const char* inKey, struct LEOContext * inContext )
+{
+	return LEOGetArrayValueForKey( self->array.array, inKey );
 }
 
 

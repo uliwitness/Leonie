@@ -1054,22 +1054,106 @@ static bool LEOAssignChunkArrayChunkCallback( const char *currStr, size_t currLe
 }
 
 
+/*!
+	@function LEOAssignChunkArrayInstruction
+	Build an array containing each chunk item (i.e. item, line or word) in a
+	given value's string representation.
+	You must push the value whose chunks you want to get (or a reference to it)
+	on the stack before calling this.
+	
+	param1		-	BP-relative address of at which you want the array to be
+					created, or BACK_OF_STACK to push it on the back of the stack.
+	param2		-	The chunk type to use.
+*/
+
 void	LEOAssignChunkArrayInstruction( LEOContext* inContext )
 {
-	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
-	LEOValuePtr		valueTarget = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	if( !onStack )
-		LEOCleanUpValue( valueTarget, kLEOKeepReferences, inContext );
 	union LEOValue	*		srcValue = inContext->stackEndPtr -1;
 	struct LEOAssignChunkArrayUserData	userData = { 0 };
 	userData.context = inContext;
 	char					tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
 	
 	LEOGetValueAsString( srcValue, tempStr, sizeof(tempStr), inContext );
+	LEOCleanUpStackToPtr( inContext, srcValue );	// Pop srcValue off the stack.
+	
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
+	LEOValuePtr		dstValue = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
+	if( !onStack )
+		LEOCleanUpValue( dstValue, kLEOKeepReferences, inContext );
 	
 	LEODoForEachChunk( tempStr, strlen(tempStr), inContext->currentInstruction->param2, LEOAssignChunkArrayChunkCallback, inContext->itemDelimiter, &userData );
-	LEOInitArrayValue( valueTarget, userData.array, kLEOKeepReferences, inContext );
+	LEOInitArrayValue( dstValue, userData.array, kLEOKeepReferences, inContext );
 
+	inContext->currentInstruction++;
+}
+
+
+struct LEOCountChunksUserData
+{
+	size_t					numItems;
+	struct LEOContext	*	context;
+};
+
+
+static bool LEOCountChunksChunkCallback( const char *currStr, size_t currLen, size_t currStart, size_t currEnd, void *userData )
+{
+	size_t	*	numItems = (size_t *) userData;
+	++(*numItems);
+		
+	return true;
+}
+
+
+/*!
+	@function LEOCountChunksInstruction
+	Determine the number of chunks of the given type in a value's string
+	representation.
+	
+	param2		-	The chunk type to use.
+*/
+
+void	LEOCountChunksInstruction( LEOContext* inContext )
+{
+	union LEOValue	*		srcValue = inContext->stackEndPtr -1;
+	int						numItems = 0;
+	char					tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
+	
+	LEOGetValueAsString( srcValue, tempStr, sizeof(tempStr), inContext );
+	
+	LEODoForEachChunk( tempStr, strlen(tempStr), inContext->currentInstruction->param2, LEOCountChunksChunkCallback, inContext->itemDelimiter, &numItems );
+
+	inContext->currentInstruction++;
+}
+
+
+/*!
+	@function LEOGetArrayItemInstruction
+	Fetch an item out of an array, or an empty string if there is no such item.
+	The key for the array item to be fetched, and the array value, must have been
+	pushed on the stack before.
+	
+	param1		-	Destination BP-relative address, or BACK_OF_STACK.
+*/
+
+
+void	LEOGetArrayItemInstruction( LEOContext* inContext )
+{
+	bool					onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
+	LEOValuePtr				dstValue = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
+	if( !onStack )
+		LEOCleanUpValue( dstValue, kLEOKeepReferences, inContext );
+	union LEOValue	*		keyValue = inContext->stackEndPtr -2;
+	union LEOValue	*		srcValue = inContext->stackEndPtr -1;
+	
+	char					keyStr[1024] = { 0 };	// TODO: Make this work with any length of string.
+	
+	LEOGetValueAsString( keyValue, keyStr, sizeof(keyStr), inContext );	
+	LEOValuePtr		foundItem = LEOGetValueForKey( srcValue, keyStr, inContext );
+	if( foundItem == NULL )
+		LEOInitStringValue( dstValue, "", 0, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
+	else
+		LEOInitSimpleCopy( foundItem, dstValue, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
+	
 	inContext->currentInstruction++;
 }
 
@@ -1125,7 +1209,9 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOEqualOperatorInstruction,
 	LEONotEqualOperatorInstruction,
 	LEOLineMarkerInstruction,
-	LEOAssignChunkArrayInstruction
+	LEOAssignChunkArrayInstruction,
+	LEOGetArrayItemInstruction,
+	LEOCountChunksInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -1176,7 +1262,9 @@ const char*	gInstructionNames[] =
 	"Equal",
 	"NotEqual",
 	"# Line",
-	"AssignChunkArray"
+	"AssignChunkArray",
+	"GetArrayItem",
+	"CountChunks"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

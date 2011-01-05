@@ -68,6 +68,9 @@
 #define EQUAL_OPERATOR_INSTR				43
 #define NOT_EQUAL_OPERATOR_INSTR			44
 #define LINE_MARKER_INSTR					45
+#define ASSIGN_CHUNK_ARRAY_INSTR			46
+#define GET_ARRAY_ITEM_INSTR				47
+#define COUNT_CHUNKS_INSTR					48
 
 
 // -----------------------------------------------------------------------------
