@@ -56,6 +56,11 @@ void LEODebuggerPrompt( struct LEOContext* inContext )
 				LEODebuggerRemoveBreakpoint( inContext->currentInstruction );
 				printf("\n");
 			}
+			else if( strcasecmp(currCmd,"exit") == 0 )
+			{
+				inContext->keepRunning = false;
+				stayInDebuggerPrompt = false;
+			}
 			else if( strcasecmp(currCmd,"help") == 0 )
 			{
 				printf( "LDB, the Leonie Debugger, Version 1.0.\nList of commands:\n" );
@@ -68,6 +73,7 @@ void LEODebuggerPrompt( struct LEOContext* inContext )
 				printf( "    breakpoint - Set a breakpoint at the current instruction.\n" );
 				printf( "    b          - Short form of 'breakpoint'.\n" );
 				printf( "    delete     - Delete a breakpoint at the current instruction.\n" );
+				printf( "    exit       - Stop execution (and exit the debugger).\n" );
 				printf( "    help       - Display this help text.\n\n" );
 			}
 			else

@@ -67,6 +67,7 @@
 #define POWER_OPERATOR_INSTR				42
 #define EQUAL_OPERATOR_INSTR				43
 #define NOT_EQUAL_OPERATOR_INSTR			44
+#define LINE_MARKER_INSTR					45
 
 
 // -----------------------------------------------------------------------------

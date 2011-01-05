@@ -23,6 +23,7 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 
 /*! @enum LEOChunkType
@@ -88,12 +89,41 @@ typedef enum
 							the end of the given chunk, including any starting
 							or ending delimiters that would have to be deleted
 							to remove this chunk completely from its string.
+	@param itemDelimiter	The item delimiter to use when inType is kLEOChunkTypeItem.
 */
 void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 							size_t inRangeStart, size_t inRangeEnd,
 							size_t *outChunkStart, size_t *outChunkEnd,
 							size_t *outDelChunkStart, size_t *outDelChunkEnd,
 							uint32_t itemDelimiter );
+
+
+/*!
+	Determine all the chunks of a certain type in a string and call the given
+	callback for each chunk.
+	
+	@param inStr			A UTF8-encoded string to be parsed to determine the
+							range of the given chunk, or, for the byte chunk type,
+							an arbitrary buffer of bytes.
+	@param inBufSize		The number of bytes in inStr to parse.
+	@param inType			The type of unit for the chunk items to pass to the
+							callback.
+	@param inChunkCallback	A pointer to a function which will be called for
+							each chunk item. If this function returns FALSE,
+							parsing of the string for chunks will be aborted.
+							Return TRUE to keep going.
+	@param itemDelimiter	The item delimiter to use when inType is kLEOChunkTypeItem.
+	@param userData			A pointer to an arbitrary block of data that will be
+							passed to inChunkCallback as its userData parameter.
+							Use this to pass in context information that your
+							callback needs. LEODoForEachChunk() does not make
+							any assumptions or do anything with this pointer
+							except pass it on.
+*/
+
+void	LEODoForEachChunk( const char* inStr, size_t inBufSize, LEOChunkType inType,
+							bool (*inChunkCallback)( const char* currStr, size_t currLen, size_t currStart, size_t currEnd, void* userData ),
+							uint32_t itemDelimiter, void* userData );
 
 
 #endif // LEO_CHUNKS_H

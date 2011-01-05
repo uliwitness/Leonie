@@ -79,7 +79,7 @@ void	LEOPushStringFromTableInstruction( LEOContext* inContext )
 	if( inContext->currentInstruction->param2 < script->numStrings )
 		theString = script->strings[inContext->currentInstruction->param2];
 	
-	LEOInitStringValue( (LEOValuePtr) inContext->stackEndPtr, theString, kLEOInvalidateReferences, inContext );
+	LEOInitStringValue( (LEOValuePtr) inContext->stackEndPtr, theString, strlen(theString), kLEOInvalidateReferences, inContext );
 	inContext->stackEndPtr++;
 	
 	inContext->currentInstruction++;
@@ -1016,6 +1016,64 @@ void	LEONotEqualOperatorInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	This instruction does nothing. It just advances to the next instruction.
+	(LINE_MARKER_INSTR)
+	
+	param2		-	The line number.
+*/
+
+void	LEOLineMarkerInstruction( LEOContext* inContext )
+{
+	// Do nothing.
+
+	inContext->currentInstruction++;
+}
+
+
+struct LEOAssignChunkArrayUserData
+{
+	struct LEOArrayEntry *	array;
+	size_t					numItems;
+	struct LEOContext	*	context;
+};
+
+
+static bool LEOAssignChunkArrayChunkCallback( const char *currStr, size_t currLen, size_t currStart, size_t currEnd, void *userData )
+{
+	struct LEOAssignChunkArrayUserData	*	ud = (struct LEOAssignChunkArrayUserData *) userData;
+	char									keyString[20] = { 0 };
+	snprintf( keyString, sizeof(keyString) -1, "%lu", ++ud->numItems );
+	
+	union LEOValue		tempStringValue = { 0 };
+	LEOInitStringValue( &tempStringValue, currStr, currLen, kLEOInvalidateReferences, ud->context );
+	LEOAddArrayEntryToRoot( &ud->array, keyString, &tempStringValue, ud->context );
+	LEOCleanUpValue( &tempStringValue, kLEOInvalidateReferences, ud->context );
+	
+	return true;
+}
+
+
+void	LEOAssignChunkArrayInstruction( LEOContext* inContext )
+{
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
+	LEOValuePtr		valueTarget = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
+	if( !onStack )
+		LEOCleanUpValue( valueTarget, kLEOKeepReferences, inContext );
+	union LEOValue	*		srcValue = inContext->stackEndPtr -1;
+	struct LEOAssignChunkArrayUserData	userData = { 0 };
+	userData.context = inContext;
+	char					tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
+	
+	LEOGetValueAsString( srcValue, tempStr, sizeof(tempStr), inContext );
+	
+	LEODoForEachChunk( tempStr, strlen(tempStr), inContext->currentInstruction->param2, LEOAssignChunkArrayChunkCallback, inContext->itemDelimiter, &userData );
+	LEOInitArrayValue( valueTarget, userData.array, kLEOKeepReferences, inContext );
+
+	inContext->currentInstruction++;
+}
+
+
 #pragma mark -
 #pragma mark Instruction table
 
@@ -1065,7 +1123,9 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOModuloOperatorInstruction,
 	LEOPowerOperatorInstruction,
 	LEOEqualOperatorInstruction,
-	LEONotEqualOperatorInstruction
+	LEONotEqualOperatorInstruction,
+	LEOLineMarkerInstruction,
+	LEOAssignChunkArrayInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -1114,7 +1174,9 @@ const char*	gInstructionNames[] =
 	"Modulo",
 	"Power",
 	"Equal",
-	"NotEqual"
+	"NotEqual",
+	"# Line",
+	"AssignChunkArray"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

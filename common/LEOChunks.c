@@ -261,3 +261,109 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 		}
 	}
 }
+
+
+void	LEODoForEachChunk( const char* inStr, size_t inBufSize, LEOChunkType inType,
+							bool (*inChunkCallback)( const char* currStr, size_t currLen, size_t currStart, size_t currEnd, void* userData ),
+							uint32_t itemDelimiter, void* userData )
+{
+	size_t		theLen = inBufSize;
+	size_t		foundChunkStart = 0;
+	size_t		foundChunkEnd = 0;
+	
+	if( inType == kLEOChunkTypeByte )
+	{
+		size_t		currIdx = 0;
+		
+		while( currIdx < theLen )
+		{
+			if( !inChunkCallback( inStr +currIdx, 1, currIdx, currIdx, userData ) )
+				return;
+			++currIdx;
+		}
+	}
+	else if( inType == kLEOChunkTypeCharacter )
+	{
+		size_t		currOffset = 0;
+		size_t		currChar = 0;
+		
+		while( currOffset < theLen )
+		{
+			size_t		startOffset = currOffset;
+			
+			(uint32_t) LEOUTF8StringParseUTF32CharacterAtOffset( inStr, theLen, &currOffset );
+			
+			++currChar;
+			if( !inChunkCallback( inStr +startOffset, currOffset -startOffset, currChar, currChar, userData ) )
+				return;
+		}
+	}
+	else if( inType == kLEOChunkTypeItem || inType == kLEOChunkTypeLine )
+	{
+		size_t		currOffset = 0;
+		size_t		startOffset = currOffset;
+		uint32_t	currCh = 0;
+		bool		foundDelimiter = false;
+		
+		while( currOffset < theLen )
+		{
+			size_t		prevOffset = currOffset;
+			foundDelimiter = false;
+			currCh = LEOUTF8StringParseUTF32CharacterAtOffset( inStr, theLen, &currOffset );
+			
+			if( inType == kLEOChunkTypeItem )
+				foundDelimiter = (currCh == itemDelimiter);
+			else if( inType == kLEOChunkTypeLine )
+				foundDelimiter = (currCh == '\n' || currCh == '\r');
+			
+			if( foundDelimiter )
+			{
+				if( !inChunkCallback( inStr +startOffset, prevOffset -startOffset, startOffset, prevOffset, userData ) )
+					return;
+				
+				startOffset = currOffset;
+			}
+		}
+		
+		// There's always a last item that we haven't reported yet, though it can be empty:
+		inChunkCallback( inStr +startOffset, currOffset -startOffset, startOffset, currOffset, userData );
+	}
+	else if( inType == kLEOChunkTypeWord )
+	{
+		size_t		wordNum = 0;
+		bool		isInWord = true;	// Ignored, initialized when we know what 1st char is.
+		
+		foundChunkStart = 0;
+		
+		size_t x = 0;
+		for( ; x < theLen; )
+		{
+			size_t		newX = x;
+			uint32_t	currCh = LEOUTF8StringParseUTF32CharacterAtOffset( inStr, theLen, &newX );
+			bool		isWhitespace = (currCh == ' ' || currCh == '\t' || currCh == '\r' || currCh == '\n');
+			if( x == 0 )
+				isInWord = !isWhitespace;
+			if( isWhitespace && isInWord )
+			{
+				isInWord = false;
+				foundChunkEnd = x;
+				if( !inChunkCallback( inStr +foundChunkStart, foundChunkEnd -foundChunkStart, foundChunkStart, foundChunkEnd, userData ) )
+					return;
+				wordNum++;
+			}
+			else if( !isWhitespace && !isInWord )
+			{
+				isInWord = true;
+				foundChunkStart = x;
+			}
+			
+			x = newX;
+		}
+		
+		if( isInWord )
+		{
+			foundChunkEnd = theLen;
+			inChunkCallback( inStr +foundChunkStart, foundChunkEnd -foundChunkStart, foundChunkStart, foundChunkEnd, userData );
+		}
+	}
+}

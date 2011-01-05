@@ -18,6 +18,7 @@
 
 
 #define ASSERT(expr)	({ if( !(expr) ) printf( "error: Test failed: %s\n", #expr ); else printf( "note: Test passed: %s\n", #expr ); })
+#define ASSERT_STRING_MATCH(a,b)	({ if( strcmp( (a), (b) ) != 0 ) printf( "error: Test failed: \"%s\" != \"%s\"\n", (a), (b) ); else printf( "note: Test passed: \"%s\" == \"%s\"\n", (a), (b) ); })
 
 
 void	ASSERT_RANGE_MATCHES_STRING( const char* theStr, size_t chunkStart, size_t chunkEnd, const char* matchStr )
@@ -44,6 +45,8 @@ void	DoScriptTest( void )
 	LEOScript		*	theScript = LEOScriptCreateForOwner( 0, 0 );
 	LEOHandler		*	newHandler = NULL;
 	LEOHandler		*	foundHandler = NULL;
+	
+	printf( "\nnote: Script generation tests\n" );
 	
 	// Add 1st handler:
 	LEOHandlerID	mouseDownID = LEOContextGroupHandlerIDForHandlerName( group, "mouseDown" );
@@ -826,6 +829,186 @@ void	DoChunkReferenceTests( void )
 }
 
 
+static char*	sIndividualItems[] = { "this", "that", "more" };
+
+static bool	DoForAllItemsCallback( const char* currStr, size_t currLen, size_t currStart, size_t currEnd, void* userData )
+{
+	char		theCurrStr[1024] = { 0 };
+	int*		currIdx = ((int*) userData);
+	memmove( theCurrStr, currStr, (currLen >= sizeof(theCurrStr)) ? (sizeof(theCurrStr) -1) : currLen );
+	ASSERT_STRING_MATCH( theCurrStr, sIndividualItems[*currIdx] );
+	(*currIdx)++;
+	
+	return true;
+}
+
+
+static char*	sIndividualItemsWithEmpty[] = { "full", "", "full again" };
+
+static bool	DoForAllItemsWithEmptyCallback( const char* currStr, size_t currLen, size_t currStart, size_t currEnd, void* userData )
+{
+	char		theCurrStr[1024] = { 0 };
+	int*		currIdx = ((int*) userData);
+	memmove( theCurrStr, currStr, (currLen >= sizeof(theCurrStr)) ? (sizeof(theCurrStr) -1) : currLen );
+	ASSERT_STRING_MATCH( theCurrStr, sIndividualItemsWithEmpty[*currIdx] );
+	(*currIdx)++;
+	
+	return true;
+}
+
+
+static char*	sIndividualItemsWithLeadingEmpty[] = { "", "full", "still full" };
+
+static bool	DoForAllItemsWithLeadingEmptyCallback( const char* currStr, size_t currLen, size_t currStart, size_t currEnd, void* userData )
+{
+	char		theCurrStr[1024] = { 0 };
+	int*		currIdx = ((int*) userData);
+	memmove( theCurrStr, currStr, (currLen >= sizeof(theCurrStr)) ? (sizeof(theCurrStr) -1) : currLen );
+	ASSERT_STRING_MATCH( theCurrStr, sIndividualItemsWithLeadingEmpty[*currIdx] );
+	(*currIdx)++;
+	
+	return true;
+}
+
+static char*	sIndividualItemsWithTrailingEmpty[] = { "full", "still full", "" };
+
+static bool	DoForAllItemsWithTrailingEmptyCallback( const char* currStr, size_t currLen, size_t currStart, size_t currEnd, void* userData )
+{
+	char		theCurrStr[1024] = { 0 };
+	int*		currIdx = ((int*) userData);
+	memmove( theCurrStr, currStr, (currLen >= sizeof(theCurrStr)) ? (sizeof(theCurrStr) -1) : currLen );
+	ASSERT_STRING_MATCH( theCurrStr, sIndividualItemsWithTrailingEmpty[*currIdx] );
+	(*currIdx)++;
+	
+	return true;
+}
+
+
+
+static char*	sIndividualChars[] = { "E", "r", "i", "c" };
+
+static bool	DoForAllCharsCallback( const char* currStr, size_t currLen, size_t currStart, size_t currEnd, void* userData )
+{
+	char		theCurrStr[1024] = { 0 };
+	int*		currIdx = ((int*) userData);
+	memmove( theCurrStr, currStr, (currLen >= sizeof(theCurrStr)) ? (sizeof(theCurrStr) -1) : currLen );
+	ASSERT_STRING_MATCH( theCurrStr, sIndividualChars[*currIdx] );
+	(*currIdx)++;
+	
+	return true;
+}
+
+
+static char*	sIndividualUnicodeChars[] = { "G", "r", "\303\274", "b", "e", "l", " ", "\342\234\216" };
+
+static bool	DoForAllUnicodeCharsCallback( const char* currStr, size_t currLen, size_t currStart, size_t currEnd, void* userData )
+{
+	char		theCurrStr[1024] = { 0 };
+	int*		currIdx = ((int*) userData);
+	memmove( theCurrStr, currStr, (currLen >= sizeof(theCurrStr)) ? (sizeof(theCurrStr) -1) : currLen );
+	ASSERT_STRING_MATCH( theCurrStr, sIndividualUnicodeChars[*currIdx] );
+	(*currIdx)++;
+	
+	return true;
+}
+
+
+static char*	sIndividualUnicodeBytes[] = { "G", "r", "\303", "\274", "b", "e", "l", " ", "\342", "\234", "\216" };
+
+static bool	DoForAllUnicodeBytesCallback( const char* currStr, size_t currLen, size_t currStart, size_t currEnd, void* userData )
+{
+	char		theCurrStr[1024] = { 0 };
+	int*		currIdx = ((int*) userData);
+	memmove( theCurrStr, currStr, (currLen >= sizeof(theCurrStr)) ? (sizeof(theCurrStr) -1) : currLen );
+	ASSERT_STRING_MATCH( theCurrStr, sIndividualUnicodeBytes[*currIdx] );
+	(*currIdx)++;
+	
+	return true;
+}
+
+
+void	DoAllChunksTest()
+{
+	printf( "\nnote: Determine all chunks tests\n" );
+	
+	printf( "note: Items\n" );
+	int			currIdx = 0;
+	const char*	theStr = "this,that,more";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeItem, DoForAllItemsCallback, ',', &currIdx );
+
+	printf( "note: Items with empty items\n" );
+	currIdx = 0;
+	theStr = "full,,full again";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeItem, DoForAllItemsWithEmptyCallback, ',', &currIdx );
+
+	printf( "note: Items with leading empty item\n" );
+	currIdx = 0;
+	theStr = ",full,still full";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeItem, DoForAllItemsWithLeadingEmptyCallback, ',', &currIdx );
+
+	printf( "note: Items with trailing empty item\n" );
+	currIdx = 0;
+	theStr = "full,still full,";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeItem, DoForAllItemsWithTrailingEmptyCallback, ',', &currIdx );
+
+	printf( "note: Words\n" );
+	currIdx = 0;
+	theStr = "this that more";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeWord, DoForAllItemsCallback, 0, &currIdx );
+
+	printf( "note: Double-spaced words\n" );
+	currIdx = 0;
+	theStr = "this  that  more";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeWord, DoForAllItemsCallback, 0, &currIdx );
+
+	printf( "note: Leading/trailing spaces for words\n" );
+	currIdx = 0;
+	theStr = "  this  that  more  ";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeWord, DoForAllItemsCallback, 0, &currIdx );
+
+	printf( "note: Lines\n" );
+	currIdx = 0;
+	theStr = "this\nthat\rmore";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeLine, DoForAllItemsCallback, 0, &currIdx );
+
+	printf( "note: Lines with empty lines\n" );
+	currIdx = 0;
+	theStr = "full\n\rfull again";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeLine, DoForAllItemsWithEmptyCallback, 0, &currIdx );
+
+	printf( "note: Lines with leading empty line\n" );
+	currIdx = 0;
+	theStr = "\nfull\rstill full";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeLine, DoForAllItemsWithLeadingEmptyCallback, 0, &currIdx );
+
+	printf( "note: Lines with leading empty line\n" );
+	currIdx = 0;
+	theStr = "full\rstill full\n";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeLine, DoForAllItemsWithTrailingEmptyCallback, 0, &currIdx );
+
+	printf( "note: Characters\n" );
+	currIdx = 0;
+	theStr = "Eric";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeCharacter, DoForAllCharsCallback, 0, &currIdx );
+
+	printf( "note: Bytes\n" );
+	currIdx = 0;
+	theStr = "Eric";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeByte, DoForAllCharsCallback, 0, &currIdx );
+	
+	printf( "note: Characters with Unicode\n" );
+	currIdx = 0;
+	theStr = "Gr\303\274bel \342\234\216";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeCharacter, DoForAllUnicodeCharsCallback, 0, &currIdx );
+	
+	printf( "note: Bytes with Unicode\n" );
+	currIdx = 0;
+	theStr = "Gr\303\274bel \342\234\216";
+	LEODoForEachChunk( theStr, strlen(theStr), kLEOChunkTypeByte, DoForAllUnicodeBytesCallback, 0, &currIdx );
+
+}
+
+
 int main( int argc, char** argv )
 {
 	DoChunkTests();
@@ -835,6 +1018,7 @@ int main( int argc, char** argv )
 	DoWordsTestDoubleSpaced();
 	DoWordsTestLeadingWhiteSingleSpaced();
 	DoWordsTestLeadingWhiteDoubleSpaced();
+	DoAllChunksTest();
 	
 	DoScriptTest();
 	
