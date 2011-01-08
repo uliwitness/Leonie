@@ -56,7 +56,8 @@ void LEODebuggerPrompt( struct LEOContext* inContext )
 				LEODebuggerRemoveBreakpoint( inContext->currentInstruction );
 				printf("\n");
 			}
-			else if( strcasecmp(currCmd,"exit") == 0 )
+			else if( strcasecmp(currCmd,"exit") == 0 || strcasecmp(currCmd,"quit") == 0
+					|| strcasecmp(currCmd,"q") == 0 )
 			{
 				inContext->keepRunning = false;
 				stayInDebuggerPrompt = false;
@@ -74,6 +75,8 @@ void LEODebuggerPrompt( struct LEOContext* inContext )
 				printf( "    b          - Short form of 'breakpoint'.\n" );
 				printf( "    delete     - Delete a breakpoint at the current instruction.\n" );
 				printf( "    exit       - Stop execution (and exit the debugger).\n" );
+				printf( "    quit       - Synonym of 'exit'.\n" );
+				printf( "    q          - Short form of 'quit'.\n" );
 				printf( "    help       - Display this help text.\n\n" );
 			}
 			else
