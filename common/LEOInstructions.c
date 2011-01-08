@@ -1130,7 +1130,7 @@ void	LEOCountChunksInstruction( LEOContext* inContext )
 	@function LEOGetArrayItemInstruction
 	Fetch an item out of an array, or an empty string if there is no such item.
 	The key for the array item to be fetched, and the array value, must have been
-	pushed on the stack before.
+	pushed on the stack before. (GET_ARRAY_ITEM_INSTR)
 	
 	param1		-	Destination BP-relative address, or BACK_OF_STACK.
 */
@@ -1153,6 +1153,30 @@ void	LEOGetArrayItemInstruction( LEOContext* inContext )
 		LEOInitStringValue( dstValue, "", 0, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	else
 		LEOInitSimpleCopy( foundItem, dstValue, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+/*!
+	@function LEOGetArrayItemCountInstruction
+	Write the number of items in an array to a value. (GET_ARRAY_ITEM_COUNT_INSTR)
+	The the array value must have been pushed on the stack before.
+	
+	param1		-	Destination BP-relative address, or BACK_OF_STACK.
+*/
+
+
+void	LEOGetArrayItemCountInstruction( LEOContext* inContext )
+{
+	bool					onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
+	LEOValuePtr				dstValue = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
+	if( !onStack )
+		LEOCleanUpValue( dstValue, kLEOKeepReferences, inContext );
+	union LEOValue	*		srcValue = inContext->stackEndPtr -1;
+	
+	size_t	numKeys = LEOGetKeyCount( srcValue, inContext );
+	LEOInitIntegerValue( dstValue, numKeys, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -1211,7 +1235,8 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOLineMarkerInstruction,
 	LEOAssignChunkArrayInstruction,
 	LEOGetArrayItemInstruction,
-	LEOCountChunksInstruction
+	LEOCountChunksInstruction,
+	LEOGetArrayItemCountInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -1264,7 +1289,8 @@ const char*	gInstructionNames[] =
 	"# Line",
 	"AssignChunkArray",
 	"GetArrayItem",
-	"CountChunks"
+	"CountChunks",
+	"GetArrayItemCount"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);

@@ -61,7 +61,8 @@ struct LEOValueType	kLeoValueTypeNumber =
 	
 	LEOCanGetValueAsNumber,
 	
-	LEOCantGetValueForKey
+	LEOCantGetValueForKey,
+	LEOCantGetKeyCount
 };
 
 
@@ -91,7 +92,8 @@ struct LEOValueType	kLeoValueTypeInteger =
 	
 	LEOCanGetValueAsNumber,
 	
-	LEOCantGetValueForKey
+	LEOCantGetValueForKey,
+	LEOCantGetKeyCount
 };
 
 
@@ -121,7 +123,8 @@ struct LEOValueType	kLeoValueTypeString =
 	
 	LEOCanGetStringValueAsNumber,
 	
-	LEOCantGetValueForKey
+	LEOCantGetValueForKey,
+	LEOCantGetKeyCount
 };
 
 
@@ -151,7 +154,8 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	
 	LEOCanGetStringValueAsNumber,
 	
-	LEOCantGetValueForKey
+	LEOCantGetValueForKey,
+	LEOCantGetKeyCount
 };
 
 
@@ -183,7 +187,8 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	
 	LEOCantCanGetValueAsNumber,
 	
-	LEOCantGetValueForKey
+	LEOCantGetValueForKey,
+	LEOCantGetKeyCount
 };
 
 
@@ -213,7 +218,8 @@ struct LEOValueType	kLeoValueTypeReference =
 	
 	LEOCanGetReferenceValueAsNumber,
 	
-	LEOGetReferenceValueValueForKey
+	LEOGetReferenceValueValueForKey,
+	LEOGetReferenceValueKeyCount
 };
 
 
@@ -243,7 +249,8 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	
 	LEOCanGetValueAsNumber,
 	
-	LEOCantGetValueForKey
+	LEOCantGetValueForKey,
+	LEOCantGetKeyCount
 };
 
 
@@ -273,7 +280,8 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	
 	LEOCanGetValueAsNumber,
 	
-	LEOCantGetValueForKey
+	LEOCantGetValueForKey,
+	LEOCantGetKeyCount
 };
 
 
@@ -303,7 +311,8 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	
 	LEOCanGetStringValueAsNumber,
 	
-	LEOCantGetValueForKey
+	LEOCantGetValueForKey,
+	LEOCantGetKeyCount
 };
 
 
@@ -333,7 +342,8 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	
 	LEOCantCanGetValueAsNumber,
 	
-	LEOCantGetValueForKey
+	LEOCantGetValueForKey,
+	LEOCantGetKeyCount
 };
 
 
@@ -363,7 +373,8 @@ struct LEOValueType	kLeoValueTypeArray =
 	
 	LEOCantCanGetValueAsNumber,
 	
-	LEOGetArrayValueValueForKey
+	LEOGetArrayValueValueForKey,
+	LEOGetArrayValueKeyCount
 };
 
 
@@ -563,6 +574,13 @@ bool	LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext 
 {
 	return false;
 }
+
+
+size_t	LEOCantGetKeyCount( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return 0;
+}
+
 
 #pragma mark -
 #pragma mark Number
@@ -808,9 +826,8 @@ void	LEOInitStringValue( LEOValuePtr inStorage, const char* inString, size_t inL
 	inStorage->base.isa = &kLeoValueTypeString;
 	if( keepReferences == kLEOInvalidateReferences )
 		inStorage->base.refObjectID = kLEOObjectIDINVALID;
-	size_t		theLen = inLen +1;
-	inStorage->string.string = calloc( theLen, sizeof(char) );
-	strncpy( inStorage->string.string, inString, theLen );
+	inStorage->string.string = calloc( inLen +1, sizeof(char) );
+	strncpy( inStorage->string.string, inString, inLen );
 }
 
 
@@ -1755,6 +1772,21 @@ LEOValuePtr		LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKe
 }
 
 
+size_t		LEOGetReferenceValueKeyCount( LEOValuePtr self, struct LEOContext * inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
+		inContext->keepRunning = false;
+		
+		return 0;
+	}
+	else
+		return LEOGetKeyCount( theValue, inContext );
+}
+
+
 #pragma mark -
 #pragma mark Variants
 
@@ -1887,8 +1919,10 @@ void	LEOInitArrayValue( LEOValuePtr self, struct LEOArrayEntry *inArray, LEOKeep
 
 void	LEOGetArrayValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	inContext->keepRunning = false;
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into a string", self->base.isa->displayTypeName );
+//	inContext->keepRunning = false;
+//	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into a string", self->base.isa->displayTypeName );
+	
+	snprintf( outBuf, bufSize, "<%lu items>", LEOGetArrayKeyCount( self->array.array ) );
 }
 
 
@@ -1936,6 +1970,12 @@ LEOValuePtr		LEOGetArrayValueValueForKey( LEOValuePtr self, const char* inKey, s
 }
 
 
+size_t	LEOGetArrayValueKeyCount( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return LEOGetArrayKeyCount( self->array.array );
+}
+
+
 #pragma mark -
 
 
@@ -1974,7 +2014,7 @@ void	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const c
 		while( true )
 		{
 			int			cmpResult = strcasecmp( currEntry->key, inKey );
-			if( cmpResult > 0 )	// Key is larger? Go down 'larger' side one step.
+			if( cmpResult > 0 )	// inKey is larger? Go down 'larger' side one step.
 			{
 				if( currEntry->largerItem == NULL )
 				{
@@ -1984,7 +2024,7 @@ void	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const c
 				else
 					currEntry = currEntry->largerItem;
 			}
-			else if( cmpResult < 0 )	// Key is smaller? Go down 'smaller' side one step.
+			else if( cmpResult < 0 )	// inKey is smaller? Go down 'smaller' side one step.
 			{
 				if( currEntry->smallerItem == NULL )
 				{
@@ -2104,6 +2144,23 @@ LEOValuePtr		LEOGetArrayValueForKey( struct LEOArrayEntry* arrayPtr, const char*
 	}
 	
 	return NULL;
+}
+
+
+size_t	LEOGetArrayKeyCount( struct LEOArrayEntry* arrayPtr )
+{
+	if( arrayPtr == NULL )
+		return 0;
+	
+	size_t	numEntries = 1;
+	
+	if( arrayPtr->smallerItem )
+		numEntries += LEOGetArrayKeyCount( arrayPtr->smallerItem );
+	
+	if( arrayPtr->largerItem )
+		numEntries += LEOGetArrayKeyCount( arrayPtr->smallerItem );
+	
+	return numEntries;
 }
 
 
