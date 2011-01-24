@@ -24,6 +24,8 @@ void	LEOInitHandlerWithID( LEOHandler* inStorage, LEOHandlerID inHandlerName )
 {
 	inStorage->handlerName = inHandlerName;
 	inStorage->numInstructions = 0;
+	inStorage->numVariables = 0;
+	inStorage->varNames = NULL;
 	inStorage->instructions = calloc(NUM_INSTRUCTIONS_PER_CHUNK, sizeof(LEOInstruction));
 }
 
@@ -35,6 +37,13 @@ void	LEOCleanUpHandler( LEOHandler* inStorage )
 		free( inStorage->instructions );
 		inStorage->numInstructions = 0;
 		inStorage->instructions = NULL;
+	}
+	
+	if( inStorage->varNames )
+	{
+		free( inStorage->varNames );
+		inStorage->numVariables = 0;
+		inStorage->varNames = NULL;
 	}
 	
 	inStorage->handlerName = kLEOHandlerIDINVALID;
@@ -60,6 +69,56 @@ void	LEOHandlerAddInstruction( LEOHandler* inHandler, LEOInstructionID instructi
 	inHandler->instructions[inHandler->numInstructions -1].instructionID = instructionID;
 	inHandler->instructions[inHandler->numInstructions -1].param1 = param1;
 	inHandler->instructions[inHandler->numInstructions -1].param2 = param2;
+}
+
+
+void	LEOHandlerAddVariableNameMapping( LEOHandler* inHandler, const char* inName, const char *inRealName, size_t inBPRelativeAddress )
+{
+	if( !inHandler->varNames )
+	{
+		inHandler->numVariables = 1;
+		inHandler->varNames = calloc( 1, sizeof(struct LEOVariableNameMapping) );
+		if( !inHandler->varNames )
+		{
+			printf( "*** Failed to allocate var name entry! ***\n" );
+			return;
+		}
+	}
+	else
+	{
+		struct LEOVariableNameMapping	*	vars = realloc( inHandler->varNames, sizeof(struct LEOVariableNameMapping) * (inHandler->numVariables +1) );
+		if( vars )
+		{
+			inHandler->varNames = vars;
+			inHandler->numVariables++;
+		}
+		else
+		{
+			printf( "*** Failed to allocate var name entry! ***\n" );
+			return;
+		}
+	}
+	
+	strncpy( inHandler->varNames[ inHandler->numVariables -1 ].variableName, inName, DBG_VAR_NAME_SIZE );
+	strncpy( inHandler->varNames[ inHandler->numVariables -1 ].realVariableName, inRealName, DBG_VAR_NAME_SIZE );
+	inHandler->varNames[ inHandler->numVariables -1 ].bpRelativeAddress = inBPRelativeAddress;
+}
+
+
+void	LEOHandlerFindVariable( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName )
+{
+	for( size_t x = 0; x < inHandler->numVariables; x++ )
+	{
+		if( inHandler->varNames[x].bpRelativeAddress == bpRelativeAddress )
+		{
+			*outName = inHandler->varNames[x].variableName;
+			*outRealName = inHandler->varNames[x].realVariableName;
+			return;
+		}
+	}
+	
+	*outName = "";
+	*outRealName = "";
 }
 
 
@@ -226,6 +285,11 @@ void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandle
 {
 	printf( "%s:\n", LEOContextGroupHandlerNameForHandlerID( inGroup, inHandler->handlerName ) );
 	LEODebugPrintInstructions( inHandler->instructions, inHandler->numInstructions );
+	for( size_t x = 0; x < inHandler->numVariables; x++ )
+	{
+		printf( "%s @%ld (%s)\n", inHandler->varNames[x].realVariableName,
+				inHandler->varNames[x].bpRelativeAddress, inHandler->varNames[x].variableName );
+	}
 }
 
 

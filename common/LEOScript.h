@@ -35,6 +35,16 @@
 #include "LEOHandlerID.h"
 
 
+#define	DBG_VAR_NAME_SIZE		40
+
+typedef struct LEOVariableNameMapping
+{
+	char			variableName[DBG_VAR_NAME_SIZE];
+	char			realVariableName[DBG_VAR_NAME_SIZE];
+	long			bpRelativeAddress;
+} LEOVariableNameMapping;
+
+
 // -----------------------------------------------------------------------------
 /*!	Every method is represented by a struct like this:
 	@field handlerName		The name of this handler. Case INsensitive.
@@ -46,9 +56,11 @@
 
 typedef struct LEOHandler
 {
-	LEOHandlerID	handlerName;		// Unique ID of handlers with this name.
-	size_t			numInstructions;
-	LEOInstruction	*instructions;
+	LEOHandlerID			handlerName;		// Unique ID of handlers with this name.
+	size_t					numInstructions;
+	LEOInstruction			*instructions;
+	size_t					numVariables;
+	LEOVariableNameMapping	*varNames;
 } LEOHandler;
 
 
@@ -178,6 +190,18 @@ LEOHandler*	LEOScriptFindFunctionHandlerWithID( LEOScript* inScript, LEOHandlerI
 	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerWithID LEOScriptAddFunctionHandlerWithID
 */
 void	LEOHandlerAddInstruction( LEOHandler* inHandler, LEOInstructionID instructionID, uint16_t param1, uint32_t param2 );
+
+
+/*!
+	Add an entry to this handler so we can display a name for this variable.
+*/
+void	LEOHandlerAddVariableNameMapping( LEOHandler* inHandler, const char* inName, const char *inRealName, size_t inBPRelativeAddress );
+
+
+/*!
+	Find a variable's name in a handler based on its basePointer-relative offset.
+*/
+void	LEOHandlerFindVariable( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName );
 
 
 /*!

@@ -344,10 +344,11 @@ void	LEOContextDebugPrintCallStack( LEOContext* inContext )
 void	LEODebugPrintContext( LEOContext* ctx )
 {
 	printf( "CONTEXT:\n" );
-	printf( "    keepRunning: %s\n", ctx->keepRunning ? "true" : "FALSE" );
-	printf( "    errMsg: %s\n", ctx->errMsg );
+	if( !ctx->keepRunning )
+		printf( "    keepRunning: FALSE\n" );
+	if( ctx->errMsg[0] != 0 )
+		printf( "    errMsg: %s\n", ctx->errMsg );
 	printf( "    currentInstruction: " ); LEODebugPrintInstr( ctx->currentInstruction );
-	printf( "    -----------------------------\n" );
 	
 	if( ctx->stackEndPtr != NULL )
 	{
@@ -361,7 +362,21 @@ void	LEODebugPrintContext( LEOContext* ctx )
 			
 			char		str[1024] = { 0 };
 			LEOGetValueAsString( currValue, str, sizeof(str), ctx );
-			printf( "\"%s\" (%s)\n", str, currValue->base.isa->displayTypeName );
+			printf( "\"%s\" (%s)", str, currValue->base.isa->displayTypeName );
+			
+			long		bpRelativeAddress = currValue -ctx->stackBasePtr;
+			if( bpRelativeAddress >= 0 )
+			{
+				char*		theName = NULL;
+				char*		theRealName = NULL;
+				LEOHandlerFindVariable( ctx->callStackEntries[ ctx->numCallStackEntries -1 ].handler,
+										bpRelativeAddress, &theName, &theRealName );
+				if( strlen(theRealName) > 0 )
+					printf("\t%s",theRealName);
+				if( strlen(theName) > 0 )
+					printf(" [%s]",theName);
+			}
+			printf( "\n" );
 			
 			currValue ++;
 		}
