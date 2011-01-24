@@ -72,6 +72,7 @@
 #define GET_ARRAY_ITEM_INSTR				47
 #define COUNT_CHUNKS_INSTR					48
 #define GET_ARRAY_ITEM_COUNT_INSTR			49
+#define POP_SIMPLE_VALUE_INSTR				50
 
 
 // -----------------------------------------------------------------------------

@@ -96,7 +96,7 @@ void	LEOPrintInstruction( LEOContext* inContext );
 				stack location before we pop it.
 */
 
-void	LEOPopInstruction( LEOContext* inContext )
+void	LEOPopValueInstruction( LEOContext* inContext )
 {
 	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	destValue = onStack ? NULL : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
@@ -105,6 +105,28 @@ void	LEOPopInstruction( LEOContext* inContext )
 	{
 		LEOCleanUpValue(destValue, kLEOKeepReferences, inContext);
 		LEOInitCopy( inContext->stackEndPtr -1, destValue, kLEOKeepReferences, inContext );
+	}
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	inContext->currentInstruction++;
+}
+/*!
+	Pop the last value off the stack. (POP_SIMPLE_VALUE_INSTR)
+	
+	param1	-	If this is not BACK_OF_STACK, we copy the simple value of the
+				last value on the stack to that bp-relative stack location
+				before we pop it.
+*/
+
+void	LEOPopSimpleValueInstruction( LEOContext* inContext )
+{
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
+	union LEOValue*	destValue = onStack ? NULL : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
+	
+	if( destValue )
+	{
+		LEOCleanUpValue(destValue, kLEOKeepReferences, inContext);
+		LEOInitSimpleCopy( inContext->stackEndPtr -1, destValue, kLEOKeepReferences, inContext );
 	}
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
 	
@@ -1192,7 +1214,7 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEONoOpInstruction,
 	LEOPushStringFromTableInstruction,
 	LEOPrintInstruction,
-	LEOPopInstruction,
+	LEOPopValueInstruction,
 	LEOPushBooleanInstruction,
 	LEOAssignStringFromTableInstruction,
 	LEOJumpRelativeInstruction,
@@ -1236,7 +1258,8 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOAssignChunkArrayInstruction,
 	LEOGetArrayItemInstruction,
 	LEOCountChunksInstruction,
-	LEOGetArrayItemCountInstruction
+	LEOGetArrayItemCountInstruction,
+	LEOPopSimpleValueInstruction
 };
 
 const char*	gInstructionNames[] =
@@ -1246,7 +1269,7 @@ const char*	gInstructionNames[] =
 	"NoOp",
 	"PushStringFromTable",
 	"Print",
-	"Pop",
+	"PopValue",
 	"PushBoolean",
 	"AssignStringFromTable",
 	"JumpRelative",
@@ -1290,7 +1313,8 @@ const char*	gInstructionNames[] =
 	"AssignChunkArray",
 	"GetArrayItem",
 	"CountChunks",
-	"GetArrayItemCount"
+	"GetArrayItemCount",
+	"PopSimpleValue"
 };
 
 size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);
