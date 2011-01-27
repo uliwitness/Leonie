@@ -269,7 +269,8 @@ void	DoChunkValueTests( void )
 	
 	printf( "\nnote: Value Chunk Range tests\n" );
 	
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+    const char*     theChunkStr = "this,that,more";
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	memset( str, 'X', sizeof(str) );
 	LEOGetValueAsRangeOfString( &theValue, kLEOChunkTypeItem, 0, 0, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"this") == 0 );
@@ -337,42 +338,42 @@ void	DoChunkValueTests( void )
 	printf( "\nnote: Modifying dynamic string chunk tests\n" );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 0, "THIS", &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"THIS,that,more") == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 1, "THAT", &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"this,THAT,more") == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 2, 2, "MORE", &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"this,that,MORE") == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 1, "THISTHAT", &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"THISTHAT,more") == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 2, "THISTHATMORE", &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"THISTHATMORE") == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 2, "THATMORE", &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"this,THATMORE") == 0 );
@@ -425,42 +426,42 @@ void	DoChunkValueTests( void )
 	printf( "\nnote: Delete dynamic string chunk tests\n" );
 		
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 0, NULL, &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"that,more") == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 1, NULL, &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"this,more") == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 2, 2, NULL, &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"this,that") == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 1, NULL, &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"more") == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 0, 2, NULL, &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"") == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	
 	memset( str, 'X', sizeof(str) );
-	LEOInitStringValue( (LEOValuePtr) &theValue, "this,that,more", kLEOInvalidateReferences, &ctx );
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOSetValueRangeAsString( &theValue, kLEOChunkTypeItem, 1, 2, NULL, &ctx );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"this") == 0 );
@@ -770,7 +771,8 @@ void	DoChunkReferenceTests( void )
 	
 	printf( "\nnote: Chunked reference tests\n" );
 	
-	LEOInitStringValue( (LEOValuePtr) &theValue, "The Chunked reference", kLEOInvalidateReferences, &ctx );
+    const char*     theChunkStr = "The Chunked reference";
+	LEOInitStringValue( (LEOValuePtr) &theValue, theChunkStr, strlen(theChunkStr), kLEOInvalidateReferences, &ctx );
 	LEOInitReferenceValue( (LEOValuePtr) &valueReference, (LEOValuePtr) &theValue, kLEOInvalidateReferences, kLEOChunkTypeWord, 1, 1, &ctx );
 	LEOInitReferenceValue( (LEOValuePtr) &valueRefReference, (LEOValuePtr) &valueReference, kLEOInvalidateReferences, kLEOChunkTypeItem, 0, 0, &ctx );
 	
