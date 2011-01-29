@@ -272,6 +272,12 @@ size_t	LEOScriptAddString( LEOScript* inScript, const char* inString )
 		}
 	}
 	
+	if( inScript->strings == NULL )
+	{
+		printf( "*** Failed to allocate string! ***\n" );
+		return SIZE_MAX;
+	}
+	
 	size_t		inStringLen = strlen(inString) +1;
 	char*		newStr = calloc( inStringLen, sizeof(char) );
 	inScript->strings[inScript->numStrings -1] = newStr;
