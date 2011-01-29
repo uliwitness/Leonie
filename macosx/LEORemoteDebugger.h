@@ -26,6 +26,9 @@
 #include "LEOInterpreter.h"
 
 
+bool LEOInitRemoteDebugger( const char* inHostName );
+
+
 /*! Use this function as the PreInstructionProc of your LEOContext to activate
 	the debugger. */
 void LEORemoteDebuggerPreInstructionProc( struct LEOContext* inContext );
@@ -39,7 +42,6 @@ void LEORemoteDebuggerAddBreakpoint( LEOInstruction* targetInstruction );
 /*! Remove a breakpoint set using LEODebuggerAddBreakpoint().
 	@seealso //leo_ref/c/func/LEODebuggerAddBreakpoint LEODebuggerAddBreakpoint */
 void LEORemoteDebuggerRemoveBreakpoint( LEOInstruction* targetInstruction );
-
 
 
 #endif // LEO_DEBUGGER_H
