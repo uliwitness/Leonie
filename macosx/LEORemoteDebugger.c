@@ -45,6 +45,8 @@ bool	LEOInitRemoteDebugger( const char* inHostName )
 		serv_addr.sin_port = htons(13762);
 		if( connect( gLEORemoteDebuggerSocketFD, (struct sockaddr*)&serv_addr, sizeof(serv_addr) ) < 0 ) 
 			return false;
+		
+		gLEORemoteDebuggerInitialized = true;
 	}
 	
 	return true;
