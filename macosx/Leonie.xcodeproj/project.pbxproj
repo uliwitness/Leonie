@@ -69,6 +69,7 @@
 		55792F4B12357A0A00A84BD2 /* LEOValue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOValue.c; path = ../common/LEOValue.c; sourceTree = "<group>"; };
 		55BB77901278CD5B006A7F62 /* LEOContextGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOContextGroup.h; path = ../common/LEOContextGroup.h; sourceTree = SOURCE_ROOT; };
 		55BB77911278CD5B006A7F62 /* LEOContextGroup.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOContextGroup.c; path = ../common/LEOContextGroup.c; sourceTree = SOURCE_ROOT; };
+		55D8EE7012FC456400048A0B /* TODO.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
 		55E140DA124805E8008EDC7C /* LEOChunks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOChunks.h; path = ../common/LEOChunks.h; sourceTree = "<group>"; };
 		55E140DB124805E8008EDC7C /* LEOChunks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOChunks.c; path = ../common/LEOChunks.c; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Leonie-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Leonie-Info.plist"; sourceTree = "<group>"; };
@@ -135,6 +136,7 @@
 		29B97314FDCFA39411CA2CEA /* Leonie */ = {
 			isa = PBXGroup;
 			children = (
+				55D8EE7012FC456400048A0B /* TODO.txt */,
 				550A2A5312607B3800C6DB9D /* common */,
 				550A2A6212607D9300C6DB9D /* generic */,
 				080E96DDFE201D6D7F000001 /* macosx */,
