@@ -1,0 +1,4 @@
+-> Make it possible to allocate the gInstructions array by passing in a second
+	array to append to it. This will reallocate the whole buffer, placing built-
+	in instructions at the start, the new ones after that. This way, we can
+	better separate built-in instructions from platform- or host-specific ones.
