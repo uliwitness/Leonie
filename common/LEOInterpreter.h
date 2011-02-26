@@ -100,6 +100,12 @@ inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum ) __attribute__((alway
 inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum )	{ assert(sizeof(LEONumber) <= sizeof(uint32_t));  return *(LEONumber*)&inNum; }
 
 
+void	LEOInitInstructionArray();
+
+void	LEOAddInstructionsToInstructionArray( LEOInstructionFuncPtr *inInstructionArray, const char* *inInstructionNames, size_t inNumInstructions );
+
+
+
 /*! @functiongroup LEOContext methods */
 
 // Data type used internally to be able to show the call stack to the user and

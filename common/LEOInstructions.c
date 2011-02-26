@@ -110,6 +110,7 @@ void	LEOPopValueInstruction( LEOContext* inContext )
 	
 	inContext->currentInstruction++;
 }
+
 /*!
 	Pop the last value off the stack. (POP_SIMPLE_VALUE_INSTR)
 	
@@ -1207,13 +1208,16 @@ void	LEOGetArrayItemCountInstruction( LEOContext* inContext )
 #pragma mark -
 #pragma mark Instruction table
 
-LEOInstructionFuncPtr	gInstructions[] =
+LEOInstructionFuncPtr*	gInstructions = NULL;
+const char**			gInstructionNames = NULL;
+
+
+LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 {
 	LEOInvalidInstruction,
 	LEOExitToTopInstruction,
 	LEONoOpInstruction,
 	LEOPushStringFromTableInstruction,
-	LEOPrintInstruction,
 	LEOPopValueInstruction,
 	LEOPushBooleanInstruction,
 	LEOAssignStringFromTableInstruction,
@@ -1259,16 +1263,17 @@ LEOInstructionFuncPtr	gInstructions[] =
 	LEOGetArrayItemInstruction,
 	LEOCountChunksInstruction,
 	LEOGetArrayItemCountInstruction,
-	LEOPopSimpleValueInstruction
+	LEOPopSimpleValueInstruction,
+	LEOPrintInstruction
 };
 
-const char*	gInstructionNames[] =
+
+const char*	gDefaultInstructionNames[] =
 {
 	"Invalid",
 	"ExitToTop",
 	"NoOp",
 	"PushStringFromTable",
-	"Print",
 	"PopValue",
 	"PushBoolean",
 	"AssignStringFromTable",
@@ -1314,7 +1319,29 @@ const char*	gInstructionNames[] =
 	"GetArrayItem",
 	"CountChunks",
 	"GetArrayItemCount",
-	"PopSimpleValue"
+	"PopSimpleValue",
+	"Print"
 };
 
-size_t		gNumInstructions = sizeof(gInstructions) / sizeof(LEOInstructionFuncPtr);
+size_t		gNumInstructions = 0;
+
+
+
+void	LEOInitInstructionArray()
+{
+	if( gInstructions == NULL )
+	{
+		gInstructions = gDefaultInstructions;
+		gInstructionNames = gDefaultInstructionNames;
+		gNumInstructions = LEO_NUMBER_OF_INSTRUCTIONS;
+	}
+}
+
+void	LEOAddInstructionsToInstructionArray( LEOInstructionFuncPtr *inInstructionArray, const char* *inInstructionNames, size_t inNumInstructions )
+{
+	LEOInitInstructionArray();
+	if( gNumInstructions == LEO_NUMBER_OF_INSTRUCTIONS )	// Static buffer. 
+	{
+	
+	}
+}
