@@ -17,10 +17,12 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <errno.h>
+#include <netinet/tcp.h>
 #include "LEOHandlerID.h"
 #include "LEOInterpreter.h"
 #include "LEOScript.h"
 #include "LEOContextGroup.h"
+#include "LEOInstructions.h"
 
 
 LEOInstruction**	gLEORemoteDebuggerBreakpoints = NULL;
@@ -37,6 +39,12 @@ bool	LEOInitRemoteDebugger( const char* inHostName )
 		struct hostent		*	server = NULL;
 
 		gLEORemoteDebuggerSocketFD = socket( AF_INET, SOCK_STREAM, 0 );
+		int v = 1; 
+		if( setsockopt( gLEORemoteDebuggerSocketFD, IPPROTO_TCP, TCP_NODELAY, &v, sizeof(v)) )
+		{
+			printf( "Couldn't set options when connecting to remote debugger: %d\n", errno );
+			return false;
+		}
 		server = gethostbyname( inHostName );
 		if( server == NULL )
 			return false;
@@ -58,8 +66,8 @@ bool	LEOInitRemoteDebugger( const char* inHostName )
 
 void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 {
-	write( gLEORemoteDebuggerSocketFD, "EMTY\0\0\0\0", 8 );	// Clear any existing variable display.
-	printf( "Remote debugger: Emptying\n" );
+	size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "EMTY\0\0\0\0", 8 );	// Clear any existing variable display.
+	printf( "Remote debugger: Emptying (%lu bytes written)\n", actuallyWritten );
 	
 	// Print all local variables:
 	if( inContext->stackEndPtr != NULL )
@@ -82,12 +90,11 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 			
 				uint32_t	dataLen = strlen(str) +1 +strlen(currValue->base.isa->displayTypeName) +1 +strlen(theRealName) +1;
 				
-				write( gLEORemoteDebuggerSocketFD, "VARI", 4 );
-				write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
-				write( gLEORemoteDebuggerSocketFD, theRealName, strlen(theRealName) +1 );
-				write( gLEORemoteDebuggerSocketFD, currValue->base.isa->displayTypeName, strlen(currValue->base.isa->displayTypeName) +1 );
-				write( gLEORemoteDebuggerSocketFD, str, strlen(str) +1 );
-				printf( "Remote debugger: Registering variable %s\n", theRealName );
+				actuallyWritten = write( gLEORemoteDebuggerSocketFD, "VARI", 4 );
+				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+				actuallyWritten = write( gLEORemoteDebuggerSocketFD, theRealName, strlen(theRealName) +1 );
+				actuallyWritten = write( gLEORemoteDebuggerSocketFD, currValue->base.isa->displayTypeName, strlen(currValue->base.isa->displayTypeName) +1 );
+				actuallyWritten = write( gLEORemoteDebuggerSocketFD, str, strlen(str) +1 );
 			}
 						
 			currValue ++;
@@ -106,13 +113,20 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 			LEOHandlerID	theID = inContext->callStackEntries[x].handler->handlerName;
 			const char*		hdlNameStr = LEOContextGroupHandlerNameForHandlerID( inContext->group, theID );
 			uint32_t		dataLen = strlen(hdlNameStr) +1;
-			printf( "Remote debugger: Sending handler name %s\n", hdlNameStr );
-			write( gLEORemoteDebuggerSocketFD, "CALL", 4 );
-			write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
-			write( gLEORemoteDebuggerSocketFD, hdlNameStr, strlen(hdlNameStr) +1 );
-			printf( "Remote debugger: Sent handler name %s\n", hdlNameStr );
+			actuallyWritten = write( gLEORemoteDebuggerSocketFD, "CALL", 4 );
+			actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+			actuallyWritten = write( gLEORemoteDebuggerSocketFD, hdlNameStr, strlen(hdlNameStr) +1 );
 		} while( x > 0 );
 	}
+	
+	// Tell the debugger what instruction we're currently stopped at:
+	char	instructionStr[256] = { 0 };
+	snprintf( instructionStr, 255, "%s( %d, %d )", gInstructionNames[inContext->currentInstruction->instructionID],
+					inContext->currentInstruction->param1, inContext->currentInstruction->param2 );
+	size_t	dataLen = strlen(instructionStr) +1;
+	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "INST", 4 );
+	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+	actuallyWritten = write( gLEORemoteDebuggerSocketFD, instructionStr, strlen(instructionStr) +1 );
 }
 
 void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
@@ -122,8 +136,8 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 	{
 		LEORemoteDebuggerUpdateState( inContext );
 		printf( "Remote debugger: About to WAIT\n" );
-		write( gLEORemoteDebuggerSocketFD, "WAIT\0\0\0\0", 8 );	// Tell remote debugger to show its prompt now and call us back when the user has made a decision.
-		printf( "Remote debugger: Returned from WAIT\n" );
+		size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "WAIT\0\0\0\0", 8 );	// Tell remote debugger to show its prompt now and call us back when the user has made a decision.
+		printf( "Remote debugger: Returned from WAIT having written %lu bytes\n", actuallyWritten );
 		
 		uint32_t		currCmd = 0;
 		size_t			amountLeft = sizeof(currCmd);
@@ -131,15 +145,16 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 		
 		while( amountLeft > 0 )
 		{
-			printf( "Remote debugger: About to read.\n" );
+			//printf( "Remote debugger: About to read.\n" );
 			size_t	numRead = read( gLEORemoteDebuggerSocketFD, currBytesPtr, amountLeft );
-			printf( "Remote debugger: Read %lu bytes.\n", numRead );
+			//printf( "Remote debugger: Read %lu bytes.\n", numRead );
 			amountLeft -= numRead;
 			currBytesPtr += numRead;
 		}
+		currBytesPtr = (char*) &currCmd;
 		printf( "Remote debugger: Read one command.\n" );
 		
-		switch( currCmd )
+		switch( ntohl(currCmd) )
 		{
 			case 'CONT':
 				printf( "Remote debugger: Continuing.\n" );
@@ -163,6 +178,10 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 			case 'EXIT':
 				inContext->keepRunning = false;
 				stayInDebuggerPrompt = false;
+				break;
+			
+			default:
+				printf( "Remote Debugger: Unknown command '%c%c%c%c'\n", currBytesPtr[0], currBytesPtr[1], currBytesPtr[2], currBytesPtr[3] );
 				break;
 		}
 	}
