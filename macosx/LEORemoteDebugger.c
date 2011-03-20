@@ -120,14 +120,18 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 	}
 	
 	// Tell the debugger what instruction we're currently stopped at:
-	char	instructionStr[256] = { 0 };
+	char				instructionStr[256] = { 0 };
+	unsigned long long	instructionPointer = (unsigned long long) inContext->currentInstruction;	// Address so we can tell repeated calls apart.
+	assert( sizeof(instructionPointer) >= sizeof(LEOInstruction*) );
 	snprintf( instructionStr, 255, "%s( %d, %d )", gInstructionNames[inContext->currentInstruction->instructionID],
 					inContext->currentInstruction->param1, inContext->currentInstruction->param2 );
-	size_t	dataLen = strlen(instructionStr) +1;
+	size_t	dataLen = strlen(instructionStr) +1 +sizeof(instructionPointer);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "INST", 4 );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, instructionStr, strlen(instructionStr) +1 );
+	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &instructionPointer, sizeof(instructionPointer) );
 }
+
 
 void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 {
