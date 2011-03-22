@@ -125,11 +125,33 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 	assert( sizeof(instructionPointer) >= sizeof(LEOInstruction*) );
 	snprintf( instructionStr, 255, "%s( %d, %d )", gInstructionNames[inContext->currentInstruction->instructionID],
 					inContext->currentInstruction->param1, inContext->currentInstruction->param2 );
-	size_t	dataLen = strlen(instructionStr) +1 +sizeof(instructionPointer);
+	uint32_t		dataLen = strlen(instructionStr) +1 +sizeof(instructionPointer);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "INST", 4 );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, instructionStr, strlen(instructionStr) +1 );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &instructionPointer, sizeof(instructionPointer) );
+
+	// Tell the debugger what source file we're dealing with:
+	if( inContext->currentInstruction->instructionID == LINE_MARKER_INSTR )
+	{
+		actuallyWritten = write( gLEORemoteDebuggerSocketFD, "LINE", 4 );
+		uint32_t	lineNumber = inContext->currentInstruction->param2;
+		dataLen = sizeof(lineNumber);
+		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, sizeof(dataLen) );
+		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &lineNumber, sizeof(lineNumber) );
+	}
+}
+
+void	LEORemoteDebuggerAddFile( const char* filename, const char* filecontents )
+{
+	// Tell the debugger what source file we're dealing with:
+	size_t	filenameLen = strlen(filename) +1;
+	size_t	filecontentsLen = strlen(filecontents) +1;
+	size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "SOUR", 4 );
+	size_t	dataLen = filenameLen + filecontentsLen;
+	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filename, filenameLen );
+	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filecontents, filecontentsLen );
 }
 
 
