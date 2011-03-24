@@ -26,6 +26,9 @@
 #include "LEOInterpreter.h"
 
 
+/*! Initialize the debugger and establish a connection to the debugger process.
+	To reconnect after a failed connection, pass NULL as the inHostName (it'll
+	use the host name from the previous attempt). */
 bool LEOInitRemoteDebugger( const char* inHostName );
 
 

@@ -30,9 +30,13 @@ size_t				gLEONumRemoteDebuggerBreakpoints = 0;
 
 static int			gLEORemoteDebuggerSocketFD = -1;
 static bool			gLEORemoteDebuggerInitialized = false;
+static char			gLEORemoteDebuggerHostName[1024] = { 0 };
 
 bool	LEOInitRemoteDebugger( const char* inHostName )
 {
+	if( inHostName )
+		strncpy( gLEORemoteDebuggerHostName, inHostName, sizeof(gLEORemoteDebuggerHostName) -1 );
+	
 	if( !gLEORemoteDebuggerInitialized )
 	{
 		struct sockaddr_in		serv_addr = { 0 };
@@ -42,19 +46,22 @@ bool	LEOInitRemoteDebugger( const char* inHostName )
 		int v = 1; 
 		if( setsockopt( gLEORemoteDebuggerSocketFD, IPPROTO_TCP, TCP_NODELAY, &v, sizeof(v)) )
 		{
-			printf( "Couldn't set options when connecting to remote debugger: %d\n", errno );
+			fprintf( stderr, "Couldn't set options when connecting to %s: %d\n", gLEORemoteDebuggerHostName, errno );
 			return false;
 		}
-		server = gethostbyname( inHostName );
+		server = gethostbyname( gLEORemoteDebuggerHostName );
 		if( server == NULL )
+		{
+			fprintf( stderr, "Couldn't resolve %s\n", gLEORemoteDebuggerHostName );
 			return false;
+		}
 		
 		serv_addr.sin_family = AF_INET;
 		bcopy( (char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length );
 		serv_addr.sin_port = htons(13762);
 		if( connect( gLEORemoteDebuggerSocketFD, (struct sockaddr*)&serv_addr, sizeof(serv_addr) ) < 0 ) 
 		{
-			printf( "Couldn't connect to remote debugger: %d\n", errno );
+			fprintf( stderr, "Couldn't connect to remote debugger %s: %d\n", gLEORemoteDebuggerHostName, errno );
 			return false;
 		}
 		gLEORemoteDebuggerInitialized = true;
