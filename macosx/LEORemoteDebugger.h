@@ -36,7 +36,7 @@ void LEORemoteDebuggerPreInstructionProc( struct LEOContext* inContext );
 /*! Register a file name and its contents with the debugger, so it can display
 	its contents and highlight the current line.
 */
-void	LEORemoteDebuggerAddFile( const char* filename, const char* filecontents );
+void	LEORemoteDebuggerAddFile( const char* filename, const char* filecontents, LEOInstruction* instrs, size_t numInstrs );
 
 
 /*! Set a breakpoint on the given instruction. This will cause execution to be
