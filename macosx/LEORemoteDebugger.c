@@ -72,23 +72,24 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 	// Print all local variables:
 	if( inContext->stackEndPtr != NULL )
 	{
+		uint32_t			dataLen = 0;
+		char				str[1024] = { 0 };
 		union LEOValue*		currValue = inContext->stack;
 		while( currValue != inContext->stackEndPtr )
 		{
 			long		bpRelativeAddress = currValue -inContext->stackBasePtr;
-			if( bpRelativeAddress >= 0 )
+			if( bpRelativeAddress >= -1 )
 			{
 				char*		theRealName = NULL;
 				char*		theName = NULL;
 				LEOHandlerFindVariable( inContext->callStackEntries[ inContext->numCallStackEntries -1 ].handler,
-										bpRelativeAddress, &theName, &theRealName );
+										bpRelativeAddress, &theName, &theRealName, inContext );
 				if( strlen(theRealName) == 0 && strlen(theName) > 0 )
 					theRealName = theName;
 				
-				char		str[1024] = { 0 };
 				LEOGetValueAsString( currValue, str, sizeof(str), inContext );
 			
-				uint32_t	dataLen = strlen(str) +1 +strlen(currValue->base.isa->displayTypeName) +1 +strlen(theRealName) +1;
+				dataLen = strlen(str) +1 +strlen(currValue->base.isa->displayTypeName) +1 +strlen(theRealName) +1;
 				
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, "VARI", 4 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
@@ -96,7 +97,6 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, currValue->base.isa->displayTypeName, strlen(currValue->base.isa->displayTypeName) +1 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, str, strlen(str) +1 );
 			}
-						
 			currValue ++;
 		}
 	}

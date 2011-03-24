@@ -105,8 +105,33 @@ void	LEOHandlerAddVariableNameMapping( LEOHandler* inHandler, const char* inName
 }
 
 
-void	LEOHandlerFindVariable( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName )
+void	LEOHandlerFindVariable( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName, LEOContext* inContext )
 {
+	if( bpRelativeAddress == -1 )
+	{
+		*outName = "the parameterCount";
+		*outRealName = "the parameterCount";
+		return;
+	}
+	else if( bpRelativeAddress < 0 )
+	{
+		LEOValuePtr	paramCountObj = (inContext->stackBasePtr -1);
+		LEOInteger	paramCount = LEOGetValueAsInteger( paramCountObj, inContext );
+		
+		if( bpRelativeAddress > (-paramCount -1) )
+		{
+			*outName = "parameter";
+			*outRealName = "parameter";
+			return;
+		}
+		else if( bpRelativeAddress == (-paramCount -2) )
+		{
+			*outName = "return value";
+			*outRealName = "return value";
+			return;
+		}
+	}
+	
 	for( size_t x = 0; x < inHandler->numVariables; x++ )
 	{
 		if( inHandler->varNames[x].bpRelativeAddress == bpRelativeAddress )
@@ -117,8 +142,8 @@ void	LEOHandlerFindVariable( LEOHandler* inHandler, long bpRelativeAddress, char
 		}
 	}
 	
-	*outName = "";
-	*outRealName = "";
+	*outName = "?";
+	*outRealName = "?";
 }
 
 

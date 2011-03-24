@@ -201,7 +201,7 @@ void	LEOHandlerAddVariableNameMapping( LEOHandler* inHandler, const char* inName
 /*!
 	Find a variable's name in a handler based on its basePointer-relative offset.
 */
-void	LEOHandlerFindVariable( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName );
+void	LEOHandlerFindVariable( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName, LEOContext* inContext );
 
 
 /*!
