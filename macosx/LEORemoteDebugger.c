@@ -174,7 +174,7 @@ void	LEORemoteDebuggerAddFile( const char* filename, const char* filecontents, L
 	for( size_t x = 0; x < numInstrs; x++ )
 	{
 		char				instructionStr[256] = { 0 };
-		unsigned long long	instructionPointer = (unsigned long long) instrs +x;	// Address so we can find the right string for the right instruction to show.
+		unsigned long long	instructionPointer = (unsigned long long) (instrs +x);	// Address so we can find the right string for the right instruction to show.
 		assert( sizeof(instructionPointer) >= sizeof(LEOInstruction*) );
 		snprintf( instructionStr, 255, "%s( %d, %d )", gInstructionNames[instrs[x].instructionID],
 						instrs[x].param1, instrs[x].param2 );
