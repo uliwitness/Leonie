@@ -610,7 +610,7 @@ void	LEOParameterKeepRefsInstruction( LEOContext* inContext )
 
 /*!
 	Determine the number of parameters that have been passed to this function
-	and (PARAMETER_COUNT_INSTR)
+	(PARAMETER_COUNT_INSTR)
 	
 	param1	-	The basePtr-relative offset of the value to be overwritten, or
 				BACK_OF_STACK if you want the value to be pushed on the stack.
@@ -631,6 +631,10 @@ void	LEOParameterCountInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	(CONCATENATE_VALUES_INSTR)
+*/
+
 void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 {
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
@@ -640,6 +644,7 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 	uint32_t		delimChar = inContext->currentInstruction->param2;
 	char			tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
 	size_t			offs = 0;
+	union LEOValue	resultValue;
 	
 	if( delimChar != 0 )
 	{
@@ -648,14 +653,18 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 	}
 	
 	LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
+	LEOInitSimpleCopy( firstArgumentValue, &resultValue, kLEOInvalidateReferences, inContext );
 	
-	LEODetermineChunkRangeOfSubstring(	firstArgumentValue, &startOffs, &endOffs,
+	LEODetermineChunkRangeOfSubstring(	&resultValue, &startOffs, &endOffs,
 										&startDelOffs, &endDelOffs,
 										kLEOChunkTypeCharacter,
 										SIZE_MAX, SIZE_MAX, inContext );
-	LEOSetValuePredeterminedRangeAsString( firstArgumentValue, endOffs, endOffs, tempStr, inContext );
+	LEOSetValuePredeterminedRangeAsString( &resultValue, endOffs, endOffs, tempStr, inContext );
 	
-	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushValueOnStack( inContext, &resultValue );
+	LEOCleanUpValue( &resultValue, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
 }
