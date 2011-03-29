@@ -694,7 +694,10 @@ void	LEOCleanUpNumberValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferenc
 	self->base.isa = NULL;
 	self->number.number = 0.0;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
+	{
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+		self->base.refObjectID = 0;
+	}
 }
 
 
@@ -810,7 +813,10 @@ void	LEOCleanUpIntegerValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferen
 	self->base.isa = NULL;
 	self->integer.integer = 0LL;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
+	{
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+		self->base.refObjectID = 0;
+	}
 }
 
 
@@ -1106,7 +1112,10 @@ void	LEOCleanUpStringValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferenc
 		free( self->string.string );
 	self->string.string = NULL;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )
+	{
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+		self->base.refObjectID = 0;
+	}
 }
 
 
@@ -1268,7 +1277,10 @@ void	LEOCleanUpStringConstantValue( LEOValuePtr self, LEOKeepReferencesFlag keep
 	self->base.isa = NULL;
 	self->string.string = NULL;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )
+	{
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+		self->base.refObjectID = 0;
+	}
 }
 
 
@@ -1358,7 +1370,10 @@ void	LEOCleanUpBooleanValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferen
 	self->base.isa = NULL;
 	self->boolean.boolean = false;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )
+	{
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+		self->base.refObjectID = 0;
+	}
 }
 
 
@@ -1753,7 +1768,10 @@ void	LEOCleanUpReferenceValue( LEOValuePtr self, LEOKeepReferencesFlag keepRefer
 	self->reference.objectID = kLEOObjectIDINVALID;
 	self->reference.objectSeed = 0;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
+	{
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+		self->base.refObjectID = 0;
+	}
 }
 
 
@@ -1960,7 +1978,10 @@ void	LEOCleanUpArrayValue( LEOValuePtr self, LEOKeepReferencesFlag keepReference
 	LEOCleanUpArray( self->array.array, inContext );
 	self->array.array = NULL;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )	// We have references? Make sure they all notice we've gone if they try to access us from now on.
+	{
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+		self->base.refObjectID = 0;
+	}
 }
 
 
