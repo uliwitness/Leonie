@@ -87,22 +87,36 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 			long		bpRelativeAddress = currValue -inContext->stackBasePtr;
 			if( bpRelativeAddress >= -1 )
 			{
-				char*		theRealName = NULL;
-				char*		theName = NULL;
+				char*				theRealName = NULL;
+				char*				theName = NULL;
+				unsigned long long	objectID = 0;
 				LEOHandlerFindVariable( inContext->callStackEntries[ inContext->numCallStackEntries -1 ].handler,
 										bpRelativeAddress, &theName, &theRealName, inContext );
 				if( strlen(theRealName) == 0 && strlen(theName) > 0 )
 					theRealName = theName;
 				
+				objectID = currValue->base.refObjectID;
+				
 				LEOGetValueAsString( currValue, str, sizeof(str), inContext );
+				
+				unsigned long long	referenceObjectID = 0;
+				unsigned long long	referenceObjectSeed = 0;
+				if( currValue->base.isa == &kLeoValueTypeReference )
+				{
+					referenceObjectID = currValue->reference.objectID;
+					referenceObjectSeed = currValue->reference.objectSeed;
+				}
 			
-				dataLen = strlen(str) +1 +strlen(currValue->base.isa->displayTypeName) +1 +strlen(theRealName) +1;
+				dataLen = strlen(str) +1 +strlen(currValue->base.isa->displayTypeName) +1 +strlen(theRealName) +1 +sizeof(objectID) +sizeof(referenceObjectID) +sizeof(referenceObjectSeed);
 				
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, "VARI", 4 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, theRealName, strlen(theRealName) +1 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, currValue->base.isa->displayTypeName, strlen(currValue->base.isa->displayTypeName) +1 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, str, strlen(str) +1 );
+				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &objectID, sizeof(objectID) );
+				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &referenceObjectID, sizeof(referenceObjectID) );
+				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &referenceObjectSeed, sizeof(referenceObjectSeed) );
 			}
 			currValue ++;
 		}
