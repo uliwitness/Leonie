@@ -32,6 +32,10 @@ static int			gLEORemoteDebuggerSocketFD = -1;
 static bool			gLEORemoteDebuggerInitialized = false;
 static char			gLEORemoteDebuggerHostName[1024] = { 0 };
 
+
+#define LEO_DEBUGGER_PORT		13762
+
+
 bool	LEOInitRemoteDebugger( const char* inHostName )
 {
 	if( inHostName )
@@ -58,10 +62,10 @@ bool	LEOInitRemoteDebugger( const char* inHostName )
 		
 		serv_addr.sin_family = AF_INET;
 		bcopy( (char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length );
-		serv_addr.sin_port = htons(13762);
+		serv_addr.sin_port = htons(LEO_DEBUGGER_PORT);
 		if( connect( gLEORemoteDebuggerSocketFD, (struct sockaddr*)&serv_addr, sizeof(serv_addr) ) < 0 ) 
 		{
-			fprintf( stderr, "Couldn't connect to remote debugger %s: %d\n", gLEORemoteDebuggerHostName, errno );
+			fprintf( stderr, "Couldn't connect to remote debugger %s:%d error = %d\n", gLEORemoteDebuggerHostName, LEO_DEBUGGER_PORT, errno );
 			return false;
 		}
 		gLEORemoteDebuggerInitialized = true;
@@ -141,7 +145,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 	}
 	
 	// Tell the debugger what instruction we're currently stopped at:
-	unsigned long long	instructionPointer = (unsigned long long) inContext->currentInstruction;	// Address so we can tell repeated calls apart.
+	unsigned long long	instructionPointer = (intptr_t) inContext->currentInstruction;	// Address so we can tell repeated calls apart.
 	assert( sizeof(instructionPointer) >= sizeof(LEOInstruction*) );
 	uint32_t		dataLen = sizeof(instructionPointer);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "CURR", 4 );
@@ -165,7 +169,7 @@ void	LEORemoteDebuggerAddHandler( struct LEOHandler* inHandler )
 	for( size_t x = 0; x < inHandler->numInstructions; x++ )
 	{
 		char				instructionStr[256] = { 0 };
-		unsigned long long	instructionPointer = (unsigned long long) (inHandler->instructions +x);	// Address so we can find the right string for the right instruction to show.
+		unsigned long long	instructionPointer = (intptr_t) (inHandler->instructions +x);	// Address so we can find the right string for the right instruction to show.
 		assert( sizeof(instructionPointer) >= sizeof(LEOInstruction*) );
 		snprintf( instructionStr, 255, "%s( %d, %d )", gInstructionNames[inHandler->instructions[x].instructionID],
 						inHandler->instructions[x].param1, inHandler->instructions[x].param2 );
