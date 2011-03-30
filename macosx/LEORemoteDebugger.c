@@ -159,7 +159,26 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 	}
 }
 
-void	LEORemoteDebuggerAddFile( const char* filename, const char* filecontents, LEOInstruction* instrs, size_t numInstrs )
+
+void	LEORemoteDebuggerAddHandler( struct LEOHandler* inHandler )
+{
+	for( size_t x = 0; x < inHandler->numInstructions; x++ )
+	{
+		char				instructionStr[256] = { 0 };
+		unsigned long long	instructionPointer = (unsigned long long) (inHandler->instructions +x);	// Address so we can find the right string for the right instruction to show.
+		assert( sizeof(instructionPointer) >= sizeof(LEOInstruction*) );
+		snprintf( instructionStr, 255, "%s( %d, %d )", gInstructionNames[inHandler->instructions[x].instructionID],
+						inHandler->instructions[x].param1, inHandler->instructions[x].param2 );
+		size_t	dataLen = strlen(instructionStr) +1 +sizeof(instructionPointer);
+		size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "INST", 4 );
+		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+		actuallyWritten = write( gLEORemoteDebuggerSocketFD, instructionStr, strlen(instructionStr) +1 );
+		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &instructionPointer, sizeof(instructionPointer) );
+	}
+}
+
+
+void	LEORemoteDebuggerAddFile( const char* filename, const char* filecontents, struct LEOScript* inScript )
 {
 	// Tell the debugger what source file we're dealing with:
 	size_t	filenameLen = strlen(filename) +1;
@@ -171,18 +190,14 @@ void	LEORemoteDebuggerAddFile( const char* filename, const char* filecontents, L
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filecontents, filecontentsLen );
 	
 	// Transmit all instructions for this file to remote debugger:
-	for( size_t x = 0; x < numInstrs; x++ )
+	for( size_t x = 0; x < inScript->numFunctions; x++ )
 	{
-		char				instructionStr[256] = { 0 };
-		unsigned long long	instructionPointer = (unsigned long long) (instrs +x);	// Address so we can find the right string for the right instruction to show.
-		assert( sizeof(instructionPointer) >= sizeof(LEOInstruction*) );
-		snprintf( instructionStr, 255, "%s( %d, %d )", gInstructionNames[instrs[x].instructionID],
-						instrs[x].param1, instrs[x].param2 );
-		dataLen = strlen(instructionStr) +1 +sizeof(instructionPointer);
-		actuallyWritten = write( gLEORemoteDebuggerSocketFD, "INST", 4 );
-		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
-		actuallyWritten = write( gLEORemoteDebuggerSocketFD, instructionStr, strlen(instructionStr) +1 );
-		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &instructionPointer, sizeof(instructionPointer) );
+		LEORemoteDebuggerAddHandler( inScript->functions +x );
+	}
+
+	for( size_t x = 0; x < inScript->numCommands; x++ )
+	{
+		LEORemoteDebuggerAddHandler( inScript->commands +x );
 	}
 }
 
