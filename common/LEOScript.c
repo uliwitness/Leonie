@@ -118,7 +118,7 @@ void	LEOHandlerFindVariable( LEOHandler* inHandler, long bpRelativeAddress, char
 		LEOValuePtr	paramCountObj = (inContext->stackBasePtr -1);
 		LEOInteger	paramCount = LEOGetValueAsInteger( paramCountObj, inContext );
 		
-		if( bpRelativeAddress > (-paramCount -1) )
+		if( bpRelativeAddress >= (-paramCount -1) )
 		{
 			*outName = "parameter";
 			*outRealName = "parameter";

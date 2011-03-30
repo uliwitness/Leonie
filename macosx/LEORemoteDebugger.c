@@ -85,7 +85,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 		while( currValue != inContext->stackEndPtr )
 		{
 			long		bpRelativeAddress = currValue -inContext->stackBasePtr;
-			if( bpRelativeAddress >= -1 )
+			//if( bpRelativeAddress >= -1 )
 			{
 				char*				theRealName = NULL;
 				char*				theName = NULL;
