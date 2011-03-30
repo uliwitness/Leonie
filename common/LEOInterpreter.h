@@ -221,6 +221,10 @@ LEOValuePtr	LEOPushBooleanOnStack( LEOContext* theContext, bool inBoolean );
 
 LEOValuePtr	LEOPushEmptyValueOnStack( LEOContext* theContext );
 
+
+LEOValuePtr	LEOPushStringValueOnStack( LEOContext* theContext, const char* inString, size_t strLen );
+
+
 // Used internally to unwind the stack and ensure values get destructed correctly.
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete );
 

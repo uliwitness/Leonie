@@ -196,6 +196,21 @@ LEOValuePtr	LEOPushEmptyValueOnStack( LEOContext* theContext )
 }
 
 
+LEOValuePtr	LEOPushStringValueOnStack( LEOContext* theContext, const char* inString, size_t strLen )
+{
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+	
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitStringValue( theValue, inString, strLen, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
 LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger )
 {
 	if( !theContext->stackEndPtr )
