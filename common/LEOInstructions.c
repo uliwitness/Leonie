@@ -541,6 +541,51 @@ void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
 
 
 /*!
+	Push a chunk out of a larger value onto the stack as a string value. (PUSH_CHUNK_INSTR)
+	
+	The chunk end and chunk start are popped off the back of the stack (in that order).
+	
+	param1	-	The basePtr-relative offset of the value to be referenced. If this is BACK_OF_STACK it will get the value from the stack, and expects it to have been pushed as the very first parameter.
+	
+	param2	-	The LEOChunkType of this chunk expression.
+	
+	@seealso //leo_ref/c/func/LEOGetChunkRanges LEOGetChunkRanges
+*/
+
+void	LEOPushChunkInstruction( LEOContext* inContext )
+{
+	LEOValuePtr		chunkTarget = NULL;
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
+	if( onStack )
+		chunkTarget = inContext->stackEndPtr -3;
+	else
+		chunkTarget = (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
+	LEOValuePtr		chunkEnd = inContext->stackEndPtr -1;
+	LEOValuePtr		chunkStart = inContext->stackEndPtr -2;
+	
+	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext);
+	if( !inContext->keepRunning )
+		return;
+	
+	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext);
+	if( !inContext->keepRunning )
+		return;
+	
+	char	str[1024] = { 0 };
+	LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	size_t	startDelOffs = 0, endDelOffs = 0;
+	LEOGetChunkRanges( str, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	LEOInitStringValue( inContext->stackEndPtr -1, str +chunkStartOffs, chunkEndOffs -chunkStartOffs, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+/*!
 	Copy the value of the parameter at given index into the given value on the
 	stack. If no parameter of that index has been passed, this returns an empty
 	string. (PARAMETER_INSTR)
@@ -1292,7 +1337,8 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEOGetArrayItemCountInstruction,
 	LEOPopSimpleValueInstruction,
 	LEOPrintInstruction,
-	LEOSetStringInstruction
+	LEOSetStringInstruction,
+	LEOPushChunkInstruction
 };
 
 
@@ -1349,7 +1395,8 @@ const char*	gDefaultInstructionNames[] =
 	"GetArrayItemCount",
 	"PopSimpleValue",
 	"Print",
-	"SetString"
+	"SetString",
+	"PushChunk"
 };
 
 size_t		gNumInstructions = 0;
