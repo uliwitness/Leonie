@@ -1214,6 +1214,24 @@ void	LEOGetArrayItemCountInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Pop the last value off the stack, evaluate it as a string, and then assign it to the value at the given bp-relative address. If param1 is BACK_OF_STACK, the penultimate item on the stack will be used, and popped off as well.
+	(SET_STRING_INSTRUCTION)
+*/
+
+void	LEOSetStringInstruction( LEOContext* inContext )
+{
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
+	union LEOValue*	destValue = onStack ? (inContext->stackEndPtr -2) : inContext->stackBasePtr +inContext->currentInstruction->param1;
+	char			str[1024] = { 0 };
+	LEOGetValueAsString( inContext->stackEndPtr -1, str, sizeof(str), inContext );
+	LEOSetValueAsString( destValue, str, inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr +(onStack ? -2 : -1) );
+	
+	inContext->currentInstruction++;
+}
+
+
 #pragma mark -
 #pragma mark Instruction table
 
@@ -1273,7 +1291,8 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEOCountChunksInstruction,
 	LEOGetArrayItemCountInstruction,
 	LEOPopSimpleValueInstruction,
-	LEOPrintInstruction
+	LEOPrintInstruction,
+	LEOSetStringInstruction
 };
 
 
@@ -1329,7 +1348,8 @@ const char*	gDefaultInstructionNames[] =
 	"CountChunks",
 	"GetArrayItemCount",
 	"PopSimpleValue",
-	"Print"
+	"Print",
+	"SetString"
 };
 
 size_t		gNumInstructions = 0;
