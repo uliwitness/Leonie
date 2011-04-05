@@ -523,11 +523,11 @@ void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
 	union LEOValue	tmpRefValue = { 0 };
 	LEOValuePtr		refValueOnStack = NULL;
 	
-	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext);
+	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext);
+	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
@@ -563,11 +563,11 @@ void	LEOPushChunkInstruction( LEOContext* inContext )
 	LEOValuePtr		chunkEnd = inContext->stackEndPtr -1;
 	LEOValuePtr		chunkStart = inContext->stackEndPtr -2;
 	
-	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext);
+	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext);
+	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
