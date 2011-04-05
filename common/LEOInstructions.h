@@ -77,9 +77,12 @@ enum
 	PRINT_VALUE_INSTR,
 	SET_STRING_INSTR,
 	PUSH_CHUNK_INSTR,
+	PUSH_ITEMDELIMITER_INSTR,
+	SET_ITEMDELIMITER_INSTR,
 
 	LEO_NUMBER_OF_INSTRUCTIONS	// MUST BE LAST.
 };
+// Possible LEOInstructionID values.
 
 
 // -----------------------------------------------------------------------------

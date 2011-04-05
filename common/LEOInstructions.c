@@ -1277,6 +1277,28 @@ void	LEOSetStringInstruction( LEOContext* inContext )
 }
 
 
+void	LEOPushItemDelimiterInstruction( LEOContext* inContext )
+{
+	char		delimStr[8] = { 0 };
+	delimStr[0] = inContext->itemDelimiter;	// TODO: Make this work with more than 1-byte characters.
+	LEOPushStringValueOnStack( inContext, delimStr, strlen(delimStr) );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOSetItemDelimiterInstruction( LEOContext* inContext )
+{
+	char		delimStr[8] = { 0 };
+	LEOGetValueAsString( inContext->stackEndPtr -1, delimStr, sizeof(delimStr), inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+
+	inContext->itemDelimiter = delimStr[0];	// TODO: Make this work with more than 1-byte characters.
+	
+	inContext->currentInstruction++;
+}
+
+
 #pragma mark -
 #pragma mark Instruction table
 
@@ -1338,7 +1360,9 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEOPopSimpleValueInstruction,
 	LEOPrintInstruction,
 	LEOSetStringInstruction,
-	LEOPushChunkInstruction
+	LEOPushChunkInstruction,
+	LEOPushItemDelimiterInstruction,
+	LEOSetItemDelimiterInstruction
 };
 
 
@@ -1396,7 +1420,9 @@ const char*	gDefaultInstructionNames[] =
 	"PopSimpleValue",
 	"Print",
 	"SetString",
-	"PushChunk"
+	"PushChunk",
+	"PushItemDelimiter",
+	"SetItemDelimiter"
 };
 
 size_t		gNumInstructions = 0;
