@@ -139,7 +139,7 @@ LEOHandlerID	LEOContextGroupHandlerIDForHandlerName( LEOContextGroup* inContext,
 	
 	if( inContext->handlerNames && inContext->numHandlerNames > 0 )
 	{
-		for( size_t x = 0; x < inContext->numHandlerNames; x++ )
+		for( LEOHandlerID x = 0; x < inContext->numHandlerNames; x++ )
 		{
 			if( strcasecmp(handlerName, inContext->handlerNames[x] ) == 0 )
 			{

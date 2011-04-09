@@ -111,7 +111,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 					referenceObjectSeed = currValue->reference.objectSeed;
 				}
 			
-				dataLen = strlen(str) +1 +strlen(currValue->base.isa->displayTypeName) +1 +strlen(theRealName) +1 +sizeof(objectID) +sizeof(referenceObjectID) +sizeof(referenceObjectSeed);
+				dataLen = (uint32_t) (strlen(str) +1 +strlen(currValue->base.isa->displayTypeName) +1 +strlen(theRealName) +1 +sizeof(objectID) +sizeof(referenceObjectID) +sizeof(referenceObjectSeed));
 				
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, "VARI", 4 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
@@ -137,7 +137,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 			
 			LEOHandlerID	theID = inContext->callStackEntries[x].handler->handlerName;
 			const char*		hdlNameStr = LEOContextGroupHandlerNameForHandlerID( inContext->group, theID );
-			uint32_t		dataLen = strlen(hdlNameStr) +1;
+			uint32_t		dataLen = (uint32_t) (strlen(hdlNameStr) +1);
 			actuallyWritten = write( gLEORemoteDebuggerSocketFD, "CALL", 4 );
 			actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
 			actuallyWritten = write( gLEORemoteDebuggerSocketFD, hdlNameStr, strlen(hdlNameStr) +1 );

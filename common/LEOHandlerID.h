@@ -24,13 +24,16 @@
 	same handler ID.
 	Not unlike a "selector" in Objective C.
 */
-typedef size_t LEOHandlerID;
+typedef uint32_t LEOHandlerID;
+
+
+typedef uint32_t LEOHandlerCount;	// Must be same type as LEOHandlerID.
 
 
 /*!
 	Indicate that a handler ID variable has not been set yet.
 */
-#define kLEOHandlerIDINVALID		SIZE_MAX
+#define kLEOHandlerIDINVALID		UINT32_MAX
 
 
 
