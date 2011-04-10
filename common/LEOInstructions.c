@@ -1304,6 +1304,7 @@ void	LEOSetItemDelimiterInstruction( LEOContext* inContext )
 
 LEOInstructionFuncPtr*	gInstructions = NULL;
 const char**			gInstructionNames = NULL;
+size_t					gNumInstructions = 0;
 
 
 LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
@@ -1358,7 +1359,6 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEOCountChunksInstruction,
 	LEOGetArrayItemCountInstruction,
 	LEOPopSimpleValueInstruction,
-	LEOPrintInstruction,
 	LEOSetStringInstruction,
 	LEOPushChunkInstruction,
 	LEOPushItemDelimiterInstruction,
@@ -1418,14 +1418,11 @@ const char*	gDefaultInstructionNames[] =
 	"CountChunks",
 	"GetArrayItemCount",
 	"PopSimpleValue",
-	"Print",
 	"SetString",
 	"PushChunk",
 	"PushItemDelimiter",
 	"SetItemDelimiter"
 };
-
-size_t		gNumInstructions = 0;
 
 
 
@@ -1439,11 +1436,36 @@ void	LEOInitInstructionArray()
 	}
 }
 
-void	LEOAddInstructionsToInstructionArray( LEOInstructionFuncPtr *inInstructionArray, const char* *inInstructionNames, size_t inNumInstructions )
+
+void	LEOAddInstructionsToInstructionArray( LEOInstructionFuncPtr *inInstructionArray, const char* *inInstructionNames, size_t inNumInstructions, size_t *outFirstNewInstruction )
 {
 	LEOInitInstructionArray();
-	if( gNumInstructions == LEO_NUMBER_OF_INSTRUCTIONS )	// Static buffer. 
-	{
 	
+	LEOInstructionFuncPtr*	instrArray = NULL;
+	const char**			instrNames = NULL;
+	
+	if( gNumInstructions == LEO_NUMBER_OF_INSTRUCTIONS )	// Static buffer:
+	{
+		instrArray = calloc( gNumInstructions +inNumInstructions, sizeof(LEOInstructionFuncPtr) );
+		instrNames = calloc( gNumInstructions +inNumInstructions, sizeof(const char*) );
+		memmove( instrArray, gInstructions, gNumInstructions *sizeof(LEOInstructionFuncPtr) );
+		memmove( instrNames, gInstructionNames, gNumInstructions *sizeof(const char*) );
+	}
+	else	// Dynamic buffer, already added something before:
+	{
+		instrArray = realloc( gInstructions, (gNumInstructions +inNumInstructions) * sizeof(LEOInstructionFuncPtr) );
+		instrNames = realloc( gInstructionNames, (gNumInstructions +inNumInstructions) * sizeof(const char*) );
+	}
+	
+	if( instrArray && instrNames )
+	{
+		gInstructions = instrArray;
+		gInstructionNames = instrNames;
+		
+		memmove( gInstructions +gNumInstructions, inInstructionArray, inNumInstructions * sizeof(LEOInstructionFuncPtr) );
+		memmove( gInstructionNames +gNumInstructions, inInstructionNames, inNumInstructions * sizeof(const char*) );
+		
+		*outFirstNewInstruction = gNumInstructions;
+		gNumInstructions += inNumInstructions;
 	}
 }

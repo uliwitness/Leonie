@@ -19,7 +19,7 @@
 	bytecode, or as a starting point for porting Leonie to a new platform or host.
 */
 
-#include "LEOInterpreter.h"
+#include <ForgeFramework/ForgeFramework.h>
 #include <stdio.h>
 
 
@@ -46,3 +46,15 @@ void	LEOPrintInstruction( LEOContext* inContext )
 	
 	inContext->currentInstruction++;
 }
+
+
+LEOInstructionFuncPtr	gMsgInstructions[LEO_NUMBER_OF_MSG_INSTRUCTIONS] =
+{
+	LEOPrintInstruction
+};
+
+
+const char*		gMsgInstructionNames[LEO_NUMBER_OF_MSG_INSTRUCTIONS] =
+{
+	"Print"
+};
