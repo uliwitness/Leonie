@@ -19,7 +19,7 @@
 	bytecode, or as a starting point for porting Leonie to a new platform or host.
 */
 
-#include <ForgeFramework/ForgeFramework.h>
+#include "Forge.h"
 #include <stdio.h>
 
 
