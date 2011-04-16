@@ -1299,6 +1299,39 @@ void	LEOSetItemDelimiterInstruction( LEOContext* inContext )
 }
 
 
+void	LEOPushGlobalReferenceInstruction( LEOContext* inContext )
+{
+	char		globalName[1024] = { 0 };
+	LEOGetValueAsString( inContext->stackEndPtr -1, globalName, sizeof(globalName), inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	LEOValuePtr	theGlobal = LEOGetArrayValueForKey( inContext->group->globals, globalName );
+	if( !theGlobal )
+	{
+		union LEOValue		emptyString = { 0 };
+		LEOInitStringVariantValue( &emptyString, "", kLEOInvalidateReferences, inContext );
+		theGlobal = LEOAddArrayEntryToRoot( &inContext->group->globals, globalName, &emptyString, inContext );
+		LEOCleanUpValue( &emptyString, kLEOInvalidateReferences, inContext );
+	}
+	
+	union LEOValue	tmpRefValue = { 0 };
+	LEOValuePtr		refValueOnStack = NULL;
+	
+	LEOInitReferenceValue( &tmpRefValue, theGlobal, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
+	/*LEOValuePtr*/ LEOPushValueOnStack( inContext, &tmpRefValue );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOPutValueIntoValueInstruction( LEOContext* inContext )
+{
+	LEOPutValueIntoValue( inContext->stackEndPtr -1, inContext->stackEndPtr -2, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
 #pragma mark -
 #pragma mark Instruction table
 
@@ -1362,7 +1395,9 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEOSetStringInstruction,
 	LEOPushChunkInstruction,
 	LEOPushItemDelimiterInstruction,
-	LEOSetItemDelimiterInstruction
+	LEOSetItemDelimiterInstruction,
+	LEOPushGlobalReferenceInstruction,
+	LEOPutValueIntoValueInstruction
 };
 
 
@@ -1421,7 +1456,9 @@ const char*	gDefaultInstructionNames[] =
 	"SetString",
 	"PushChunk",
 	"PushItemDelimiter",
-	"SetItemDelimiter"
+	"SetItemDelimiter",
+	"PushGlobalReference",
+	"PutValueIntoValue"
 };
 
 

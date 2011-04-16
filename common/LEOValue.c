@@ -86,6 +86,7 @@ struct LEOValueType	kLeoValueTypeInteger =
 	
 	LEOInitIntegerValueCopy,
 	LEOInitIntegerValueCopy,
+	LEOPutIntegerValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpIntegerValue,
@@ -117,6 +118,7 @@ struct LEOValueType	kLeoValueTypeString =
 	
 	LEOInitStringValueCopy,
 	LEOInitStringValueCopy,
+	LEOPutStringValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringValue,
@@ -148,6 +150,7 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	
 	LEOInitStringConstantValueCopy,
 	LEOInitStringConstantValueCopy,
+	LEOPutStringValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringConstantValue,
@@ -181,6 +184,7 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	
 	LEOInitBooleanValueCopy,
 	LEOInitBooleanValueCopy,
+	LEOPutBooleanValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpBooleanValue,
@@ -212,6 +216,7 @@ struct LEOValueType	kLeoValueTypeReference =
 	
 	LEOInitReferenceValueCopy,
 	LEOInitReferenceValueSimpleCopy,
+	LEOPutReferenceValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfReferenceValue,
 	
 	LEOCleanUpReferenceValue,
@@ -243,6 +248,7 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	
 	LEOInitNumberVariantValueCopy,
 	LEOInitNumberValueCopy,
+	LEOPutNumberValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpNumberValue,
@@ -274,6 +280,7 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	
 	LEOInitIntegerVariantValueCopy,
 	LEOInitIntegerValueCopy,
+	LEOPutIntegerValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpIntegerValue,
@@ -305,6 +312,7 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	
 	LEOInitStringVariantValueCopy,
 	LEOInitStringValueCopy,
+	LEOPutStringValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringValue,
@@ -336,6 +344,7 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	
 	LEOInitBooleanVariantValueCopy,
 	LEOInitBooleanValueCopy,
+	LEOPutBooleanValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpBooleanValue,
@@ -367,6 +376,7 @@ struct LEOValueType	kLeoValueTypeArray =
 	
 	LEOInitArrayValueCopy,
 	LEOInitArrayValueCopy,
+	LEOPutArrayValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfArrayValue,
 	
 	LEOCleanUpArrayValue,
@@ -684,6 +694,12 @@ void	LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 }
 
 
+void	LEOPutNumberValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+{
+	LEOSetValueAsNumber( dest, self->number.number, inContext );
+}
+
+
 /*!
 	Destructor for number values. If this value has references, this makes sure
 	that they will produce an error message if they ever try to access it again.
@@ -800,6 +816,12 @@ void	LEOInitIntegerValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferen
 	if( keepReferences == kLEOInvalidateReferences )
 		dest->base.refObjectID = kLEOObjectIDINVALID;
 	dest->integer.integer = self->integer.integer;
+}
+
+
+void	LEOPutIntegerValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+{
+	LEOSetValueAsInteger( dest, self->integer.integer, inContext );
 }
 
 
@@ -1001,6 +1023,12 @@ void	LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 	size_t		theLen = strlen( self->string.string ) +1;
 	dest->string.string = calloc( theLen, sizeof(char) );
 	strncpy( dest->string.string, self->string.string, theLen );
+}
+
+
+void	LEOPutStringValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+{
+	LEOSetValueAsString( dest, self->string.string, inContext );
 }
 
 
@@ -1360,6 +1388,13 @@ void	LEOInitBooleanValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferen
 }
 
 
+void	LEOPutBooleanValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+{
+	LEOSetValueAsBoolean( dest, self->boolean.boolean, inContext );
+}
+
+
+
 /*!
 	Destructor for boolean values. If this value has references, this makes sure
 	that they will produce an error message if they ever try to access it again.
@@ -1712,6 +1747,19 @@ void	LEOInitReferenceValueSimpleCopy( LEOValuePtr self, LEOValuePtr dest, LEOKee
 }
 
 
+void	LEOPutReferenceValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
+		inContext->keepRunning = false;
+	}
+	else
+		LEOPutValueIntoValue(theValue, dest, inContext);
+}
+
+
 void	LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
 															size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
 															LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
@@ -1972,6 +2020,14 @@ void	LEOInitArrayValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReference
 }
 
 
+void	LEOPutArrayValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+{
+	// TODO: Make it possible to copy arrays.
+	snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Can't copy arrays." );
+	inContext->keepRunning = false;
+}
+
+
 void	LEOCleanUpArrayValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	self->base.isa = NULL;
@@ -2023,12 +2079,15 @@ struct LEOArrayEntry	*	LEOAllocNewEntry( const char* inKey, LEOValuePtr inValue,
 }
 
 
-void	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOValuePtr inValue, struct LEOContext* inContext )
+LEOValuePtr	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOValuePtr inValue, struct LEOContext* inContext )
 {
 	struct LEOArrayEntry	*	currEntry = NULL;
 	
 	if( *arrayPtrByReference == NULL )
+	{
 		*arrayPtrByReference = LEOAllocNewEntry( inKey, inValue, inContext );
+		return &(*arrayPtrByReference)->value;
+	}
 	else
 	{
 		currEntry = *arrayPtrByReference;
@@ -2040,7 +2099,7 @@ void	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const c
 				if( currEntry->largerItem == NULL )
 				{
 					currEntry->largerItem = LEOAllocNewEntry( inKey, inValue, inContext );
-					break;
+					return &currEntry->largerItem->value;
 				}
 				else
 					currEntry = currEntry->largerItem;
@@ -2050,7 +2109,7 @@ void	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const c
 				if( currEntry->smallerItem == NULL )
 				{
 					currEntry->smallerItem = LEOAllocNewEntry( inKey, inValue, inContext );
-					break;
+					return &currEntry->smallerItem->value;
 				}
 				else
 					currEntry = currEntry->smallerItem;
@@ -2059,9 +2118,12 @@ void	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const c
 			{
 				LEOCleanUpValue( &currEntry->value, kLEOKeepReferences, inContext );
 				LEOInitCopy( inValue, &currEntry->value, kLEOKeepReferences, inContext );
+				return &currEntry->value;
 			}
 		}
 	}
+	
+	return NULL;
 }
 
 

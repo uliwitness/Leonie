@@ -37,17 +37,19 @@ typedef struct LEOObject LEOObject;
 	global data they share. You can insulate running scripts from each other by
 	placing them in a different context group.
 	@field	referenceCount		Reference count for this object, i.e. number of contexts still attached to this object.
+	@field	globals				An associative array of LEOValues of various kinds representing global variables.
 	@field	numReferences		Number of items in the <tt>references</tt> array.
 	@field	references			An array of "master pointers" to values to which references have been created.
 	@seealso //leo_ref/c/func/LEOContextGroupCreate LEOContextGroupCreate
 */
 typedef struct LEOContextGroup
 {
-	size_t			referenceCount;		// Reference count for this object, i.e. number of contexts still attached to this object.
-	LEOHandlerCount	numHandlerNames;	// Number of slots in handlerNames array.
-	char**			handlerNames;		// Array of handler names. The indexes into this array are 'handler IDs' used throughout the bytecode.
-	size_t			numReferences;		// Available slots in "references" array.
-	LEOObject		*references;		// "Master pointer" table for references so we can detect when a reference goes away.
+	size_t					referenceCount;		// Reference count for this object, i.e. number of contexts still attached to this object.
+	struct LEOArrayEntry	*globals;			// Associative array containing global variables.
+	LEOHandlerCount			numHandlerNames;	// Number of slots in handlerNames array.
+	char**					handlerNames;		// Array of handler names. The indexes into this array are 'handler IDs' used throughout the bytecode.
+	size_t					numReferences;		// Available slots in "references" array.
+	LEOObject				*references;		// "Master pointer" table for references so we can detect when a reference goes away.
 } LEOContextGroup;
 
 

@@ -13,6 +13,7 @@
 
 #include "LEOContextGroup.h"
 #include "LEOHandlerID.h"
+#include "LEOValue.h"
 #include <stdlib.h>
 #include <string.h>
 
