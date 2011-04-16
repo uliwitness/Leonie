@@ -862,7 +862,7 @@ void	LEOGreaterThanOperatorInstruction( LEOContext* inContext )
 	
 	bool			isEqual = false;
 	
-	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
 		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
 		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
@@ -894,7 +894,7 @@ void	LEOLessThanOperatorInstruction( LEOContext* inContext )
 	
 	bool			isEqual = false;
 	
-	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
 		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
 		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
@@ -926,7 +926,7 @@ void	LEOGreaterThanEqualOperatorInstruction( LEOContext* inContext )
 	
 	bool			isEqual = false;
 	
-	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
 		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
 		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
@@ -958,7 +958,7 @@ void	LEOLessThanEqualOperatorInstruction( LEOContext* inContext )
 	
 	bool			isEqual = false;
 	
-	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
 		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
 		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
@@ -1036,7 +1036,7 @@ void	LEOEqualOperatorInstruction( LEOContext* inContext )
 	
 	bool			isEqual = false;
 	
-	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
 		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
 		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
@@ -1068,7 +1068,7 @@ void	LEONotEqualOperatorInstruction( LEOContext* inContext )
 	
 	bool			isEqual = false;
 	
-	if( LEOCanGetValueAsNumber(firstArgumentValue, inContext) && LEOCanGetValueAsNumber(secondArgumentValue, inContext) )
+	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
 		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
 		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
