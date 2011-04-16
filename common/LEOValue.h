@@ -252,6 +252,19 @@ typedef struct LEOValueArray	LEOValueArray;
 
 
 /*!
+	A generic wrapper around foreign objects. The host may provide its own
+	LEOValueType for an individual instance, so don't make any assumptions.
+	This is mainly here so foreign objects can pass through LEO scripts and be
+	stored on the stack unharmed.
+*/
+struct LEOValueObject
+{
+	struct LEOValueBase		base;
+	void*					object;
+};
+
+
+/*!
 	We build the stack out of entries of this union, so we can just add 1 to the
 	stack pointer to add another value to the stack, and so we don't have to
 	check the size of each item before initializing.
@@ -268,6 +281,7 @@ union LEOValue
 	struct LEOValueBoolean		boolean;
 	struct LEOValueReference	reference;
 	struct LEOValueArray		array;
+	struct LEOValueObject		object;
 };
 
 
