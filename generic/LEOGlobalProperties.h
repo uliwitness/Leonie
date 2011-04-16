@@ -25,4 +25,4 @@ extern const char*					gGlobalPropertyInstructionNames[LEO_NUMBER_OF_GLOBAL_PROP
 extern size_t						kFirstGlobalPropertyInstruction;
 
 
-extern struct TGlobalPropertyEntry	gHostGlobalProperties[LEO_NUMBER_OF_GLOBAL_PROPERTY_INSTRUCTIONS / 2];
+extern struct TGlobalPropertyEntry	gHostGlobalProperties[(LEO_NUMBER_OF_GLOBAL_PROPERTY_INSTRUCTIONS / 2) +1];
