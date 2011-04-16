@@ -55,6 +55,7 @@ struct LEOValueType	kLeoValueTypeNumber =
 	
 	LEOInitNumberValueCopy,
 	LEOInitNumberValueCopy,
+	LEOPutNumberValueIntoValue,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpNumberValue,
