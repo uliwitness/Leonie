@@ -532,12 +532,12 @@ void	LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	char		str[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
+	char		strBuf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
 	size_t		outChunkStart = 0,
 				outChunkEnd = 0,
 				outDelChunkStart = 0,
 				outDelChunkEnd = 0;
-	LEOGetValueAsString( self, str, sizeof(str), inContext );
+	const char*	str = LEOGetValueAsString( self, strBuf, sizeof(strBuf), inContext );
 	LEOGetChunkRanges( str, inType, inRangeStart, inRangeEnd,
 						&outChunkStart, &outChunkEnd,
 						&outDelChunkStart, &outDelChunkEnd, inContext->itemDelimiter );
@@ -555,10 +555,7 @@ void	LEODetermineChunkRangeOfSubstringOfAnyValue( LEOValuePtr self, size_t *ioBy
 														struct LEOContext* inContext )
 {
 	char		strBuf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
-	char*		str = strBuf;
-	LEOGetValueAsString( self, strBuf, sizeof(strBuf), inContext );
-	if( (*ioBytesEnd) < sizeof(strBuf) )
-		str[(*ioBytesEnd)] = '\0';
+	char*		str = LEOGetValueAsString( self, strBuf, sizeof(strBuf), inContext );
 	str += (*ioBytesStart);
 	
 	size_t		chunkStart, chunkEnd, delChunkStart, delChunkEnd;
@@ -639,9 +636,10 @@ LEOInteger LEOGetNumberValueAsInteger( LEOValuePtr self, struct LEOContext* inCo
 	Implementation of GetValueAsString for number values.
 */
 
-void LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+const char* LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	snprintf( outBuf, bufSize -1, "%g", self->number.number );
+	return outBuf;
 }
 
 
@@ -758,9 +756,10 @@ LEOInteger LEOGetIntegerValueAsInteger( LEOValuePtr self, struct LEOContext* inC
 	Implementation of GetValueAsString for integer values.
 */
 
-void LEOGetIntegerValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+const char*	LEOGetIntegerValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	snprintf( outBuf, bufSize -1, "%lld", self->integer.integer );
+	return outBuf;
 }
 
 
@@ -896,9 +895,10 @@ LEOInteger	LEOGetStringValueAsInteger( LEOValuePtr self, struct LEOContext* inCo
 	Implementation of GetAsString for string values.
 */
 
-void	LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+const char*	LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	strncpy( outBuf, self->string.string, bufSize );
+	return self->string.string;
 }
 
 
@@ -1333,9 +1333,10 @@ void	LEOInitBooleanValue( LEOValuePtr self, bool inBoolean, LEOKeepReferencesFla
 	Implementation of GetAsString for boolean values.
 */
 
-void	LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+const char*	LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	strncpy( outBuf, (self->boolean.boolean ? "true" : "false"), bufSize -1 );
+	return outBuf;
 }
 
 
@@ -1447,8 +1448,9 @@ void	LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr originalValue, LEOKeep
 	Implementation of GetAsString for reference values.
 */
 
-void	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+const char*	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
+	char*			theStr = outBuf;
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
@@ -1458,7 +1460,7 @@ void	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t bufSiz
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 		LEOGetValueAsRangeOfString( theValue, self->reference.chunkType, self->reference.chunkStart, self->reference.chunkEnd, outBuf, bufSize, inContext );
 	else
-		LEOGetValueAsString( theValue, outBuf, bufSize, inContext );
+		theStr = LEOGetValueAsString( theValue, outBuf, bufSize, inContext );
 }
 
 
@@ -1984,12 +1986,13 @@ void	LEOInitArrayValue( LEOValuePtr self, struct LEOArrayEntry *inArray, LEOKeep
 }
 
 
-void	LEOGetArrayValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+const char*	LEOGetArrayValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 //	inContext->keepRunning = false;
 //	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into a string", self->base.isa->displayTypeName );
 	
 	snprintf( outBuf, bufSize, "<%lu items>", LEOGetArrayKeyCount( self->array.array ) );
+	return outBuf;
 }
 
 
