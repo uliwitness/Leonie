@@ -56,6 +56,7 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOInitNumberValueCopy,
 	LEOInitNumberValueCopy,
 	LEOPutNumberValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpNumberValue,
@@ -88,6 +89,7 @@ struct LEOValueType	kLeoValueTypeInteger =
 	LEOInitIntegerValueCopy,
 	LEOInitIntegerValueCopy,
 	LEOPutIntegerValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpIntegerValue,
@@ -120,6 +122,7 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOInitStringValueCopy,
 	LEOInitStringValueCopy,
 	LEOPutStringValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringValue,
@@ -152,6 +155,7 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOInitStringConstantValueCopy,
 	LEOInitStringConstantValueCopy,
 	LEOPutStringValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringConstantValue,
@@ -186,6 +190,7 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOInitBooleanValueCopy,
 	LEOInitBooleanValueCopy,
 	LEOPutBooleanValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpBooleanValue,
@@ -218,6 +223,7 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOInitReferenceValueCopy,
 	LEOInitReferenceValueSimpleCopy,
 	LEOPutReferenceValueIntoValue,
+	LEOReferenceValueFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfReferenceValue,
 	
 	LEOCleanUpReferenceValue,
@@ -250,6 +256,7 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOInitNumberVariantValueCopy,
 	LEOInitNumberValueCopy,
 	LEOPutNumberValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpNumberValue,
@@ -282,6 +289,7 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	LEOInitIntegerVariantValueCopy,
 	LEOInitIntegerValueCopy,
 	LEOPutIntegerValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpIntegerValue,
@@ -314,6 +322,7 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOInitStringVariantValueCopy,
 	LEOInitStringValueCopy,
 	LEOPutStringValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfStringValue,
 	
 	LEOCleanUpStringValue,
@@ -346,6 +355,7 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOInitBooleanVariantValueCopy,
 	LEOInitBooleanValueCopy,
 	LEOPutBooleanValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfAnyValue,
 	
 	LEOCleanUpBooleanValue,
@@ -378,6 +388,7 @@ struct LEOValueType	kLeoValueTypeArray =
 	LEOInitArrayValueCopy,
 	LEOInitArrayValueCopy,
 	LEOPutArrayValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
 	LEODetermineChunkRangeOfSubstringOfArrayValue,
 	
 	LEOCleanUpArrayValue,
@@ -587,6 +598,15 @@ bool	LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext 
 size_t	LEOCantGetKeyCount( LEOValuePtr self, struct LEOContext* inContext )
 {
 	return 0;
+}
+
+
+LEOValuePtr	LEOCantFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOValueTypePtr inType, struct LEOContext* inContext )
+{
+	if( inType == self->base.isa )
+		return self;
+	else
+		return NULL;
 }
 
 
@@ -1444,6 +1464,22 @@ void	LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr originalValue, LEOKeep
 }
 
 
+void	LEOInitReferenceValueWithIDs( LEOValuePtr self, LEOObjectID referencedObjectID, LEOObjectSeed referencedObjectSeed,
+									  LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	self->base.isa = &kLeoValueTypeReference;
+	if( keepReferences == kLEOInvalidateReferences )
+		self->base.refObjectID = kLEOObjectIDINVALID;
+	
+	self->reference.objectID = referencedObjectID;
+	self->reference.objectSeed = referencedObjectSeed;
+	
+	self->reference.chunkType = kLEOChunkTypeINVALID;
+	self->reference.chunkStart = 0;
+	self->reference.chunkEnd = 0;
+}
+
+
 /*!
 	Implementation of GetAsString for reference values.
 */
@@ -1853,6 +1889,27 @@ size_t		LEOGetReferenceValueKeyCount( LEOValuePtr self, struct LEOContext * inCo
 	}
 	else
 		return LEOGetKeyCount( theValue, inContext );
+}
+
+
+LEOValuePtr	LEOReferenceValueFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOValueTypePtr inType, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( self->base.isa == inType )
+		return self;
+	else if( theValue == NULL )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
+		inContext->keepRunning = false;
+		
+		return NULL;
+	}
+	else if( theValue->base.isa == inType )
+		return theValue;
+	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
+		return NULL;
+	else
+		return LEOFollowReferencesAndReturnValueOfType( theValue, inType, inContext );
 }
 
 

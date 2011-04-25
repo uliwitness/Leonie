@@ -101,6 +101,8 @@ struct LEOValueType
 	void		(*InitCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// dest is an uninitialized value.
 	void		(*InitSimpleCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// dest is an uninitialized value.
 	void		(*PutValueIntoValue)( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );	// dest must be a VALID, initialized value!
+	LEOValuePtr	(*FollowReferencesAndReturnValueOfType)( LEOValuePtr self, LEOValueTypePtr inType, struct LEOContext* inContext );	// Returns NULL if no direct reference.
+	
 	void		(*DetermineChunkRangeOfSubstring)( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
 													size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
 													LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
@@ -349,6 +351,23 @@ void		LEOInitBooleanValue( LEOValuePtr inStorage, bool inBoolean, LEOKeepReferen
 */
 void		LEOInitReferenceValue( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences,
 									LEOChunkType inType, size_t startOffs, size_t endOffs, struct LEOContext* inContext );
+
+/*!
+	Initialize the given storage so it's a valid reference value that
+	points to an original value referenced by object ID and seed.
+	If the original value is destructed while a reference still points to it,
+	method calls to such a reference will fail with an error message and abort
+	execution of the current LEOContext.
+	
+	However, the destructor of the value is safe to call, as is InitCopy.
+	
+	Pass kLEOChunkTypeINVALID if you want to reference the whole value and not
+	only a chunk of it.
+
+	@seealso //leo_ref/c/macro/LEOGetReferenceValueSize LEOGetReferenceValueSize
+*/
+void	LEOInitReferenceValueWithIDs( LEOValuePtr self, LEOObjectID referencedObjectID, LEOObjectSeed referencedObjectSeed,
+									  LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
 
 /*!
@@ -751,6 +770,17 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 */
 #define		LEOPutValueIntoValue(v,d,c)		((LEOValuePtr)(v))->base.isa->PutValueIntoValue(((LEOValuePtr)(v)),(d),(c))
 
+
+/*!
+	@function LEOGetKeyCount
+	Returns the number of key-value-pairs in this value.
+	@param	v	The value you wish to examine.
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+	@result		A LEOValuePtr pointing to the actual value in the array.
+*/
+#define 	LEOFollowReferencesAndReturnValueOfType(v,t,c)			((LEOValuePtr)(v))->base.isa->FollowReferencesAndReturnValueOfType(((LEOValuePtr)(v)),(t),(c))
+
 // Failure indicators we re-use in many places:
 LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
@@ -769,6 +799,7 @@ bool		LEOCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOCantSetValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext );
 bool		LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 size_t		LEOCantGetKeyCount( LEOValuePtr self, struct LEOContext* inContext );
+LEOValuePtr	LEOCantFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOValueTypePtr inType, struct LEOContext* inContext );
 
 // Other methods reusable across several types:
 void		LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
@@ -874,6 +905,7 @@ void		LEOSetReferenceValuePredeterminedRangeAsString( LEOValuePtr self,
 bool		LEOCanGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOPutReferenceValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
+LEOValuePtr	LEOReferenceValueFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOValueTypePtr inType, struct LEOContext* inContext );
 void		LEOInitReferenceValueSimpleCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
 																size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
