@@ -1497,6 +1497,8 @@ const char*	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t
 		LEOGetValueAsRangeOfString( theValue, self->reference.chunkType, self->reference.chunkStart, self->reference.chunkEnd, outBuf, bufSize, inContext );
 	else
 		theStr = LEOGetValueAsString( theValue, outBuf, bufSize, inContext );
+	
+	return theStr;
 }
 
 
