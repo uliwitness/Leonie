@@ -1315,7 +1315,6 @@ void	LEOPushGlobalReferenceInstruction( LEOContext* inContext )
 	}
 	
 	union LEOValue	tmpRefValue = { 0 };
-	LEOValuePtr		refValueOnStack = NULL;
 	
 	LEOInitReferenceValue( &tmpRefValue, theGlobal, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
 	/*LEOValuePtr*/ LEOPushValueOnStack( inContext, &tmpRefValue );
