@@ -19,8 +19,9 @@
 	bytecode, or as a starting point for porting Leonie to a new platform or host.
 */
 
-#include "Forge.h"
 #include <stdio.h>
+#include "LEOMsgInstructions.h"
+#include "LEOInterpreter.h"
 
 
 /*!
