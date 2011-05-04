@@ -40,7 +40,7 @@
 typedef struct LEOVariableNameMapping
 {
 	char			variableName[DBG_VAR_NAME_SIZE];
-	char			realVariableName[DBG_VAR_NAME_SIZE];
+	char			realVariableName[DBG_VAR_NAME_SIZE];	// Name as the user sees it.
 	long			bpRelativeAddress;
 } LEOVariableNameMapping;
 
@@ -201,7 +201,13 @@ void	LEOHandlerAddVariableNameMapping( LEOHandler* inHandler, const char* inName
 /*!
 	Find a variable's name in a handler based on its basePointer-relative offset.
 */
-void	LEOHandlerFindVariable( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName, LEOContext* inContext );
+void	LEOHandlerFindVariableByAddress( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName, LEOContext* inContext );
+
+
+/*!
+	Find a variable's basePointer-relative offset based on its name.
+*/
+long	LEOHandlerFindVariableByName( LEOHandler* inHandler, const char* inName );
 
 
 /*!

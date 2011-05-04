@@ -105,7 +105,22 @@ void	LEOHandlerAddVariableNameMapping( LEOHandler* inHandler, const char* inName
 }
 
 
-void	LEOHandlerFindVariable( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName, LEOContext* inContext )
+long	LEOHandlerFindVariableByName( LEOHandler* inHandler, const char* inName )
+{
+	LEOVariableNameMapping*	currVariable = inHandler->varNames;
+	
+	for( size_t x = 0; x < inHandler->numVariables; x++ )
+	{
+		if( strcasecmp( inHandler->varNames[x].realVariableName, inName ) == 0 )
+			return currVariable->bpRelativeAddress;
+		currVariable++;
+	}
+	
+	return -1;
+}
+
+
+void	LEOHandlerFindVariableByAddress( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName, LEOContext* inContext )
 {
 	if( bpRelativeAddress == -1 )
 	{

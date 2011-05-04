@@ -384,7 +384,7 @@ void	LEODebugPrintContext( LEOContext* ctx )
 			{
 				char*		theName = NULL;
 				char*		theRealName = NULL;
-				LEOHandlerFindVariable( ctx->callStackEntries[ ctx->numCallStackEntries -1 ].handler,
+				LEOHandlerFindVariableByAddress( ctx->callStackEntries[ ctx->numCallStackEntries -1 ].handler,
 										bpRelativeAddress, &theName, &theRealName, ctx );
 				if( strlen(theRealName) > 0 )
 					printf("\t%s",theRealName);

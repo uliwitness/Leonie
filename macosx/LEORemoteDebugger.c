@@ -94,7 +94,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 				char*				theRealName = NULL;
 				char*				theName = NULL;
 				unsigned long long	objectID = 0;
-				LEOHandlerFindVariable( inContext->callStackEntries[ inContext->numCallStackEntries -1 ].handler,
+				LEOHandlerFindVariableByAddress( inContext->callStackEntries[ inContext->numCallStackEntries -1 ].handler,
 										bpRelativeAddress, &theName, &theRealName, inContext );
 				if( strlen(theRealName) == 0 && strlen(theName) > 0 )
 					theRealName = theName;
