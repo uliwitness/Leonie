@@ -1,5 +1,5 @@
 /*
- *  LEODebugger.h
+ *  LEORemoteDebugger.h
  *  Leonie
  *
  *  Created by Uli Kusterer on 20.09.10.
@@ -7,16 +7,13 @@
  *
  */
 
-#ifndef LEO_DEBUGGER_H
-#define LEO_DEBUGGER_H		1
+#ifndef LEO_REMOTE_DEBUGGER_H
+#define LEO_REMOTE_DEBUGGER_H		1
 
 /*!
-	@header LEODebugger
-	These are hooks and utility functions for a little command-line debugger
+	@header LEORemoteDebugger
+	These are hooks and utility functions for a little debugger
 	that can be used to analyze your bytecode while it is running.
-	
-	To activate it, set your LEOContext's PreInstructionProc to
-	LEODebuggerPreInstructionProc.
 */
 
 // -----------------------------------------------------------------------------
@@ -53,5 +50,5 @@ void LEORemoteDebuggerAddBreakpoint( LEOInstruction* targetInstruction );
 void LEORemoteDebuggerRemoveBreakpoint( LEOInstruction* targetInstruction );
 
 
-#endif // LEO_DEBUGGER_H
+#endif // LEO_REMOTE_DEBUGGER_H
 
