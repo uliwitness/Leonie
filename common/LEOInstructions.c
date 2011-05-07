@@ -86,6 +86,27 @@ void	LEOPushStringFromTableInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Take a string in the current script's string table and push it on the stack
+	as a LEOStringValue. (PUSH_STR_VARIANT_FROM_TABLE_INSTR)
+	
+	param2	-	The index of the string table entry to retrieve.
+*/
+
+void	LEOPushStringVariantFromTableInstruction( LEOContext* inContext )
+{
+	const char*		theString = "";
+	LEOScript*		script = LEOContextPeekCurrentScript( inContext );
+	if( inContext->currentInstruction->param2 < script->numStrings )
+		theString = script->strings[inContext->currentInstruction->param2];
+	
+	LEOInitStringVariantValue( (LEOValuePtr) inContext->stackEndPtr, theString, kLEOInvalidateReferences, inContext );
+	inContext->stackEndPtr++;
+	
+	inContext->currentInstruction++;
+}
+
+
 void	LEOPrintInstruction( LEOContext* inContext );
 
 
@@ -1396,7 +1417,8 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEOPushItemDelimiterInstruction,
 	LEOSetItemDelimiterInstruction,
 	LEOPushGlobalReferenceInstruction,
-	LEOPutValueIntoValueInstruction
+	LEOPutValueIntoValueInstruction,
+	LEOPushStringVariantFromTableInstruction
 };
 
 
@@ -1457,7 +1479,8 @@ const char*	gDefaultInstructionNames[] =
 	"PushItemDelimiter",
 	"SetItemDelimiter",
 	"PushGlobalReference",
-	"PutValueIntoValue"
+	"PutValueIntoValue",
+	"PushStringVariantFromTable"
 };
 
 
