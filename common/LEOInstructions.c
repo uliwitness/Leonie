@@ -1347,6 +1347,7 @@ void	LEOPushGlobalReferenceInstruction( LEOContext* inContext )
 void	LEOPutValueIntoValueInstruction( LEOContext* inContext )
 {
 	LEOPutValueIntoValue( inContext->stackEndPtr -1, inContext->stackEndPtr -2, inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
 	inContext->currentInstruction++;
 }
