@@ -112,6 +112,9 @@ struct LEOValueType
 	bool		(*CanGetAsNumber)( LEOValuePtr self, struct LEOContext* inContext );
 	
 	LEOValuePtr	(*GetValueForKey)( LEOValuePtr self, const char* keyName, struct LEOContext* inContext );
+	void		(*SetValueForKey)( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext );
+	
+	void		(*SetValueAsArray)( LEOValuePtr self, struct LEOArrayEntry* inArray, struct LEOContext* inContext );
 	
 	size_t		(*GetKeyCount)( LEOValuePtr self, struct LEOContext* inContext );
 };
@@ -139,6 +142,11 @@ extern struct LEOValueType	kLeoValueTypeStringConstant;
 extern struct LEOValueType	kLeoValueTypeBoolean;
 extern struct LEOValueType	kLeoValueTypeReference;
 extern struct LEOValueType	kLeoValueTypeArray;
+extern struct LEOValueType	kLeoValueTypeArrayVariant;
+extern struct LEOValueType	kLeoValueTypeNumberVariant;
+extern struct LEOValueType	kLeoValueTypeIntegerVariant;
+extern struct LEOValueType	kLeoValueTypeStringVariant;
+extern struct LEOValueType	kLeoValueTypeBooleanVariant;
 
 
 // -----------------------------------------------------------------------------
@@ -719,7 +727,7 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 
 /*!
 	@function LEOGetValueForKey
-	Fetches the value with the given key from tha array in the specified value.
+	Fetches the value with the given key from the array in the specified value.
 	Returns NULL if there is no value under that key yet.
 	@param	v	The value you wish to examine.
 	@param	k	The key of the array item to fetch.
@@ -728,6 +736,20 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 	@result		A LEOValuePtr pointing to the actual value in the array.
 */
 #define 	LEOGetValueForKey(v,k,c)			((LEOValuePtr)(v))->base.isa->GetValueForKey(((LEOValuePtr)(v)),(k),(c))
+
+
+/*!
+	@function LEOSetValueForKey
+	Stores a value under the given key in the array in the specified value.
+	
+	@param	v	The value you wish to examine.
+	@param	k	The key of the array item to fetch.
+	@param	s	The source value to copy into the array.
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+	@result		A LEOValuePtr pointing to the actual value in the array.
+*/
+#define 	LEOSetValueForKey(v,k,s,c)			((LEOValuePtr)(v))->base.isa->SetValueForKey(((LEOValuePtr)(v)),(k),(s),(c))
 
 
 /*!
@@ -781,11 +803,15 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 */
 #define 	LEOFollowReferencesAndReturnValueOfType(v,t,c)			((LEOValuePtr)(v))->base.isa->FollowReferencesAndReturnValueOfType(((LEOValuePtr)(v)),(t),(c))
 
+
+#define		LEOSetValueAsArray(v,a,c)		((LEOValuePtr)(v))->base.isa->SetValueAsArray(((LEOValuePtr)(v)),(a),(c))
+
 // Failure indicators we re-use in many places:
 LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
 bool		LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
 LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, struct LEOContext* inContext );
+void		LEOCantSetValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext );
 void		LEOCantSetValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext );
 void		LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct LEOContext* inContext );
 void		LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext* inContext );
@@ -800,6 +826,7 @@ void		LEOCantSetValueAsString( LEOValuePtr self, const char* inString, struct LE
 bool		LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 size_t		LEOCantGetKeyCount( LEOValuePtr self, struct LEOContext* inContext );
 LEOValuePtr	LEOCantFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOValueTypePtr inType, struct LEOContext* inContext );
+void		LEOCantSetValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext );
 
 // Other methods reusable across several types:
 void		LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
@@ -913,6 +940,8 @@ void		LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_
 																struct LEOContext* inContext );
 void		LEOCleanUpReferenceValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 LEOValuePtr	LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKey, struct LEOContext * inContext );
+void		LEOSetReferenceValueValueForKey( LEOValuePtr self, const char* inKey, LEOValuePtr inValue, struct LEOContext * inContext );
+void		LEOSetReferenceValueAsArray( LEOValuePtr self, struct LEOArrayEntry * inArray, struct LEOContext * inContext );
 size_t		LEOGetReferenceValueKeyCount( LEOValuePtr self, struct LEOContext * inContext );
 
 
@@ -931,6 +960,8 @@ void		LEOInitNumberVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeep
 void		LEOInitIntegerVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitBooleanVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitStringVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+void		LEOSetVariantValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext );
+void		LEOInitArrayVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
 // Array value-specific:
 void		LEOInitArrayValue( LEOValuePtr self, struct LEOArrayEntry *inArray, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// Takes over ownership of the array.
@@ -946,8 +977,10 @@ void		LEODetermineChunkRangeOfSubstringOfArrayValue( LEOValuePtr self, size_t *i
 															struct LEOContext* inContext );
 void		LEOCleanUpArrayValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 LEOValuePtr	LEOGetArrayValueValueForKey( LEOValuePtr self, const char* inKey, struct LEOContext * inContext );
+void		LEOSetArrayValueValueForKey( LEOValuePtr self, const char* inKey, LEOValuePtr inValue, struct LEOContext * inContext );
 size_t		LEOGetArrayValueKeyCount( LEOValuePtr self, struct LEOContext* inContext );
 
+void		LEOSetArrayValueAsArray( LEOValuePtr self, struct LEOArrayEntry* inArray, struct LEOContext* inContext );
 
 // Associative arrays:
 struct LEOArrayEntry	*	LEOAllocNewEntry( const char* inKey, LEOValuePtr inValue, struct LEOContext* inContext );
@@ -956,7 +989,18 @@ void						LEODeleteArrayEntryFromRoot( struct LEOArrayEntry** arrayPtrByReferenc
 struct LEOArrayEntry*		LEOCopyArray( struct LEOArrayEntry* arrayPtr, struct LEOContext* inContext );
 LEOValuePtr					LEOGetArrayValueForKey( struct LEOArrayEntry* arrayPtr, const char* inKey );
 size_t						LEOGetArrayKeyCount( struct LEOArrayEntry* arrayPtr );
+void						LEOPrintArray( struct LEOArrayEntry* arrayPtr, char* strBuf, size_t bufSize, struct LEOContext* inContext );
 void						LEOCleanUpArray( struct LEOArrayEntry* arrayPtr, struct LEOContext* inContext );
+
+
+// One array entry:
+struct LEOArrayEntry
+{
+	struct LEOArrayEntry	*	smallerItem;
+	struct LEOArrayEntry	*	largerItem;
+	union LEOValue				value;
+	char						key[0];	// Must be last, dynamically sized array.
+};
 
 
 #endif // LEO_VALUE_H
