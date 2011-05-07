@@ -77,6 +77,9 @@ bool	LEOInitRemoteDebugger( const char* inHostName )
 
 void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 {
+	if( !gLEORemoteDebuggerInitialized )
+		return;
+	
 	size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "EMTY\0\0\0\0", 8 );	// Clear any existing variable display.
 	printf( "Remote debugger: Emptying (%lu bytes written)\n", actuallyWritten );
 	
@@ -166,6 +169,9 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 
 void	LEORemoteDebuggerAddHandler( struct LEOHandler* inHandler )
 {
+	if( !gLEORemoteDebuggerInitialized )
+		return;
+	
 	for( size_t x = 0; x < inHandler->numInstructions; x++ )
 	{
 		char				instructionStr[256] = { 0 };
@@ -184,6 +190,9 @@ void	LEORemoteDebuggerAddHandler( struct LEOHandler* inHandler )
 
 void	LEORemoteDebuggerAddFile( const char* filename, const char* filecontents, struct LEOScript* inScript )
 {
+	if( !gLEORemoteDebuggerInitialized )
+		return;
+	
 	// Tell the debugger what source file we're dealing with:
 	size_t	filenameLen = strlen(filename) +1;
 	size_t	filecontentsLen = strlen(filecontents) +1;
@@ -208,6 +217,9 @@ void	LEORemoteDebuggerAddFile( const char* filename, const char* filecontents, s
 
 void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 {
+	if( !gLEORemoteDebuggerInitialized )
+		return;
+	
 	bool	stayInDebuggerPrompt = true;
 	while( stayInDebuggerPrompt )
 	{
@@ -267,6 +279,9 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 
 void LEORemoteDebuggerPreInstructionProc( struct LEOContext* inContext )
 {
+	if( !gLEORemoteDebuggerInitialized )
+		return;
+	
 	if( inContext->numSteps > 0 )
 	{
 		inContext->numSteps--;
