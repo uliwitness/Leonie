@@ -354,7 +354,7 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOCanGetStringValueAsNumber,
 	
 	LEOCantGetValueForKey,
-	LEOCantSetValueForKey,
+	LEOSetStringVariantValueValueForKey,
 	LEOSetVariantValueAsArray,
 	LEOCantGetKeyCount
 };
@@ -2131,6 +2131,21 @@ void	LEOSetVariantValuePredeterminedRangeAsString( LEOValuePtr self,
 	LEOSetVariantValueRangeAsString( self, kLEOChunkTypeByte,
 										inRangeStart, inRangeEnd,
 										inBuf, inContext );
+}
+
+
+void	LEOSetStringVariantValueValueForKey( LEOValuePtr self, const char* inKey, LEOValuePtr inValue, struct LEOContext * inContext )
+{
+	if( self->string.string[0] != 0 )	// Not an empty string
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Expected array here, found \"%s\".", self->string.string );
+		inContext->keepRunning = false;
+		return;
+	}
+	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+	LEOInitArrayValue( self, NULL, kLEOKeepReferences, inContext );
+	self->base.isa = &kLeoValueTypeArrayVariant;
+	LEOAddArrayEntryToRoot( &self->array.array, inKey, inValue, inContext );
 }
 
 
