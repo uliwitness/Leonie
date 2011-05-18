@@ -438,15 +438,27 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 	LEOHandler*		foundHandler = NULL;
 	if( currScript )
 	{
-		if( inContext->currentInstruction->param1 == 0 )
-			foundHandler = LEOScriptFindCommandHandlerWithID( currScript, handlerName );
-		else
-			foundHandler = LEOScriptFindFunctionHandlerWithID( currScript, handlerName );
-		if( foundHandler )
+		while( foundHandler == NULL )
 		{
-			LEOContextPushHandlerScriptReturnAddressAndBasePtr( inContext, foundHandler, currScript, inContext->currentInstruction +1, inContext->stackBasePtr );
-			inContext->currentInstruction = foundHandler->instructions;
-			inContext->stackBasePtr = inContext->stackEndPtr;
+			if( inContext->currentInstruction->param1 == 0 )
+				foundHandler = LEOScriptFindCommandHandlerWithID( currScript, handlerName );
+			else
+				foundHandler = LEOScriptFindFunctionHandlerWithID( currScript, handlerName );
+			
+			if( foundHandler )
+			{
+				LEOContextPushHandlerScriptReturnAddressAndBasePtr( inContext, foundHandler, currScript, inContext->currentInstruction +1, inContext->stackBasePtr );
+				inContext->currentInstruction = foundHandler->instructions;
+				inContext->stackBasePtr = inContext->stackEndPtr;
+			}
+			
+			if( !foundHandler )
+			{
+				if( currScript->GetParentScript )
+					currScript = currScript->GetParentScript( currScript, inContext );
+				if( !currScript )
+					break;
+			}
 		}
 	}
 	

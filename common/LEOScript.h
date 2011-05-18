@@ -86,6 +86,8 @@ typedef struct LEOHandler
 	@field	numStrings			Number of items in stringsTable. */
 // -----------------------------------------------------------------------------
 
+typedef struct LEOScript*	(*LEOGetParentScriptFuncPtr)( struct LEOScript* inScript, struct LEOContext* inContext );
+
 typedef struct LEOScript
 {
 	size_t				referenceCount;
@@ -97,6 +99,7 @@ typedef struct LEOScript
 	LEOHandler			*commands;
 	size_t				numStrings;			// Number of items in stringsTable.
 	char**				strings;			// List of string constants in this script, which we can load.
+	LEOGetParentScriptFuncPtr	GetParentScript;
 } LEOScript;
 
 
@@ -108,7 +111,7 @@ typedef struct LEOScript
 	@seealso //leo_ref/c/func/LEOScriptRetain LEOScriptRetain
 	@seealso //leo_ref/c/func/LEOScriptRelease LEOScriptRelease
 */
-LEOScript*	LEOScriptCreateForOwner( LEOObjectID ownerObject, LEOObjectSeed ownerSeed );	// Gives referenceCount of 1.
+LEOScript*	LEOScriptCreateForOwner( LEOObjectID ownerObject, LEOObjectSeed ownerSeed, LEOGetParentScriptFuncPtr inGetParentScriptFunc );	// Gives referenceCount of 1.
 
 /*!
 	Acquire ownership of the given script, so that when the current owner releases

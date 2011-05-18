@@ -162,7 +162,7 @@ void	LEOHandlerFindVariableByAddress( LEOHandler* inHandler, long bpRelativeAddr
 }
 
 
-LEOScript*	LEOScriptCreateForOwner( LEOObjectID ownerObject, LEOObjectSeed ownerSeed )
+LEOScript*	LEOScriptCreateForOwner( LEOObjectID ownerObject, LEOObjectSeed ownerSeed, LEOGetParentScriptFuncPtr inGetParentScriptFunc )
 {
 	LEOScript	*	theStorage = calloc( 1, sizeof(LEOScript) );
 	
@@ -177,6 +177,7 @@ LEOScript*	LEOScriptCreateForOwner( LEOObjectID ownerObject, LEOObjectSeed owner
 		theStorage->commands = NULL;
 		theStorage->numStrings = 0;
 		theStorage->strings = NULL;
+		theStorage->GetParentScript = inGetParentScriptFunc;
 	}
 	
 	return theStorage;
