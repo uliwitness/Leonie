@@ -2199,7 +2199,7 @@ const char*	LEOGetArrayValueAsString( LEOValuePtr self, char* outBuf, size_t buf
 {
 	LEOPrintArray( self->array.array, outBuf, bufSize, inContext );
 	size_t	lastCh = strlen(outBuf)-1;
-	if( outBuf[lastCh] == ',' )	// Remove trailing comma, if there is one.
+	if( outBuf[lastCh] == '\n' )	// Remove trailing return, if there is one.
 		outBuf[lastCh] = 0;
 	return outBuf;
 }
@@ -2456,16 +2456,90 @@ void	LEOPrintArray( struct LEOArrayEntry* arrayPtr, char* strBuf, size_t bufSize
 	
 	char valBuf[1024];
 	
-	snprintf( strBuf, bufSize, "%s:%s,", arrayPtr->key, LEOGetValueAsString( &arrayPtr->value, valBuf, sizeof(valBuf), inContext ) );
+	const char* valStr = LEOGetValueAsString( &arrayPtr->value, valBuf, sizeof(valBuf), inContext );
+	
+	size_t	offs = snprintf( strBuf, bufSize, "%s:", arrayPtr->key );
+	for( int x = 0; true; x++ )
+	{
+		if( (bufSize -offs) == 0 )
+		{
+			strBuf[offs] = 0;
+			break;
+		}
+		if( valStr[x] == '\n' )	// Replace with "¬\n" (2-byte char + line feed).
+		{
+			strBuf[offs++] = 0xc2;
+			if( (bufSize -offs) == 0 )
+			{
+				strBuf[offs -1] = 0;
+				break;
+			}
+			strBuf[offs++] = 0xac;
+			if( (bufSize -offs) == 0 )
+			{
+				strBuf[offs -2] = 0;
+				break;
+			}
+			strBuf[offs++] = '\n';
+		}
+		else if( valStr[x] == (char)0xc2 )
+		{
+			if( valStr[x+1] == (char)0xac )
+			{
+				x++;
+				
+				strBuf[offs++] = 0xc2;
+				if( (bufSize -offs) == 0 )
+				{
+					strBuf[offs -1] = 0;
+					break;
+				}
+				strBuf[offs++] = 0xac;
+				if( (bufSize -offs) == 0 )
+				{
+					strBuf[offs -2] = 0;
+					break;
+				}
+				strBuf[offs++] = 0xc2;
+				if( (bufSize -offs) == 0 )
+				{
+					strBuf[offs -1] = 0;
+					break;
+				}
+				strBuf[offs++] = 0xac;
+				if( (bufSize -offs) == 0 )
+				{
+					strBuf[offs -2] = 0;
+					break;
+				}
+			}
+			else
+				strBuf[offs++] = valStr[x];
+		}
+		else
+			strBuf[offs++] = valStr[x];
+		if( (bufSize -offs) <= 1 )
+		{
+			strBuf[offs] = 0;
+			break;
+		}
+		if( valStr[x] == 0 )
+			break;
+	}
+	if( (bufSize -offs) > 0 )
+	{
+		strBuf[offs -1] = '\n';
+		strBuf[offs++] = 0;
+	}
 	
 	if( arrayPtr->smallerItem )
 	{
-		size_t	offs = strlen(strBuf);
+		offs = strlen(strBuf);
 		LEOPrintArray( arrayPtr->smallerItem, strBuf +offs, bufSize -offs, inContext );
 	}
 	if( arrayPtr->largerItem )
 	{
-		size_t	offs = strlen(strBuf);
+		offs = strlen(strBuf);
 		LEOPrintArray( arrayPtr->largerItem, strBuf +offs, bufSize -offs, inContext );
 	}
 }
