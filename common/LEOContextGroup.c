@@ -127,7 +127,7 @@ void	LEOContextGroupRecycleObjectID( LEOContextGroup* inContext, LEOObjectID inO
 
 void*	LEOContextGroupGetPointerForObjectIDAndSeed( LEOContextGroup* inContext, LEOObjectID inObjectID, LEOObjectSeed inObjectSeed )
 {
-	if( inContext->references[inObjectID].seed != inObjectSeed )
+	if( inContext->numReferences == 0 || inContext->references[inObjectID].seed != inObjectSeed )
 		return NULL;
 	
 	return inContext->references[inObjectID].value;
