@@ -28,6 +28,7 @@
 
 
 #define OTHER_VALUE_SHORT_STRING_MAX_LENGTH		256
+#define LEO_MAX_ARRAY_KEY_SIZE					1024
 
 
 // Users shouldn't care if something is a variant, but it helps when debugging:
@@ -143,7 +144,7 @@ struct LEOValueType	kLeoValueTypeString =
 	
 	LEOCantGetValueForKey,
 	LEOCantSetValueForKey,
-	LEOCantSetValueAsArray,
+	LEOSetStringLikeValueAsArray,
 	LEOCantGetKeyCount
 };
 
@@ -178,7 +179,7 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	
 	LEOCantGetValueForKey,
 	LEOCantSetValueForKey,
-	LEOCantSetValueAsArray,
+	LEOSetStringLikeValueAsArray,
 	LEOCantGetKeyCount
 };
 
@@ -541,6 +542,26 @@ void	LEOCantSetValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr i
 }
 
 
+//LEOValuePtr	LEOGetStringLikeValueForKey( LEOValuePtr self, const char* keyName, struct LEOContext* inContext )
+//{
+//	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into an array", self->base.isa->displayTypeName );
+//	inContext->keepRunning = false;
+//	
+//	return NULL;
+//}
+//
+//
+//void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext )
+//{
+//	struct LEOArrayEntry	*	convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
+//	if( convertedArray || self->string
+//	LEOAddArrayEntryToRoot( &self->array.array, inKey, inValue, inContext );
+//	
+//	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected array, found %s", self->base.isa->displayTypeName );
+//	inContext->keepRunning = false;
+//}
+
+
 /*!
 	Generic method implementation used for values to return a "can't set as number"
 	error message and abort execution of the current LEOContext.
@@ -691,6 +712,14 @@ void	LEOCantSetValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, st
 {
 	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found array", self->base.isa->displayTypeName );
 	inContext->keepRunning = false;
+}
+
+
+void	LEOSetStringLikeValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext )
+{
+	char	str[1024] = { 0 };	// TODO: Make work with arbitrary string sizes.
+	LEOPrintArray( inArray, str, sizeof(str), inContext );
+	LEOSetValueAsString( self, str, inContext );	// TODO: Make this binary data safe.
 }
 
 
@@ -959,7 +988,7 @@ void	LEOInitStringValue( LEOValuePtr inStorage, const char* inString, size_t inL
 	if( keepReferences == kLEOInvalidateReferences )
 		inStorage->base.refObjectID = kLEOObjectIDINVALID;
 	inStorage->string.string = calloc( inLen +1, sizeof(char) );
-	strncpy( inStorage->string.string, inString, inLen );
+	memmove( inStorage->string.string, inString, inLen );
 }
 
 
@@ -2138,12 +2167,22 @@ void	LEOSetStringVariantValueValueForKey( LEOValuePtr self, const char* inKey, L
 {
 	if( self->string.string[0] != 0 )	// Not an empty string
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Expected array here, found \"%s\".", self->string.string );
-		inContext->keepRunning = false;
-		return;
+		struct LEOArrayEntry	*	convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
+		if( !convertedArray )
+		{
+			snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Expected array here, found \"%s\".", self->string.string );
+			inContext->keepRunning = false;
+			return;
+		}
+		
+		LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+		LEOInitArrayValue( self, convertedArray, kLEOKeepReferences, inContext );
 	}
-	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
-	LEOInitArrayValue( self, NULL, kLEOKeepReferences, inContext );
+	else
+	{
+		LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+		LEOInitArrayValue( self, NULL, kLEOKeepReferences, inContext );
+	}
 	self->base.isa = &kLeoValueTypeArrayVariant;
 	LEOAddArrayEntryToRoot( &self->array.array, inKey, inValue, inContext );
 }
@@ -2280,13 +2319,82 @@ void	LEOSetArrayValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, s
 #pragma mark -
 
 
+struct LEOArrayEntry	*	LEOCreateArrayFromString( const char* inString, struct LEOContext* inContext )
+{
+	struct LEOArrayEntry*	theArray = NULL;
+	size_t					x = 0, keyStartOffs = 0, keyEndOffs = 0,
+							valueStartOffs = 0, valueEndOffs = 0;
+	bool					isInKey = true;
+	char					keyStr[LEO_MAX_ARRAY_KEY_SIZE] = { 0 };
+	
+	for( ; inString[x] != 0; x++ )
+	{
+		if( isInKey && inString[x] == ':' )
+		{
+			keyEndOffs = x;
+			valueStartOffs = valueEndOffs = x+1;
+			isInKey = false;
+		}
+		else if( !isInKey && inString[x] == '\n' )
+		{
+			if( x <= 1 || inString[x-2] != 0xc2 || inString[x-1] != 0xac )	// Is a real return end-of-entry, not an escaped return in data?
+			{
+				valueEndOffs = x;	// No +1, the return at the end is a delimiter that should be removed.
+				size_t	keyLen = keyEndOffs -keyStartOffs;
+				if( keyLen >= LEO_MAX_ARRAY_KEY_SIZE )
+					keyLen = LEO_MAX_ARRAY_KEY_SIZE -1;
+				if( keyLen > 0 )
+					memmove( keyStr, inString +keyStartOffs, keyLen );
+				else	// Error, not a valid array!
+				{
+					LEOCleanUpArray( &theArray, inContext );
+					return NULL;
+				}
+				keyStr[keyLen] = 0;
+				
+				struct LEOArrayEntry*	newValue = LEOAddArrayEntryToRoot( &theArray, keyStr, NULL, inContext );
+				LEOInitStringValue( newValue, inString +valueStartOffs, valueEndOffs -valueStartOffs, kLEOInvalidateReferences, inContext );
+				
+				isInKey = true;
+				keyEndOffs = keyStartOffs = valueEndOffs = valueStartOffs = x +1;
+			}
+		}
+		else if( !isInKey )
+			valueEndOffs = x +1;
+		else if( isInKey )
+			keyEndOffs = x+1;
+	}
+	
+	if( !isInKey && (keyEndOffs > keyStartOffs || valueEndOffs > valueStartOffs) )	// No return at end, we have one leftover key-value pair?
+	{
+		size_t	keyLen = keyEndOffs -keyStartOffs;
+		if( keyLen >= LEO_MAX_ARRAY_KEY_SIZE )
+			keyLen = LEO_MAX_ARRAY_KEY_SIZE -1;
+		if( keyLen > 0 )
+			memmove( keyStr, inString +keyStartOffs, keyLen );
+		else	// Error, not a valid array!
+		{
+			LEOCleanUpArray( &theArray, inContext );
+			return NULL;
+		}
+		keyStr[keyLen] = 0;
+		
+		struct LEOArrayEntry*	newValue = LEOAddArrayEntryToRoot( &theArray, keyStr, NULL, inContext );
+		LEOInitStringValue( newValue, inString +valueStartOffs, valueEndOffs -valueStartOffs, kLEOInvalidateReferences, inContext );
+	}
+	
+	return theArray;
+}
+
+
 struct LEOArrayEntry	*	LEOAllocNewEntry( const char* inKey, LEOValuePtr inValue, struct LEOContext* inContext )
 {
 	struct LEOArrayEntry	*	newEntry = NULL;
 	size_t						inKeyLen = strlen(inKey);
 	newEntry = calloc( sizeof(struct LEOArrayEntry) +inKeyLen +1, 1 );
-	memmove( newEntry->key, inKey, inKeyLen +1 ); 
-	LEOInitCopy( inValue, &newEntry->value, kLEOInvalidateReferences, inContext );
+	memmove( newEntry->key, inKey, inKeyLen +1 );
+	if( inValue )
+		LEOInitCopy( inValue, &newEntry->value, kLEOInvalidateReferences, inContext );
 	newEntry->smallerItem = NULL;
 	newEntry->largerItem = NULL;
 	
@@ -2332,7 +2440,8 @@ LEOValuePtr	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, 
 			else if( cmpResult == 0 )	// Key already exists? Replace value!
 			{
 				LEOCleanUpValue( &currEntry->value, kLEOKeepReferences, inContext );
-				LEOInitCopy( inValue, &currEntry->value, kLEOKeepReferences, inContext );
+				if( inValue )
+					LEOInitCopy( inValue, &currEntry->value, kLEOKeepReferences, inContext );
 				return &currEntry->value;
 			}
 		}
@@ -2564,6 +2673,9 @@ size_t	LEOGetArrayKeyCount( struct LEOArrayEntry* arrayPtr )
 
 void	LEOCleanUpArray( struct LEOArrayEntry* arrayPtr, struct LEOContext* inContext )
 {
+	if( !arrayPtr )
+		return;	// Nothing to do, never added a value to the array.
+	
 	if( arrayPtr->smallerItem )
 	{
 		LEOCleanUpArray( arrayPtr->smallerItem, inContext );
