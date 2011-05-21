@@ -90,6 +90,15 @@ enum
 #define INVALID_INSTR2		UINT16_MAX
 
 
+// param1 bits for CALL_HANDLER_INSTR:
+enum eLEOCallHandlerFlags // at most uint16_t
+{
+	kLEOCallHandler_IsCommandFlag	= 0,		// For readability, you can "or" this in to indicate you're not passing IsFunctionFlag
+	kLEOCallHandler_IsFunctionFlag	= (1 << 0),	// Otherwise we assume it's a command.
+	kLEOCallHandler_PassMessage		= (1 << 1),	// Don't send the message to "me", start looking for a handler in the parent script.
+};
+
+
 // -----------------------------------------------------------------------------
 //	Globals:
 // -----------------------------------------------------------------------------

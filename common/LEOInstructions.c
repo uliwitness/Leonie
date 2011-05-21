@@ -423,7 +423,7 @@ void	LEOAddIntegerInstruction( LEOContext* inContext )
 	instruction so returning from the handler can restore the previous state,
 	and retains the current script in case the script deletes its owner.
 	
-	param1	-	0 to call a command, 1 to call a function.
+	param1	-	Flags from eLEOCallHandlerFlags enum.
 	param2	-	The LEOHandlerID of the handler to call.
 	
 	@seealso //leo_ref/c/func/LEOReturnFromHandlerInstruction LEOReturnFromHandlerInstruction
@@ -435,12 +435,15 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 	
 	LEOHandlerID	handlerName = inContext->currentInstruction->param2;
 	LEOScript*		currScript = LEOContextPeekCurrentScript( inContext );
+	if( (inContext->currentInstruction->param1 & kLEOCallHandler_PassMessage) == kLEOCallHandler_PassMessage
+		&& currScript && currScript->GetParentScript )
+		currScript = currScript->GetParentScript( currScript, inContext );
 	LEOHandler*		foundHandler = NULL;
 	if( currScript )
 	{
 		while( foundHandler == NULL )
 		{
-			if( inContext->currentInstruction->param1 == 0 )
+			if( (inContext->currentInstruction->param1 & kLEOCallHandler_IsFunctionFlag) == 0 )
 				foundHandler = LEOScriptFindCommandHandlerWithID( currScript, handlerName );
 			else
 				foundHandler = LEOScriptFindFunctionHandlerWithID( currScript, handlerName );
