@@ -104,7 +104,10 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 				
 				objectID = currValue->base.refObjectID;
 				
-				LEOGetValueAsString( currValue, str, sizeof(str), inContext );
+				if( currValue == NULL || currValue->base.isa == NULL )
+					strncpy( str, "*** INVALID ***", sizeof(str)-1 );
+				else
+					LEOGetValueAsString( currValue, str, sizeof(str), inContext );
 				
 				unsigned long long	referenceObjectID = 0;
 				unsigned long long	referenceObjectSeed = 0;
@@ -114,12 +117,13 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 					referenceObjectSeed = currValue->reference.objectSeed;
 				}
 			
-				dataLen = (uint32_t) (strlen(str) +1 +strlen(currValue->base.isa->displayTypeName) +1 +strlen(theRealName) +1 +sizeof(objectID) +sizeof(referenceObjectID) +sizeof(referenceObjectSeed));
+				char*	theTypeName = (currValue && currValue->base.isa) ? currValue->base.isa->displayTypeName : "*** INVALID ***";
+				dataLen = (uint32_t) (strlen(str) +1 +strlen(theTypeName) +1 +strlen(theRealName) +1 +sizeof(objectID) +sizeof(referenceObjectID) +sizeof(referenceObjectSeed));
 				
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, "VARI", 4 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, theRealName, strlen(theRealName) +1 );
-				actuallyWritten = write( gLEORemoteDebuggerSocketFD, currValue->base.isa->displayTypeName, strlen(currValue->base.isa->displayTypeName) +1 );
+				actuallyWritten = write( gLEORemoteDebuggerSocketFD, theTypeName, strlen(theTypeName) +1 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, str, strlen(str) +1 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &objectID, sizeof(objectID) );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &referenceObjectID, sizeof(referenceObjectID) );
