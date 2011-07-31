@@ -775,7 +775,7 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 	@param	c	The context in which your script is currently running and in
 				which errors will be stored.
 */
-#define 	LEOCleanUpValue(v,k,c)			((LEOValuePtr)(v))->base.isa->CleanUp(((LEOValuePtr)(v)),(k),(c))
+#define 	LEOCleanUpValue(v,k,c)			do { if( ((LEOValuePtr)(v)) && ((LEOValuePtr)(v))->base.isa ) ((LEOValuePtr)(v))->base.isa->CleanUp(((LEOValuePtr)(v)),(k),(c)); } while(0)
 
 
 /*!
