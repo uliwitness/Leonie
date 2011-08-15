@@ -827,13 +827,102 @@ void	LEONegateBooleanInstruction( LEOContext* inContext )
 }
 
 
+void	LEOSubtractCommandInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
+	
+	LEOSetValueAsNumber( secondArgumentValue, secondArgument -firstArgument, inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOAddCommandInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
+
+	LEOSetValueAsNumber( secondArgumentValue, firstArgument +secondArgument, inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOMultiplyCommandInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
+
+	LEOSetValueAsNumber( firstArgumentValue, firstArgument * secondArgument, inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEODivideCommandInstruction( LEOContext* inContext )
+{
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
+	
+	if( secondArgument == 0.0 )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't divide %g by 0.", firstArgument );
+		
+		inContext->keepRunning = false;	// Causes interpreter loop to exit.
+		return;
+	}
+	LEOSetValueAsNumber( firstArgumentValue, firstArgument / secondArgument, inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushNumberOnStack( inContext, firstArgument / secondArgument );
+	
+	inContext->currentInstruction++;
+}
+
+
 void	LEOSubtractOperatorInstruction( LEOContext* inContext )
 {
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
 	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
 	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
@@ -849,7 +938,11 @@ void	LEOAddOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
 	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
 	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
@@ -865,7 +958,11 @@ void	LEOMultiplyOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
 	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
 	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
@@ -881,7 +978,19 @@ void	LEODivideOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
 	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
 	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	if( !inContext->keepRunning )
+		return;
+
+	if( secondArgument == 0.0 )
+	{
+		snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't divide %g by 0.", firstArgument );
+		
+		inContext->keepRunning = false;	// Causes interpreter loop to exit.
+		return;
+	}
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
@@ -1409,6 +1518,10 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEOOrOperatorInstruction,
 	LEOConcatenateValuesWithSpaceInstruction,
 	LEONegateBooleanInstruction,
+	LEOSubtractCommandInstruction,
+	LEOAddCommandInstruction,
+	LEOMultiplyCommandInstruction,
+	LEODivideCommandInstruction,
 	LEOSubtractOperatorInstruction,
 	LEOAddOperatorInstruction,
 	LEOMultiplyOperatorInstruction,
@@ -1471,6 +1584,10 @@ const char*	gDefaultInstructionNames[] =
 	"Or",
 	"ConcatenateValuesWithSpace",
 	"NegateBoolean",
+	"SubtractCommand",
+	"AddCommand",
+	"MultiplyCommand",
+	"DivideCommand",
 	"Subtract",
 	"Add",
 	"Multiply",
