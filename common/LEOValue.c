@@ -1283,6 +1283,9 @@ void	LEOCleanUpStringValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferenc
 
 bool	LEOCanGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContext )
 {
+	if( self->string.string[0] == 0 )	// Empty string? Not a number!
+		return false;
+	
 	for( size_t x = 0; self->string.string[x] != 0; x++ )
 	{
 		if( self->string.string[x] < '0' || self->string.string[x] > '9' )
