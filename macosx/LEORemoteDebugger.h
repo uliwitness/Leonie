@@ -29,9 +29,15 @@
 bool LEOInitRemoteDebugger( const char* inHostName );
 
 
-/*! Use this function as the PreInstructionProc of your LEOContext to activate
+/*! Use this function as the preInstructionProc of your LEOContext to activate
 	the debugger. */
 void LEORemoteDebuggerPreInstructionProc( struct LEOContext* inContext );
+
+
+/*! Use this function as the promptProc of your LEOContext to activate
+	the debugger. */
+void LEORemoteDebuggerPrompt( struct LEOContext* inContext );
+
 
 /*! Register a file name and its contents with the debugger, so it can display
 	its contents and highlight the current line.

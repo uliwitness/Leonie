@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 
 
@@ -40,6 +41,7 @@ void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup )
 {
 	memset( theContext, 0, sizeof(LEOContext) );
 	theContext->preInstructionProc = LEODoNothingPreInstructionProc;
+	theContext->promptProc = LEODoNothingPreInstructionProc;
 	theContext->itemDelimiter = ',';
 	theContext->group = LEOContextGroupRetain( inGroup );
 	theContext->keepRunning = true;
@@ -99,8 +101,7 @@ LEOHandler*	LEOContextPeekCurrentHandler( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Error: No current handler found." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "Error: No current handler found." );
 		return NULL;
 	}
 	else
@@ -112,8 +113,7 @@ LEOScript*	LEOContextPeekCurrentScript( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Error: No current script found." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "Error: No current script found." );
 		return NULL;
 	}
 	else
@@ -125,8 +125,7 @@ LEOInstruction*	LEOContextPeekReturnAddress( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Error: No return address found." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "Error: No return address found." );
 		return NULL;
 	}
 	else
@@ -138,8 +137,7 @@ LEOValuePtr	LEOContextPeekBasePtr( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Error: No base pointer found." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "Error: No base pointer found." );
 		return NULL;
 	}
 	else
@@ -151,8 +149,7 @@ void	LEOContextPopHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Error: Script attempted to return from handler that has never been called." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "Error: Script attempted to return from handler that has never been called." );
 		return;
 	}
 	
@@ -308,6 +305,18 @@ bool	LEOContinueRunningContext( LEOContext *inContext )
 	gInstructions[currID](inContext);
 	
 	return( inContext->currentInstruction != NULL && inContext->keepRunning );
+}
+
+
+void	LEOContextStopWithError( LEOContext* inContext, const char* inErrorFmt, ... )
+{
+	va_list		varargs;
+	va_start( varargs, inErrorFmt );
+	vsnprintf( inContext->errMsg, sizeof(inContext->errMsg), inErrorFmt, varargs );
+	va_end( varargs );
+	inContext->keepRunning = false;
+	
+	inContext->promptProc( inContext );
 }
 
 

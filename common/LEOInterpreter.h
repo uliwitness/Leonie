@@ -156,6 +156,7 @@ typedef struct LEOContext
 	size_t					numCallStackEntries;	// Number of items in callStackEntries.
 	LEOCallStackEntry*		callStackEntries;		// Array of call stack entries to allow showing a simple backtrace and picking handlers from the current script.
 	LEOInstructionFuncPtr	preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
+	LEOInstructionFuncPtr	promptProc;				// On certain errors, this function is called to enter into the debugger prompt.
 	size_t					numSteps;				// Used by LEODebugger's PreInstructionProc to implement single-stepping.
 	LEOInstruction			*currentInstruction;	// PC
 	union LEOValue			*stackBasePtr;			// BP
@@ -199,6 +200,12 @@ void	LEOPrepareContextForRunning( LEOInstruction instructions[], LEOContext *inC
 	@seealso //leo_ref/c/func/LEOPrepareContextForRunning LEOPrepareContextForRunning
 */
 bool	LEOContinueRunningContext( LEOContext *inContext );
+
+/*! Stop execution in the given context with an error message.
+	Currently sets the errMsg field of the context to the given string and set
+	keepRunningto FALSE.
+ */
+void	LEOContextStopWithError( LEOContext* inContext, const char* inErrorFmt, ... );
 
 /*! Push a copy of the given value onto the stack, returning a pointer to it.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr

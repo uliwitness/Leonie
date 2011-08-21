@@ -481,8 +481,7 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 
 LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into a number", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext,"Can't make %s into a number", self->base.isa->displayTypeName );
 	
 	return 0.0;
 }
@@ -495,8 +494,7 @@ LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContex
 
 LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into an integer", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Can't make %s into an integer", self->base.isa->displayTypeName );
 	
 	return 0LL;
 }
@@ -509,8 +507,7 @@ LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, struct LEOContext* inCont
 
 bool	LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into a boolean", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Can't make %s into a boolean", self->base.isa->displayTypeName );
 	
 	return false;
 }
@@ -523,8 +520,7 @@ bool	LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext )
 
 LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into an array", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Can't make %s into an array", self->base.isa->displayTypeName );
 	
 	return NULL;
 }
@@ -537,15 +533,13 @@ LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, struct
 
 void	LEOCantSetValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected array, found %s", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
 }
 
 
 //LEOValuePtr	LEOGetStringLikeValueForKey( LEOValuePtr self, const char* keyName, struct LEOContext* inContext )
 //{
-//	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into an array", self->base.isa->displayTypeName );
-//	inContext->keepRunning = false;
+//	LEOContextStopWithError( inContext, "Can't make %s into an array", self->base.isa->displayTypeName );
 //	
 //	return NULL;
 //}
@@ -557,8 +551,7 @@ void	LEOCantSetValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr i
 //	if( convertedArray || self->string
 //	LEOAddArrayEntryToRoot( &self->array.array, inKey, inValue, inContext );
 //	
-//	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected array, found %s", self->base.isa->displayTypeName );
-//	inContext->keepRunning = false;
+//	LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
 //}
 
 
@@ -569,8 +562,7 @@ void	LEOCantSetValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr i
 
 void	LEOCantSetValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found number", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Expected %s, found number", self->base.isa->displayTypeName );
 }
 
 
@@ -581,8 +573,7 @@ void	LEOCantSetValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOCo
 
 void	LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found integer", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Expected %s, found integer", self->base.isa->displayTypeName );
 }
 
 
@@ -593,8 +584,7 @@ void	LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct LE
 
 void	LEOCantSetValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found string", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Expected %s, found string", self->base.isa->displayTypeName );
 }
 
 
@@ -605,8 +595,7 @@ void	LEOCantSetValueAsString( LEOValuePtr self, const char* inString, struct LEO
 
 void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found boolean", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Expected %s, found boolean", self->base.isa->displayTypeName );
 }
 
 
@@ -619,16 +608,14 @@ void	LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found string", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Expected %s, found string", self->base.isa->displayTypeName );
 }
 
 
 void	LEOCantSetValuePredeterminedRangeAsString( LEOValuePtr self, size_t inRangeStart, size_t inRangeEnd,
 													const char* inBuf, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found string", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Expected %s, found string", self->base.isa->displayTypeName );
 }
 
 
@@ -710,8 +697,7 @@ LEOValuePtr	LEOCantFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOVa
 
 void	LEOCantSetValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected %s, found array", self->base.isa->displayTypeName );
-	inContext->keepRunning = false;
+	LEOContextStopWithError( inContext, "Expected %s, found array", self->base.isa->displayTypeName );
 }
 
 
@@ -757,8 +743,7 @@ LEOInteger LEOGetNumberValueAsInteger( LEOValuePtr self, struct LEOContext* inCo
 {
 	if( trunc(self->number.number) != self->number.number )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Expected integer, not fractional number." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "Expected integer, not fractional number." );
 	}
 	
 	return self->number.number;
@@ -906,8 +891,7 @@ void LEOSetIntegerValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LE
 {
 	if( trunc(inNumber) != inNumber )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make fractional number into integer." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "Can't make fractional number into integer." );
 	}
 	else
 		self->integer.integer = inNumber;
@@ -1614,8 +1598,7 @@ const char*	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 		LEOGetValueAsRangeOfString( theValue, self->reference.chunkType, self->reference.chunkStart, self->reference.chunkEnd, outBuf, bufSize, inContext );
@@ -1635,8 +1618,7 @@ LEONumber	LEOGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inC
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 		return 0.0;
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
@@ -1663,8 +1645,7 @@ LEOInteger	LEOGetReferenceValueAsInteger( LEOValuePtr self, struct LEOContext* i
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 		return 0LL;
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
@@ -1691,8 +1672,7 @@ bool	LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inConte
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 		return false;
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
@@ -1722,8 +1702,7 @@ void	LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -1746,8 +1725,7 @@ void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, struc
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -1770,8 +1748,7 @@ void	LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEO
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -1792,8 +1769,7 @@ void	LEOSetReferenceValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct 
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -1816,8 +1792,7 @@ void	LEOSetReferenceValueAsInteger( LEOValuePtr self, LEOInteger inInteger, stru
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -1840,8 +1815,7 @@ void		LEOSetReferenceValueAsArray( LEOValuePtr self, struct LEOArrayEntry * inAr
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -1865,8 +1839,7 @@ void	LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -1890,8 +1863,7 @@ void	LEOSetReferenceValuePredeterminedRangeAsString( LEOValuePtr self, size_t in
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOSetValuePredeterminedRangeAsString( theValue, inRangeStart, inRangeEnd, inBuf, inContext );
@@ -1927,8 +1899,7 @@ void	LEOInitReferenceValueSimpleCopy( LEOValuePtr self, LEOValuePtr dest, LEOKee
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOInitSimpleCopy(theValue, dest, keepReferences, inContext);
@@ -1940,8 +1911,7 @@ void	LEOPutReferenceValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct L
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOPutValueIntoValue(theValue, dest, inContext);
@@ -1956,8 +1926,7 @@ void	LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -2016,8 +1985,7 @@ LEOValuePtr		LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKe
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 		
 		return NULL;
 	}
@@ -2031,8 +1999,7 @@ void		LEOSetReferenceValueValueForKey( LEOValuePtr self, const char* inKey, LEOV
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOSetValueForKey( theValue, inKey, inValue, inContext );
@@ -2044,8 +2011,7 @@ size_t		LEOGetReferenceValueKeyCount( LEOValuePtr self, struct LEOContext * inCo
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 		
 		return 0;
 	}
@@ -2061,8 +2027,7 @@ LEOValuePtr	LEOReferenceValueFollowReferencesAndReturnValueOfType( LEOValuePtr s
 		return self;
 	else if( theValue == NULL )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "The referenced value doesn't exist anymore." );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 		
 		return NULL;
 	}
@@ -2181,8 +2146,7 @@ void	LEOSetStringVariantValueValueForKey( LEOValuePtr self, const char* inKey, L
 		struct LEOArrayEntry	*	convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
 		if( !convertedArray )
 		{
-			snprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, "Expected array here, found \"%s\".", self->string.string );
-			inContext->keepRunning = false;
+			LEOContextStopWithError( inContext, "Expected array here, found \"%s\".", self->string.string );
 			return;
 		}
 		
@@ -2262,8 +2226,7 @@ void	LEOGetArrayValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	inContext->keepRunning = false;
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into a string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, "Can't make %s into a string", self->base.isa->displayTypeName );
 }
 
 
@@ -2272,8 +2235,7 @@ void	LEODetermineChunkRangeOfSubstringOfArrayValue( LEOValuePtr self, size_t *io
 														LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
 														struct LEOContext* inContext )
 {
-	inContext->keepRunning = false;
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't make %s into a string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, "Can't make %s into a string", self->base.isa->displayTypeName );
 }
 
 

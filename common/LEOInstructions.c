@@ -36,9 +36,7 @@
 
 void	LEOInvalidInstruction( LEOContext* inContext )
 {
-	snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Unknown instruction %u", inContext->currentInstruction->instructionID );
-	
-	inContext->keepRunning = false;	// Causes interpreter loop to exit.
+	LEOContextStopWithError( inContext, "Unknown instruction %u", inContext->currentInstruction->instructionID );	// Causes interpreter loop to exit.
 }
 
 
@@ -467,8 +465,7 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 	
 	if( !foundHandler )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Couldn't find handler \"%s\".", LEOContextGroupHandlerNameForHandlerID( inContext->group, handlerName ) );
-		inContext->keepRunning = false;
+		LEOContextStopWithError( inContext, "Couldn't find handler \"%s\".", LEOContextGroupHandlerNameForHandlerID( inContext->group, handlerName ) );
 		inContext->currentInstruction++;
 	}
 	
@@ -911,9 +908,7 @@ void	LEODivideCommandInstruction( LEOContext* inContext )
 	
 	if( secondArgument == 0.0 )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't divide %g by 0.", firstArgument );
-		
-		inContext->keepRunning = false;	// Causes interpreter loop to exit.
+		LEOContextStopWithError( inContext, "Can't divide %g by 0.", firstArgument );
 		return;
 	}
 	LEOSetValueAsNumber( firstArgumentValue, firstArgument / secondArgument, inContext );
@@ -999,9 +994,7 @@ void	LEODivideOperatorInstruction( LEOContext* inContext )
 
 	if( secondArgument == 0.0 )
 	{
-		snprintf( inContext->errMsg, sizeof(inContext->errMsg), "Can't divide %g by 0.", firstArgument );
-		
-		inContext->keepRunning = false;	// Causes interpreter loop to exit.
+		LEOContextStopWithError( inContext, "Can't divide %g by 0.", firstArgument );	// Causes interpreter loop to exit.
 		return;
 	}
 
