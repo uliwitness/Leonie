@@ -771,7 +771,8 @@ LEOInteger LEOGetNumberValueAsInteger( LEOValuePtr self, struct LEOContext* inCo
 
 const char* LEOGetNumberValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	snprintf( outBuf, bufSize -1, "%g", self->number.number );
+	if( outBuf )	// Can never return as a string if we're not given a buffer.
+		snprintf( outBuf, bufSize -1, "%g", self->number.number );
 	return outBuf;
 }
 
@@ -891,7 +892,8 @@ LEOInteger LEOGetIntegerValueAsInteger( LEOValuePtr self, struct LEOContext* inC
 
 const char*	LEOGetIntegerValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	snprintf( outBuf, bufSize -1, "%lld", self->integer.integer );
+	if( outBuf )	// Can never return as string without buffer.
+		snprintf( outBuf, bufSize -1, "%lld", self->integer.integer );
 	return outBuf;
 }
 
@@ -1030,7 +1032,8 @@ LEOInteger	LEOGetStringValueAsInteger( LEOValuePtr self, struct LEOContext* inCo
 
 const char*	LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	strncpy( outBuf, self->string.string, bufSize );
+	if( outBuf )	// If given a buffer, copy over, caller may really want a copy. Always return our internal buffer, which contains the whole string.
+		strncpy( outBuf, self->string.string, bufSize );
 	return self->string.string;
 }
 
@@ -1471,8 +1474,13 @@ void	LEOInitBooleanValue( LEOValuePtr self, bool inBoolean, LEOKeepReferencesFla
 
 const char*	LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	strncpy( outBuf, (self->boolean.boolean ? "true" : "false"), bufSize -1 );
-	return outBuf;
+	if( outBuf )
+	{
+		strncpy( outBuf, (self->boolean.boolean ? "true" : "false"), bufSize -1 );
+		return outBuf;
+	}
+	else
+		return (self->boolean.boolean ? "true" : "false");
 }
 
 
@@ -2239,6 +2247,9 @@ void	LEOInitArrayValue( LEOValuePtr self, struct LEOArrayEntry *inArray, LEOKeep
 
 const char*	LEOGetArrayValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
+	if( !outBuf )
+		return NULL;
+	
 	LEOPrintArray( self->array.array, outBuf, bufSize, inContext );
 	size_t	lastCh = strlen(outBuf)-1;
 	if( outBuf[lastCh] == '\n' )	// Remove trailing return, if there is one.

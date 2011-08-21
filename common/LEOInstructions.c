@@ -724,6 +724,7 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 					startDelOffs, endDelOffs;
 	uint32_t		delimChar = inContext->currentInstruction->param2;
 	char			tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
+	char			tempStr2[1024] = { 0 };
 	size_t			offs = 0;
 	union LEOValue	resultValue;
 	
@@ -734,7 +735,10 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 	}
 	
 	LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
-	LEOInitSimpleCopy( firstArgumentValue, &resultValue, kLEOInvalidateReferences, inContext );
+	char*		firstArgumentString = LEOGetValueAsString( firstArgumentValue, NULL, 0, inContext );
+	if( !firstArgumentString )
+		firstArgumentString = LEOGetValueAsString( firstArgumentValue, tempStr2, sizeof(tempStr2), inContext );
+	LEOInitStringValue( &resultValue, firstArgumentString, strlen(firstArgumentString), kLEOInvalidateReferences, inContext );
 	
 	LEODetermineChunkRangeOfSubstring(	&resultValue, &startOffs, &endOffs,
 										&startDelOffs, &endDelOffs,
@@ -759,23 +763,32 @@ void	LEOConcatenateValuesWithSpaceInstruction( LEOContext* inContext )
 					startDelOffs, endDelOffs;
 	uint32_t		delimChar = inContext->currentInstruction->param2;
 	char			tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
+	char			tempStr2[1024] = { 0 };
 	size_t			offs = 0;
+	union LEOValue	resultValue;
 	
 	if( delimChar == 0 )
 		delimChar = ' ';
-	
+
 	tempStr[0] = delimChar;		// TODO: Make this work with any Unicode character.
 	offs = 1;
-		
-	LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
 	
-	LEODetermineChunkRangeOfSubstring(	firstArgumentValue, &startOffs, &endOffs,
+	LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
+	char*		firstArgumentString = LEOGetValueAsString( firstArgumentValue, NULL, 0, inContext );
+	if( !firstArgumentString )
+		firstArgumentString = LEOGetValueAsString( firstArgumentValue, tempStr2, sizeof(tempStr2), inContext );
+	LEOInitStringValue( &resultValue, firstArgumentString, strlen(firstArgumentString), kLEOInvalidateReferences, inContext );
+		
+	LEODetermineChunkRangeOfSubstring(	&resultValue, &startOffs, &endOffs,
 										&startDelOffs, &endDelOffs,
 										kLEOChunkTypeCharacter,
 										SIZE_MAX, SIZE_MAX, inContext );
-	LEOSetValuePredeterminedRangeAsString( firstArgumentValue, endOffs, endOffs, tempStr, inContext );
+	LEOSetValuePredeterminedRangeAsString( &resultValue, endOffs, endOffs, tempStr, inContext );
 	
-	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	LEOPushValueOnStack( inContext, &resultValue );
+	LEOCleanUpValue( &resultValue, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
 }
