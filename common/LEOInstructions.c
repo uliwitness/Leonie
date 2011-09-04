@@ -19,6 +19,7 @@
 #include "LEOInterpreter.h"
 #include "LEOScript.h"
 #include "LEOContextGroup.h"
+#include "UTF8UTF32Utilities.h"
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -1483,6 +1484,40 @@ void	LEOPutValueIntoValueInstruction( LEOContext* inContext )
 }
 
 
+void	LEONumToCharInstruction( LEOContext* inContext )
+{
+	uint32_t utf32Char = LEOGetValueAsInteger( inContext->stackEndPtr -1, inContext );
+	if( !inContext->keepRunning )
+		return;
+	
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	
+	char	utf8CharStr[9] = { 0 };
+	size_t	theLength = sizeof(utf8CharStr);
+	UTF8BytesForUTF32Character( utf32Char, utf8CharStr, &theLength );
+	LEOInitStringValue( inContext->stackEndPtr -1, utf8CharStr, theLength,
+						kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOCharToNumInstruction( LEOContext* inContext )
+{
+	char	utf8CharStr[9] = { 0 };
+	size_t	ioOffset = 0;
+	
+	LEOGetValueAsString( inContext->stackEndPtr -1, utf8CharStr, sizeof(utf8CharStr), inContext );
+	
+	uint32_t utf32Char = UTF8StringParseUTF32CharacterAtOffset( utf8CharStr, strlen(utf8CharStr), &ioOffset );
+	
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	LEOInitIntegerValue( inContext->stackEndPtr -1, utf32Char, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
 #pragma mark -
 #pragma mark Instruction table
 
@@ -1553,7 +1588,9 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEOSetItemDelimiterInstruction,
 	LEOPushGlobalReferenceInstruction,
 	LEOPutValueIntoValueInstruction,
-	LEOPushStringVariantFromTableInstruction
+	LEOPushStringVariantFromTableInstruction,
+	LEONumToCharInstruction,
+	LEOCharToNumInstruction
 };
 
 
@@ -1619,7 +1656,9 @@ const char*	gDefaultInstructionNames[] =
 	"SetItemDelimiter",
 	"PushGlobalReference",
 	"PutValueIntoValue",
-	"PushStringVariantFromTable"
+	"PushStringVariantFromTable",
+	"NumToChar",
+	"CharToNum"
 };
 
 
