@@ -1507,12 +1507,45 @@ void	LEOCharToNumInstruction( LEOContext* inContext )
 	char	utf8CharStr[9] = { 0 };
 	size_t	ioOffset = 0;
 	
-	LEOGetValueAsString( inContext->stackEndPtr -1, utf8CharStr, sizeof(utf8CharStr), inContext );
+	const char* theStr = LEOGetValueAsString( inContext->stackEndPtr -1, utf8CharStr, sizeof(utf8CharStr), inContext );
 	
-	uint32_t utf32Char = UTF8StringParseUTF32CharacterAtOffset( utf8CharStr, strlen(utf8CharStr), &ioOffset );
+	uint32_t utf32Char = UTF8StringParseUTF32CharacterAtOffset( theStr, strlen(theStr), &ioOffset );
 	
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
 	LEOInitIntegerValue( inContext->stackEndPtr -1, utf32Char, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEONumToHexInstruction( LEOContext* inContext )
+{
+	LEOInteger theNumber = LEOGetValueAsInteger( inContext->stackEndPtr -1, inContext );
+	if( !inContext->keepRunning )
+		return;
+	
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	
+	char	hexStr[16] = { 0 };
+	snprintf( hexStr, sizeof(hexStr), "%lx", theNumber );
+	LEOInitStringValue( inContext->stackEndPtr -1, hexStr, strlen(hexStr),
+						kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOHexToNumInstruction( LEOContext* inContext )
+{
+	char	hexStr[16] = { 0 };
+	char*	endPtr = NULL;
+	
+	const char* theStr = LEOGetValueAsString( inContext->stackEndPtr -1, hexStr, sizeof(hexStr), inContext );
+	
+	LEOInteger theNumber = strtol( theStr, &endPtr, 16 );
+	
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	LEOInitIntegerValue( inContext->stackEndPtr -1, theNumber, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -1590,7 +1623,9 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEOPutValueIntoValueInstruction,
 	LEOPushStringVariantFromTableInstruction,
 	LEONumToCharInstruction,
-	LEOCharToNumInstruction
+	LEOCharToNumInstruction,
+	LEONumToHexInstruction,
+	LEOHexToNumInstruction
 };
 
 
@@ -1658,7 +1693,9 @@ const char*	gDefaultInstructionNames[] =
 	"PutValueIntoValue",
 	"PushStringVariantFromTable",
 	"NumToChar",
-	"CharToNum"
+	"CharToNum",
+	"NumToHex",
+	"HexToNum"
 };
 
 
