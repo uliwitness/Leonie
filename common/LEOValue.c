@@ -143,7 +143,7 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOCanGetStringValueAsNumber,
 	
 	LEOCantGetValueForKey,
-	LEOCantSetValueForKey,
+	LEOSetStringLikeValueForKey,
 	LEOSetStringLikeValueAsArray,
 	LEOCantGetKeyCount
 };
@@ -545,14 +545,26 @@ void	LEOCantSetValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr i
 //}
 //
 //
-//void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext )
-//{
-//	struct LEOArrayEntry	*	convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
-//	if( convertedArray || self->string
-//	LEOAddArrayEntryToRoot( &self->array.array, inKey, inValue, inContext );
-//	
-//	LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
-//}
+void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext )
+{
+	struct LEOArrayEntry	*	convertedArray = NULL;
+	if( self->string.string != NULL && strlen(self->string.string) != 0 )
+	{
+		convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
+		if( !convertedArray )
+		{
+			LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+			return;
+		}
+	}
+	LEOAddArrayEntryToRoot( &convertedArray, keyName, inValue, inContext );
+	
+	char	str[1024] = { 0 };	// TODO: Make work with arbitrary string sizes.
+	LEOPrintArray( convertedArray, str, sizeof(str), inContext );
+	LEOSetValueAsString( self, str, inContext );	// TODO: Make this binary data safe.
+	
+	LEOCleanUpArray( convertedArray, inContext );
+}
 
 
 /*!
