@@ -1613,7 +1613,9 @@ const char*	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t
 		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
+	{
 		LEOGetValueAsRangeOfString( theValue, self->reference.chunkType, self->reference.chunkStart, self->reference.chunkEnd, outBuf, bufSize, inContext );
+	}
 	else
 		theStr = LEOGetValueAsString( theValue, outBuf, bufSize, inContext );
 	
