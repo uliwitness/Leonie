@@ -37,6 +37,21 @@
 
 #define	DBG_VAR_NAME_SIZE		40
 
+// -----------------------------------------------------------------------------
+/*!	This struct is used to keep information for the debugger and for error
+	display about each local variable, and each global imported into local
+	scope:
+	@field variableName			Name of the variable as Leonie sees it
+								internally. User-defined variables get a prefix
+								so they can't collide with temporaries the
+								compiler generates.
+	@field realVariableName		The name that the user chose for a variable when
+								defining it. Identical to variableName if not a
+								user-defined variable.
+	@field bpRelativeAddress	The basepointer-relative address of this variable
+								on the stack. */
+// -----------------------------------------------------------------------------
+
 typedef struct LEOVariableNameMapping
 {
 	char			variableName[DBG_VAR_NAME_SIZE];
@@ -65,6 +80,19 @@ typedef struct LEOHandler
 
 
 // -----------------------------------------------------------------------------
+/*! Only the host application can know where in its hierarchy a script resides,
+	and to which script unhandled messages should be forwarded. It can provide
+	a function with this signature to let the interpreter look up the next
+	script in the hierarchy.
+	@field inScript		The script whose parent needs to be determined.
+	@field inContext	The execution context in which the script is being
+						run, with all its globals, references etc. */
+// -----------------------------------------------------------------------------
+
+typedef struct LEOScript*	(*LEOGetParentScriptFuncPtr)( struct LEOScript* inScript, struct LEOContext* inContext );
+
+
+// -----------------------------------------------------------------------------
 /*!	Every object has a script, which is a grouping of functions and commands:
 	@field referenceCount		The number of owners this script currently has.
 								Owners are e.g. either contexts running the
@@ -85,8 +113,6 @@ typedef struct LEOHandler
 	@field	strings				List of string constants in this script, which we can load.
 	@field	numStrings			Number of items in stringsTable. */
 // -----------------------------------------------------------------------------
-
-typedef struct LEOScript*	(*LEOGetParentScriptFuncPtr)( struct LEOScript* inScript, struct LEOContext* inContext );
 
 typedef struct LEOScript
 {

@@ -530,7 +530,7 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 #define 	LEOGetValueAsNumber(v,c)		((LEOValuePtr)(v))->base.isa->GetAsNumber(((LEOValuePtr)(v)),(c))
 
 /*!
-	@function LEOGetValueAsNumber
+	@function LEOGetValueAsInteger
 	Returns the given value as a <tt>LEOInteger</tt>, converting it, if necessary.
 	If conversion isn't possible, it will fail with an error message and stop
 	execution in the current LEOContext.
@@ -794,17 +794,27 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 
 
 /*!
-	@function LEOGetKeyCount
-	Returns the number of key-value-pairs in this value.
+	@function LEOFollowReferencesAndReturnValueOfType
+	Follow all references in the given value, until a value of a specific type is found.
 	@param	v	The value you wish to examine.
+	@param	t	The type of the value that is desired.
 	@param	c	The context in which your script is currently running and in
 				which errors will be stored.
-	@result		A LEOValuePtr pointing to the actual value in the array.
+	@result		A LEOValuePtr pointing to the value matching the given type, or NULL if no value of that type is in the chain of references.
 */
 #define 	LEOFollowReferencesAndReturnValueOfType(v,t,c)			((LEOValuePtr)(v))->base.isa->FollowReferencesAndReturnValueOfType(((LEOValuePtr)(v)),(t),(c))
 
 
+/*!
+	@function LEOSetValueAsArray
+	Replace the value of a variant or array with the given array value.
+	@param	v	The value you wish to change.
+	@param	a	The new value for that value.
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+*/
 #define		LEOSetValueAsArray(v,a,c)		((LEOValuePtr)(v))->base.isa->SetValueAsArray(((LEOValuePtr)(v)),(a),(c))
+
 
 // Failure indicators we re-use in many places:
 LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
