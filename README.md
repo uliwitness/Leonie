@@ -10,6 +10,12 @@ How to build
 There is currently only an Xcode project for MacOS X test app in the macosx subfolder, however that code should be easily portable to command-line Unix with a few changes.
 
 
+Better test application
+-----------------------
+
+If you want to play around with Leonie in the context of actual bytecode, a good idea would be to check out the Forge and ForgeDebugger projects, which include a command line tool that compiles Hammer source code into Leonie bytecode and runs it.
+
+
 License
 -------
 
