@@ -117,6 +117,9 @@ struct LEOValueType
 	void		(*SetValueAsArray)( LEOValuePtr self, struct LEOArrayEntry* inArray, struct LEOContext* inContext );
 	
 	size_t		(*GetKeyCount)( LEOValuePtr self, struct LEOContext* inContext );
+	
+	void		(*GetValueForKeyOfRange)( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext );
+	void		(*SetValueForKeyOfRange)( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext );
 };
 
 
@@ -747,7 +750,6 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 	@param	s	The source value to copy into the array.
 	@param	c	The context in which your script is currently running and in
 				which errors will be stored.
-	@result		A LEOValuePtr pointing to the actual value in the array.
 */
 #define 	LEOSetValueForKey(v,k,s,c)			((LEOValuePtr)(v))->base.isa->SetValueForKey(((LEOValuePtr)(v)),(k),(s),(c))
 
@@ -761,6 +763,36 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 	@result		A LEOValuePtr pointing to the actual value in the array.
 */
 #define 	LEOGetKeyCount(v,c)			((LEOValuePtr)(v))->base.isa->GetKeyCount(((LEOValuePtr)(v)),(c))
+
+
+/*!
+	@function LEOGetValueForKeyOfRange
+	Fetches the value with the given key from the array in the specified value.
+	Returns NULL if there is no value under that key yet.
+	@param	v	The value you wish to examine.
+	@param	k	The key of the array item to fetch.
+	@param	so	The start offset of the byte range.
+	@param	eo	The end offset of the byte range.
+	@param	ov	This value will be set to a copy of value of the key of that range.
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+*/
+#define 	LEOGetValueForKeyOfRange(v,k,so,eo,ov,c)			((LEOValuePtr)(v))->base.isa->GetValueForKeyOfRange(((LEOValuePtr)(v)),(k),(so),(eo),(ov),(c))
+
+
+/*!
+	@function LEOSetValueForKeyOfRange
+	Stores a value under the given key in the array in the specified value.
+	
+	@param	v	The value you wish to examine.
+	@param	k	The key of the array item to fetch.
+	@param	s	The source value to copy into the array.
+	@param	so	The start offset of the byte range.
+	@param	eo	The end offset of the byte range.
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+*/
+#define 	LEOSetValueForKeyOfRange(v,k,s,so,eo,c)			((LEOValuePtr)(v))->base.isa->SetValueForKeyOfRange(((LEOValuePtr)(v)),(k),(s),(so),(eo),(c))
 
 
 /*!
@@ -838,7 +870,9 @@ size_t		LEOCantGetKeyCount( LEOValuePtr self, struct LEOContext* inContext );
 LEOValuePtr	LEOCantFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOValueTypePtr inType, struct LEOContext* inContext );
 void		LEOCantSetValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext );
 void		LEOSetStringLikeValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext );
-void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext );
+void		LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext );
+void		LEOCantGetValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext );
+void		LEOCantSetValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext );
 
 // Other methods reusable across several types:
 void		LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
@@ -955,6 +989,9 @@ LEOValuePtr	LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKey
 void		LEOSetReferenceValueValueForKey( LEOValuePtr self, const char* inKey, LEOValuePtr inValue, struct LEOContext * inContext );
 void		LEOSetReferenceValueAsArray( LEOValuePtr self, struct LEOArrayEntry * inArray, struct LEOContext * inContext );
 size_t		LEOGetReferenceValueKeyCount( LEOValuePtr self, struct LEOContext * inContext );
+
+void		LEOGetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext );
+void		LEOSetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext );
 
 
 // Variant-specific replacements for certain instance methods:

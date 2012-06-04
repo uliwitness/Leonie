@@ -75,7 +75,10 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOCantGetValueForKey,
 	LEOCantSetValueForKey,
 	LEOCantSetValueAsArray,
-	LEOCantGetKeyCount
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -110,7 +113,10 @@ struct LEOValueType	kLeoValueTypeInteger =
 	LEOCantGetValueForKey,
 	LEOCantSetValueForKey,
 	LEOCantSetValueAsArray,
-	LEOCantGetKeyCount
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -145,7 +151,10 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOCantGetValueForKey,
 	LEOSetStringLikeValueForKey,
 	LEOSetStringLikeValueAsArray,
-	LEOCantGetKeyCount
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -180,7 +189,10 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOCantGetValueForKey,
 	LEOCantSetValueForKey,
 	LEOSetStringLikeValueAsArray,
-	LEOCantGetKeyCount
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -217,7 +229,10 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOCantGetValueForKey,
 	LEOCantSetValueForKey,
 	LEOCantSetValueAsArray,
-	LEOCantGetKeyCount
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -252,7 +267,10 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOGetReferenceValueValueForKey,
 	LEOSetReferenceValueValueForKey,
 	LEOSetReferenceValueAsArray,
-	LEOGetReferenceValueKeyCount
+	LEOGetReferenceValueKeyCount,
+	
+	LEOGetReferenceValueForKeyOfRange,
+	LEOSetReferenceValueForKeyOfRange
 };
 
 
@@ -287,7 +305,10 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOCantGetValueForKey,
 	LEOCantSetValueForKey,
 	LEOSetVariantValueAsArray,
-	LEOCantGetKeyCount
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -322,7 +343,10 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	LEOCantGetValueForKey,
 	LEOCantSetValueForKey,
 	LEOSetVariantValueAsArray,
-	LEOCantGetKeyCount
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -357,7 +381,10 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOCantGetValueForKey,
 	LEOSetStringVariantValueValueForKey,
 	LEOSetVariantValueAsArray,
-	LEOCantGetKeyCount
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -392,7 +419,10 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOCantGetValueForKey,
 	LEOCantSetValueForKey,
 	LEOSetVariantValueAsArray,
-	LEOCantGetKeyCount
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -427,7 +457,10 @@ struct LEOValueType	kLeoValueTypeArray =
 	LEOGetArrayValueValueForKey,
 	LEOSetArrayValueValueForKey,
 	LEOSetArrayValueAsArray,
-	LEOGetArrayValueKeyCount
+	LEOGetArrayValueKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -462,7 +495,10 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 	LEOGetArrayValueValueForKey,
 	LEOSetArrayValueValueForKey,
 	LEOSetArrayValueAsArray,
-	LEOGetArrayValueKeyCount
+	LEOGetArrayValueKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange
 };
 
 
@@ -718,6 +754,18 @@ void	LEOSetStringLikeValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArr
 	char	str[1024] = { 0 };	// TODO: Make work with arbitrary string sizes.
 	LEOPrintArray( inArray, str, sizeof(str), inContext );
 	LEOSetValueAsString( self, str, inContext );	// TODO: Make this binary data safe.
+}
+
+
+void	LEOCantGetValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext )
+{
+	LEOContextStopWithError( inContext, "Can't get properties of ranges of a %s", self->base.isa->displayTypeName );
+}
+
+
+void	LEOCantSetValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext )
+{
+	LEOContextStopWithError( inContext, "Ranges of a %s can't have properties", self->base.isa->displayTypeName );
 }
 
 
@@ -2031,6 +2079,30 @@ size_t		LEOGetReferenceValueKeyCount( LEOValuePtr self, struct LEOContext * inCo
 	}
 	else
 		return LEOGetKeyCount( theValue, inContext );
+}
+
+
+void		LEOGetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+	}
+	else
+		LEOGetValueForKeyOfRange( theValue, keyName, startOffset, endOffset, outValue, inContext );
+}
+
+
+void		LEOSetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+	}
+	else
+		LEOSetValueForKeyOfRange( theValue, keyName, inValue, startOffset, endOffset, inContext );
 }
 
 

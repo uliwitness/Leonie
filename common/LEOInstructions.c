@@ -606,14 +606,113 @@ void	LEOPushChunkInstruction( LEOContext* inContext )
 		return;
 	
 	char	str[1024] = { 0 };
-	LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
+	char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
 	
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
 	size_t	startDelOffs = 0, endDelOffs = 0;
-	LEOGetChunkRanges( str, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
+	LEOGetChunkRanges( completeStr, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
-	LEOInitStringValue( inContext->stackEndPtr -1, str +chunkStartOffs, chunkEndOffs -chunkStartOffs, kLEOInvalidateReferences, inContext );
+	LEOInitStringValue( inContext->stackEndPtr -1, completeStr +chunkStartOffs, chunkEndOffs -chunkStartOffs, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+/*!
+	Change a property of a sub-range of an object. (SET_CHUNK_PROPERTY_INSTR)
+	
+	The property name, value, chunk end and chunk start are popped off the back of the stack (in that order).
+	
+	param1	-	The basePtr-relative offset of the value to be referenced. If this is BACK_OF_STACK it will get the value from the stack, and expects it to have been pushed as the very first parameter.
+	
+	param2	-	The LEOChunkType of this chunk expression.
+	
+	@seealso //leo_ref/c/func/LEOGetChunkRanges LEOGetChunkRanges
+*/
+
+void	LEOSetChunkPropertyInstruction( LEOContext* inContext )
+{
+	LEOValuePtr		chunkTarget = NULL;
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
+	if( onStack )
+		chunkTarget = inContext->stackEndPtr -3;
+	else
+		chunkTarget = (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
+	LEOValuePtr		propName = inContext->stackEndPtr -1;
+	LEOValuePtr		propValue = inContext->stackEndPtr -2;
+	LEOValuePtr		chunkEnd = inContext->stackEndPtr -3;
+	LEOValuePtr		chunkStart = inContext->stackEndPtr -4;
+	
+	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext) -1;
+	if( !inContext->keepRunning )
+		return;
+	
+	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext) -1;
+	if( !inContext->keepRunning )
+		return;
+
+	char	propNameStr[1024] = { 0 };
+	char*	completePropNameStr = LEOGetValueAsString( propName, propNameStr, sizeof(propNameStr), inContext );
+	
+	char	str[1024] = { 0 };
+	char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
+	
+	size_t	startDelOffs = 0, endDelOffs = 0;
+	LEOGetChunkRanges( completeStr, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
+	LEOSetValueForKeyOfRange( chunkTarget, completePropNameStr, propValue, chunkStartOffs, chunkEndOffs, inContext );
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	inContext->currentInstruction++;
+}
+
+
+/*!
+	Push the value of a property of a chunk out of a larger value onto the stack as a string value. (PUSH_CHUNK_PROPERTY_INSTR)
+	
+	The name, chunk end and chunk start are popped off the back of the stack (in that order).
+	
+	param1	-	The basePtr-relative offset of the value to be referenced. If this is BACK_OF_STACK it will get the value from the stack, and expects it to have been pushed as the very first parameter.
+	
+	param2	-	The LEOChunkType of this chunk expression.
+	
+	@seealso //leo_ref/c/func/LEOGetChunkRanges LEOGetChunkRanges
+*/
+
+void	LEOPushChunkPropertyInstruction( LEOContext* inContext )
+{
+	LEOValuePtr		chunkTarget = NULL;
+	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
+	if( onStack )
+		chunkTarget = inContext->stackEndPtr -3;
+	else
+		chunkTarget = (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
+	LEOValuePtr		propName = inContext->stackEndPtr -1;
+	LEOValuePtr		chunkEnd = inContext->stackEndPtr -2;
+	LEOValuePtr		chunkStart = inContext->stackEndPtr -3;
+	
+	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext) -1;
+	if( !inContext->keepRunning )
+		return;
+	
+	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext) -1;
+	if( !inContext->keepRunning )
+		return;
+	
+	char	propNameStr[1024] = { 0 };
+	char*	completePropNameStr = LEOGetValueAsString( propName, propNameStr, sizeof(propNameStr), inContext );
+	
+	char	str[1024] = { 0 };
+	char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	
+	size_t	startDelOffs = 0, endDelOffs = 0;
+	LEOGetChunkRanges( completeStr, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
+	LEOCleanUpValue( inContext->stackEndPtr -2, kLEOInvalidateReferences, inContext );
+	
+	LEOGetValueForKeyOfRange( chunkTarget, completePropNameStr, chunkStartOffs, chunkEndOffs, chunkTarget, inContext );
 	
 	inContext->currentInstruction++;
 }
