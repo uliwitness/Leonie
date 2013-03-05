@@ -787,6 +787,36 @@ void	LEOParameterKeepRefsInstruction( LEOContext* inContext )
 
 
 /*!
+	Copy all parameters as an array and push it on the stack. (PUSH_PARAMETERS_INSTR)
+	
+	@seealso //leo_ref/c/func/LEOParameterCountInstruction LEOParameterCountInstruction
+*/
+
+void	LEOPushParametersInstruction( LEOContext* inContext )
+{
+	LEOValuePtr	valueTarget = inContext->stackEndPtr++;
+	LEOInitStringConstantValue( valueTarget, "", kLEOInvalidateReferences, inContext );
+	LEOValuePtr	paramCountValue = inContext->stackBasePtr -1;
+	LEOInteger	paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+	struct LEOArrayEntry *inArray = NULL;
+	char	currKey[100] = {0};
+	for( int x = 1; x <= paramCount; x++ )
+	{
+		snprintf( currKey, sizeof(currKey)-1, "%d", x );
+		//LEODebugPrintContext( inContext );
+		LEOAddArrayEntryToRoot( &inArray, currKey, inContext->stackBasePtr -x -1, inContext );	// 
+	}
+	if( inArray != NULL )
+	{
+		LEOCleanUpValue( valueTarget, kLEOInvalidateReferences, inContext );
+		LEOInitArrayValue( valueTarget, inArray, kLEOInvalidateReferences, inContext );
+	}
+	
+	inContext->currentInstruction++;
+}
+
+
+/*!
 	Determine the number of parameters that have been passed to this function
 	(PARAMETER_COUNT_INSTR)
 	
@@ -1686,6 +1716,7 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEOParameterCountInstruction,
 	LEOSetReturnValueInstruction,
 	LEOParameterKeepRefsInstruction,
+	LEOPushParametersInstruction,
 	LEOConcatenateValuesInstruction,
 	LEOAndOperatorInstruction,
 	LEOOrOperatorInstruction,
@@ -1756,6 +1787,7 @@ const char*	gDefaultInstructionNames[] =
 	"ParameterCount",
 	"SetReturnValue",
 	"ParameterKeepRefs",
+	"ParametersKeepRefs",
 	"ConcatenateValues",
 	"And",
 	"Or",
