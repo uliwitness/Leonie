@@ -1505,11 +1505,12 @@ void	LEOGetArrayItemInstruction( LEOContext* inContext )
 	
 	char					keyStr[1024] = { 0 };	// TODO: Make this work with any length of string.
 	
+	
 	LEOGetValueAsString( keyValue, keyStr, sizeof(keyStr), inContext );	
-	LEOValuePtr		foundItem = LEOGetValueForKey( srcValue, keyStr, inContext );
+	LEOValuePtr		foundItem = LEOGetValueForKey( srcValue, keyStr, dstValue, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	if( foundItem == NULL )
 		LEOInitStringValue( dstValue, "", 0, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
-	else
+	else if( foundItem != dstValue )
 		LEOInitSimpleCopy( foundItem, dstValue, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	
 	inContext->currentInstruction++;

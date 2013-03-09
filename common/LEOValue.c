@@ -148,7 +148,7 @@ struct LEOValueType	kLeoValueTypeString =
 	
 	LEOCanGetStringValueAsNumber,
 	
-	LEOCantGetValueForKey,
+	LEOGetStringValueForKey,
 	LEOSetStringLikeValueForKey,
 	LEOSetStringLikeValueAsArray,
 	LEOCantGetKeyCount,
@@ -378,7 +378,7 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	
 	LEOCanGetStringValueAsNumber,
 	
-	LEOCantGetValueForKey,
+	LEOGetStringVariantValueForKey,
 	LEOSetStringVariantValueValueForKey,
 	LEOSetVariantValueAsArray,
 	LEOCantGetKeyCount,
@@ -554,7 +554,7 @@ bool	LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext )
 	error message and abort execution of the current LEOContext.
 */
 
-LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, struct LEOContext* inContext )
+LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	LEOContextStopWithError( inContext, "Can't make %s into an array", self->base.isa->displayTypeName );
 	
@@ -573,14 +573,40 @@ void	LEOCantSetValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr i
 }
 
 
-//LEOValuePtr	LEOGetStringLikeValueForKey( LEOValuePtr self, const char* keyName, struct LEOContext* inContext )
-//{
-//	LEOContextStopWithError( inContext, "Can't make %s into an array", self->base.isa->displayTypeName );
-//	
-//	return NULL;
-//}
-//
-//
+LEOValuePtr	LEOGetStringValueForKey( LEOValuePtr self, const char* keyName, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	if( !tempStorage )
+	{
+		LEOContextStopWithError( inContext, "Internal error converting %s to array.", self->base.isa->displayTypeName );
+		return NULL;
+	}
+	
+	struct LEOArrayEntry	*	convertedArray = NULL;
+	if( self->string.string != NULL && strlen(self->string.string) != 0 )
+	{
+		convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
+		if( !convertedArray )
+		{
+			LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+			return NULL;
+		}
+	}
+	else
+	{
+		LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+		return NULL;
+	}
+	
+	LEOValuePtr	theValue = LEOGetArrayValueForKey( convertedArray, keyName );
+	if( theValue == NULL )
+		return NULL;
+	LEOInitCopy( theValue, tempStorage, keepReferences, inContext );
+	LEOCleanUpArray( convertedArray, inContext );
+	
+	return tempStorage;
+}
+
+
 void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext )
 {
 	struct LEOArrayEntry	*	convertedArray = NULL;
@@ -2042,7 +2068,7 @@ void	LEOCleanUpReferenceValue( LEOValuePtr self, LEOKeepReferencesFlag keepRefer
 }
 
 
-LEOValuePtr		LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKey, struct LEOContext * inContext )
+LEOValuePtr		LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKey, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext * inContext )
 {
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
@@ -2052,7 +2078,7 @@ LEOValuePtr		LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKe
 		return NULL;
 	}
 	else
-		return LEOGetValueForKey( theValue, inKey, inContext );
+		return LEOGetValueForKey( theValue, inKey, tempStorage, keepReferences, inContext );
 }
 
 
@@ -2225,6 +2251,41 @@ void	LEOSetVariantValuePredeterminedRangeAsString( LEOValuePtr self,
 }
 
 
+LEOValuePtr	LEOGetStringVariantValueForKey( LEOValuePtr self, const char* keyName, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	struct LEOArrayEntry	*	convertedArray = NULL;
+	if( self->string.string != NULL && strlen(self->string.string) != 0 )
+	{
+		convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
+		if( !convertedArray )
+		{
+			LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+			return NULL;
+		}
+	}
+	else
+	{
+		LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+		return NULL;
+	}
+	
+	// Transform us into an array:
+	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+	LEOInitArrayValue( self, NULL, kLEOKeepReferences, inContext );
+	self->array.array = convertedArray;
+	self->base.isa = &kLeoValueTypeArrayVariant;
+	
+	LEOValuePtr		foundValue = LEOGetArrayValueForKey( self->array.array, keyName );
+	if( foundValue == NULL )
+		return NULL;
+	
+	LEOInitReferenceValue( tempStorage, foundValue, keepReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
+	
+	return tempStorage;
+}
+
+
+
 void	LEOSetStringVariantValueValueForKey( LEOValuePtr self, const char* inKey, LEOValuePtr inValue, struct LEOContext * inContext )
 {
 	if( self->string.string[0] != 0 )	// Not an empty string
@@ -2353,7 +2414,7 @@ void	LEOCleanUpArrayValue( LEOValuePtr self, LEOKeepReferencesFlag keepReference
 }
 
 
-LEOValuePtr		LEOGetArrayValueValueForKey( LEOValuePtr self, const char* inKey, struct LEOContext * inContext )
+LEOValuePtr		LEOGetArrayValueValueForKey( LEOValuePtr self, const char* inKey, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext * inContext )
 {
 	return LEOGetArrayValueForKey( self->array.array, inKey );
 }
