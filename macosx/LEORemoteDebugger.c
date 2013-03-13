@@ -104,11 +104,18 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 				
 				objectID = currValue->base.refObjectID;
 				
+				str[0] = 0;
 				if( currValue == NULL || currValue->base.isa == NULL )
 					strncpy( str, "*** INVALID ***", sizeof(str)-1 );
 				else
+				{
 					LEOGetValueAsString( currValue, str, sizeof(str), inContext );
-				
+					if( !inContext->keepRunning )
+					{
+						inContext->keepRunning = true;
+						strncpy(str, inContext->errMsg, sizeof(str) -1 );
+					}
+				}
 				unsigned long long	referenceObjectID = 0;
 				unsigned long long	referenceObjectSeed = 0;
 				if( currValue->base.isa == &kLeoValueTypeReference )
@@ -219,6 +226,12 @@ void	LEORemoteDebuggerAddFile( const char* filename, const char* filecontents, s
 }
 
 
+void	LEORemoteDebuggerDoNothingPreInstructionProc( LEOContext* inContext )
+{
+	
+}
+
+
 void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 {
 	if( !gLEORemoteDebuggerInitialized )
@@ -227,6 +240,9 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 	bool	stayInDebuggerPrompt = true;
 	while( stayInDebuggerPrompt )
 	{
+		LEOInstructionFuncPtr	savedPrompt = inContext->promptProc;
+		inContext->promptProc = LEORemoteDebuggerDoNothingPreInstructionProc;	// Prevent recursion when something we do here calls LEOContextStopWithError (which would call us again).
+		
 		LEORemoteDebuggerUpdateState( inContext );
 		printf( "Remote debugger: About to WAIT\n" );
 		size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "WAIT\0\0\0\0", 8 );	// Tell remote debugger to show its prompt now and call us back when the user has made a decision.
@@ -277,6 +293,8 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 				printf( "Remote Debugger: Unknown command '%c%c%c%c'\n", currBytesPtr[0], currBytesPtr[1], currBytesPtr[2], currBytesPtr[3] );
 				break;
 		}
+		
+		inContext->promptProc = savedPrompt;
 	}
 }
 
