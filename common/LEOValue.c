@@ -2416,7 +2416,14 @@ void	LEOCleanUpArrayValue( LEOValuePtr self, LEOKeepReferencesFlag keepReference
 
 LEOValuePtr		LEOGetArrayValueValueForKey( LEOValuePtr self, const char* inKey, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext * inContext )
 {
-	return LEOGetArrayValueForKey( self->array.array, inKey );
+	LEOValuePtr	foundValue = LEOGetArrayValueForKey( self->array.array, inKey );
+	if( foundValue )
+	{
+		LEOInitReferenceValue( tempStorage, foundValue, keepReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
+		return tempStorage;
+	}
+	
+	return NULL;
 }
 
 
