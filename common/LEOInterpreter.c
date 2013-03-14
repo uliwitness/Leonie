@@ -31,6 +31,40 @@
 
 
 
+char*	*	gFileNamesTable = NULL;
+size_t		gFileNamesTableSize = 0;
+
+
+uint16_t		LEOFileIDForFileName( const char* inFileName )
+{
+	for( int x = 0; x < gFileNamesTableSize; x++ )
+	{
+		if( strcmp(inFileName, gFileNamesTable[x]) == 0 )
+			return x;
+	}
+	
+	// No match found? Add a new entry and return its index:
+	size_t strBufferSize = strlen(inFileName) +1;
+	
+	if( gFileNamesTable == NULL )
+		gFileNamesTable = (char**) malloc( sizeof(char*) );
+	else
+		gFileNamesTable = (char**) realloc( gFileNamesTable, sizeof(char*) * (gFileNamesTableSize +1) );
+		
+	gFileNamesTable[gFileNamesTableSize] = (char*) malloc( strBufferSize );
+	memmove( gFileNamesTable[gFileNamesTableSize], inFileName, strBufferSize );
+	
+	return gFileNamesTableSize ++;
+}
+
+
+const char*	LEOFileNameForFileID( uint16_t inFileID )
+{
+	return gFileNamesTable[inFileID];
+}
+
+
+
 void	LEODoNothingPreInstructionProc( LEOContext* inContext )
 {
 	

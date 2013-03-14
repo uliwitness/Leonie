@@ -328,5 +328,9 @@ LEOValuePtr			LEOContextPeekBasePtr( LEOContext* inContext );
 void				LEOContextPopHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext );
 
 
+uint16_t		LEOFileIDForFileName( const char* inFileName );
+const char*		LEOFileNameForFileID( uint16_t inFileID );
+
+
 
 #endif // LEO_INTERPRETER_H
