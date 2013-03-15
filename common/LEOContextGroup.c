@@ -100,7 +100,7 @@ LEOObjectID	LEOContextGroupCreateNewObjectIDForPointer( LEOContextGroup* inConte
 			size_t		oldNumReferences = inContext->numReferences;
 			inContext->numReferences += LEOReferencesTableChunkSize;
 			inContext->references = realloc( inContext->references, sizeof(struct LEOObject) * inContext->numReferences );
-			memset( inContext->references +(oldNumReferences * sizeof(struct LEOObject)), 0, LEOReferencesTableChunkSize * sizeof(struct LEOObject) );
+			memset( ((char*)inContext->references) +(oldNumReferences * sizeof(struct LEOObject)), 0, LEOReferencesTableChunkSize * sizeof(struct LEOObject) );
 			
 			newObjectID = oldNumReferences;	// Same as index of first new item.
 		}
