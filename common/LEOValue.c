@@ -2653,6 +2653,9 @@ void	LEODeleteArrayEntryFromRoot( struct LEOArrayEntry** arrayPtrByReference, co
 
 struct LEOArrayEntry*	LEOCopyArray( struct LEOArrayEntry* arrayPtr, struct LEOContext* inContext )
 {
+	if( !arrayPtr )
+		return NULL;
+	
 	struct LEOArrayEntry*	entryCopy = LEOAllocNewEntry( arrayPtr->key, &arrayPtr->value, inContext );
 	
 	if( arrayPtr->smallerItem )
