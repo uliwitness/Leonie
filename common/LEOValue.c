@@ -2442,7 +2442,7 @@ size_t	LEOGetArrayValueKeyCount( LEOValuePtr self, struct LEOContext* inContext 
 void	LEOSetArrayValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext )
 {
 	LEOCleanUpArray( self->array.array, inContext );
-	self->array.array = LEOCopyArray( self->array.array, inContext );
+	self->array.array = LEOCopyArray( inArray, inContext );
 }
 
 
