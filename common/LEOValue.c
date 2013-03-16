@@ -804,6 +804,7 @@ void	LEOCantSetValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOVal
 
 void	LEOInitNumberValue( LEOValuePtr inStorage, LEONumber inNumber, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
+	assert( inStorage != NULL );
 	inStorage->base.isa = &kLeoValueTypeNumber;
 	if( keepReferences == kLEOInvalidateReferences )
 		inStorage->base.refObjectID = kLEOObjectIDINVALID;
