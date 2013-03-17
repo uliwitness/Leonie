@@ -1583,9 +1583,8 @@ void	LEOSetItemDelimiterInstruction( LEOContext* inContext )
 
 void	LEOPushGlobalReferenceInstruction( LEOContext* inContext )
 {
-	char		globalName[1024] = { 0 };
-	LEOGetValueAsString( inContext->stackEndPtr -1, globalName, sizeof(globalName), inContext );
-	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	char		globalNameBuf[1024] = { 0 };
+	const char*	globalName = LEOGetValueAsString( inContext->stackEndPtr -1, globalNameBuf, sizeof(globalNameBuf), inContext );
 	
 	LEOValuePtr	theGlobal = LEOGetArrayValueForKey( inContext->group->globals, globalName );
 	if( !theGlobal )
@@ -1599,7 +1598,9 @@ void	LEOPushGlobalReferenceInstruction( LEOContext* inContext )
 	union LEOValue	tmpRefValue = { 0 };
 	
 	LEOInitReferenceValue( &tmpRefValue, theGlobal, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
-	/*LEOValuePtr*/ LEOPushValueOnStack( inContext, &tmpRefValue );
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	LEOInitCopy( &tmpRefValue, inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	LEOCleanUpValue( &tmpRefValue, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
 }
