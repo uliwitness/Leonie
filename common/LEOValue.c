@@ -31,7 +31,7 @@
 #define LEO_MAX_ARRAY_KEY_SIZE					1024
 
 
-// Users shouldn't care if something is a variant, but it helps when debugging:
+// Users shouldn't care if something is a variant, but it helps when debugging the engine:
 #if DEBUG
 #define VARIANT_NAME(n)		(n " variant")
 #else
@@ -582,9 +582,9 @@ LEOValuePtr	LEOGetStringValueForKey( LEOValuePtr self, const char* keyName, unio
 	}
 	
 	struct LEOArrayEntry	*	convertedArray = NULL;
-	if( self->string.string != NULL && strlen(self->string.string) != 0 )
+	if( self->string.string != NULL && self->string.stringLen != 0 )
 	{
-		convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
+		convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
 			LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
@@ -610,9 +610,9 @@ LEOValuePtr	LEOGetStringValueForKey( LEOValuePtr self, const char* keyName, unio
 void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext )
 {
 	struct LEOArrayEntry	*	convertedArray = NULL;
-	if( self->string.string != NULL && strlen(self->string.string) != 0 )
+	if( self->string.string != NULL && self->string.stringLen != 0 )
 	{
-		convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
+		convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
 			LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
@@ -623,7 +623,7 @@ void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValu
 	
 	char	str[1024] = { 0 };	// TODO: Make work with arbitrary string sizes.
 	LEOPrintArray( convertedArray, str, sizeof(str), inContext );
-	LEOSetValueAsString( self, str, inContext );	// TODO: Make this binary data safe.
+	LEOSetValueAsString( self, str, strlen(str), inContext );	// TODO: Make this binary data safe.
 	
 	LEOCleanUpArray( convertedArray, inContext );
 }
@@ -656,7 +656,7 @@ void	LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct LE
 	error message and abort execution of the current LEOContext.
 */
 
-void	LEOCantSetValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )
+void	LEOCantSetValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
 	LEOContextStopWithError( inContext, "Expected %s, found string", self->base.isa->displayTypeName );
 }
@@ -779,7 +779,7 @@ void	LEOSetStringLikeValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArr
 {
 	char	str[1024] = { 0 };	// TODO: Make work with arbitrary string sizes.
 	LEOPrintArray( inArray, str, sizeof(str), inContext );
-	LEOSetValueAsString( self, str, inContext );	// TODO: Make this binary data safe.
+	LEOSetValueAsString( self, str, strlen(str), inContext );	// TODO: Make this binary data safe.
 }
 
 
@@ -875,12 +875,19 @@ void LEOSetNumberValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct 
 	and abort execution of the current LEOContext.
 */
 
-void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, struct LEOContext* inContext )
+void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, size_t inNumberLen, struct LEOContext* inContext )
 {
+	char		buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH +1] = {0};
+	if( inNumberLen > OTHER_VALUE_SHORT_STRING_MAX_LENGTH )
+	{
+		LEOContextStopWithError( inContext, "Expected %s, found string or number that is too large.", self->base.isa->displayTypeName );
+		return;
+	}
+	strncpy( buf, inNumber, inNumberLen );
 	char*		endPtr = NULL;
-	LEONumber	theNum = strtod( inNumber, &endPtr );
-	if( endPtr != (inNumber +strlen(inNumber)) )
-		LEOCantSetValueAsString( self, inNumber, inContext );
+	LEONumber	theNum = strtod( buf, &endPtr );
+	if( endPtr != (buf +inNumberLen) )
+		LEOCantSetValueAsString( self, inNumber, inNumberLen, inContext );
 	else
 		self->number.number = theNum;
 }
@@ -1001,12 +1008,19 @@ void LEOSetIntegerValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct
 	and abort execution of the current LEOContext.
 */
 
-void LEOSetIntegerValueAsString( LEOValuePtr self, const char* inInteger, struct LEOContext* inContext )
+void LEOSetIntegerValueAsString( LEOValuePtr self, const char* inInteger, size_t inIntegerLen, struct LEOContext* inContext )
 {
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH +1] = { 0 };
+	if( inIntegerLen > OTHER_VALUE_SHORT_STRING_MAX_LENGTH )
+	{
+		LEOContextStopWithError( inContext, "Expected a %s here, found a string, or a number that is too large.", self->base.isa->displayTypeName );
+		return;
+	}
+	strncpy( buf, inInteger, inIntegerLen );
 	char*		endPtr = NULL;
-	LEOInteger	theNum = strtoll( inInteger, &endPtr, 10 );
-	if( endPtr != (inInteger +strlen(inInteger)) )
-		LEOCantSetValueAsString( self, inInteger, inContext );
+	LEOInteger	theNum = strtoll( buf, &endPtr, 10 );
+	if( endPtr != (buf +inIntegerLen) )
+		LEOCantSetValueAsString( self, inInteger, inIntegerLen, inContext );
 	else
 		self->integer.integer = theNum;
 }
@@ -1060,6 +1074,7 @@ void	LEOInitStringValue( LEOValuePtr inStorage, const char* inString, size_t inL
 	inStorage->base.isa = &kLeoValueTypeString;
 	if( keepReferences == kLEOInvalidateReferences )
 		inStorage->base.refObjectID = kLEOObjectIDINVALID;
+	inStorage->string.stringLen = inLen;
 	inStorage->string.string = calloc( inLen +1, sizeof(char) );
 	memmove( inStorage->string.string, inString, inLen );
 }
@@ -1075,7 +1090,7 @@ LEONumber	LEOGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inCont
 {
 	char*		endPtr = NULL;
 	LEONumber	num = strtod( self->string.string, &endPtr );
-	if( endPtr != (self->string.string +strlen(self->string.string)) )
+	if( endPtr != (self->string.string +self->string.stringLen) )
 		LEOCantGetValueAsNumber( self, inContext );
 	return num;
 }
@@ -1091,7 +1106,7 @@ LEOInteger	LEOGetStringValueAsInteger( LEOValuePtr self, struct LEOContext* inCo
 {
 	char*		endPtr = NULL;
 	LEOInteger	num = strtoll( self->string.string, &endPtr, 10 );
-	if( endPtr != (self->string.string +strlen(self->string.string)) )
+	if( endPtr != (self->string.string +self->string.stringLen) )
 		LEOCantGetValueAsInteger( self, inContext );
 	return num;
 }
@@ -1104,7 +1119,7 @@ LEOInteger	LEOGetStringValueAsInteger( LEOValuePtr self, struct LEOContext* inCo
 const char*	LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	if( outBuf )	// If given a buffer, copy over, caller may really want a copy. Always return our internal buffer, which contains the whole string.
-		strncpy( outBuf, self->string.string, bufSize );
+		strncpy( outBuf, self->string.string, bufSize );	// TODO: Not NUL-safe!
 	return self->string.string;
 }
 
@@ -1118,7 +1133,7 @@ void	LEOSetStringValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEO
 	if( self->string.string )
 		free( self->string.string );
 	self->string.string = calloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH, sizeof(char) );
-	snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%g", inNumber );
+	self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%g", inNumber );
 }
 
 
@@ -1131,7 +1146,7 @@ void	LEOSetStringValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct 
 	if( self->string.string )
 		free( self->string.string );
 	self->string.string = calloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH, sizeof(char) );
-	snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%lld", inInteger );
+	self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%lld", inInteger );
 }
 
 
@@ -1143,9 +1158,9 @@ void	LEOSetStringValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct 
 
 bool	LEOGetStringValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext )
 {
-	if( strcasecmp( self->string.string, "true" ) == 0 )
+	if( strcasecmp( self->string.string, "true" ) == 0 && self->string.stringLen == 4 )
 		return true;
-	else if( strcasecmp( self->string.string, "false" ) == 0 )
+	else if( strcasecmp( self->string.string, "false" ) == 0 && self->string.stringLen == 5 )
 		return false;
 	else
 		return LEOCantGetValueAsBoolean( self, inContext );
@@ -1164,7 +1179,7 @@ void	LEOGetStringValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 				outChunkEnd = 0,
 				outDelChunkStart = 0,
 				outDelChunkEnd = 0;
-	LEOGetChunkRanges( self->string.string, inType,
+	LEOGetChunkRanges( self->string.string, inType,	// TODO: Make NUL-safe.
 						inRangeStart, inRangeEnd,
 						&outChunkStart, &outChunkEnd,
 						&outDelChunkStart, &outDelChunkEnd, inContext->itemDelimiter );
@@ -1181,13 +1196,13 @@ void	LEOGetStringValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 	Implementation of SetAsString for string values.
 */
 
-void LEOSetStringValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )
+void LEOSetStringValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
 	if( self->string.string )
 		free( self->string.string );
-	size_t		theLen = strlen(inString) +1;
-	self->string.string = calloc( theLen, sizeof(char) );
-	strncpy( self->string.string, inString, theLen );
+	self->string.stringLen = inStringLen;
+	self->string.string = calloc( self->string.stringLen +1, sizeof(char) );
+	memmove( self->string.string, inString, self->string.stringLen );
 }
 
 
@@ -1216,6 +1231,7 @@ void LEOSetStringValueAsStringConstant( LEOValuePtr self, const char* inString, 
 	
 	self->base.isa = &kLeoValueTypeStringConstant;
 	self->string.string = (char*) inString;
+	self->string.stringLen = strlen(inString);
 }
 
 
@@ -1228,15 +1244,16 @@ void	LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 	dest->base.isa = &kLeoValueTypeString;
 	if( keepReferences == kLEOInvalidateReferences )
 		dest->base.refObjectID = kLEOObjectIDINVALID;
-	size_t		theLen = strlen( self->string.string ) +1;
+	size_t		theLen = self->string.stringLen +1;
 	dest->string.string = calloc( theLen, sizeof(char) );
+	dest->string.stringLen = self->string.stringLen;
 	strncpy( dest->string.string, self->string.string, theLen );
 }
 
 
 void	LEOPutStringValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
 {
-	LEOSetValueAsString( dest, self->string.string, inContext );
+	LEOSetValueAsString( dest, self->string.string, self->string.stringLen, inContext );
 }
 
 
@@ -1251,7 +1268,7 @@ void	LEODetermineChunkRangeOfSubstringOfStringValue( LEOValuePtr self, size_t *i
 	
 	size_t		chunkStart, chunkEnd, delChunkStart, delChunkEnd;
 	
-	LEOGetChunkRanges( str, inType,
+	LEOGetChunkRanges( str, inType,					// TODO: Make NUL-safe.
 						inRangeStart, inRangeEnd,
 						&chunkStart, &chunkEnd,
 						&delChunkStart, &delChunkEnd,
@@ -1284,9 +1301,9 @@ void	LEOSetStringValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 				outDelChunkStart = 0,
 				outDelChunkEnd = 0,
 				inBufLen = inBuf ? strlen(inBuf) : 0,
-				selfLen = strlen( self->string.string ),
+				selfLen = self->string.stringLen,
 				finalLen = 0;
-	LEOGetChunkRanges( self->string.string, inType,
+	LEOGetChunkRanges( self->string.string, inType,	// TODO: Make NUL-safe.
 						inRangeStart, inRangeEnd,
 						&outChunkStart, &outChunkEnd,
 						&outDelChunkStart, &outDelChunkEnd, inContext->itemDelimiter );
@@ -1307,6 +1324,7 @@ void	LEOSetStringValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 	
 	free( self->string.string );
 	self->string.string = newStr;
+	self->string.stringLen = finalLen;
 }
 
 
@@ -1319,7 +1337,7 @@ void	LEOSetStringValuePredeterminedRangeAsString( LEOValuePtr self,
 											const char* inBuf, struct LEOContext* inContext )
 {
 	size_t		inBufLen = inBuf ? strlen(inBuf) : 0,
-				selfLen = strlen( self->string.string ),
+				selfLen = self->string.stringLen,
 				finalLen = 0,
 				chunkLen = inRangeEnd -inRangeStart;
 	finalLen = selfLen -chunkLen +inBufLen;
@@ -1333,6 +1351,7 @@ void	LEOSetStringValuePredeterminedRangeAsString( LEOValuePtr self,
 	
 	free( self->string.string );
 	self->string.string = newStr;
+	self->string.stringLen = finalLen;
 }
 
 
@@ -1347,6 +1366,7 @@ void	LEOCleanUpStringValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferenc
 	if( self->string.string )
 		free( self->string.string );
 	self->string.string = NULL;
+	self->string.stringLen = 0;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )
 	{
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
@@ -1357,10 +1377,10 @@ void	LEOCleanUpStringValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferenc
 
 bool	LEOCanGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContext )
 {
-	if( self->string.string[0] == 0 )	// Empty string? Not a number!
+	if( self->string.stringLen == 0 )	// Empty string? Not a number!
 		return false;
 	
-	for( size_t x = 0; self->string.string[x] != 0; x++ )
+	for( size_t x = 0; x < self->string.stringLen; x++ )
 	{
 		if( self->string.string[x] < '0' || self->string.string[x] > '9' )
 			return false;
@@ -1383,6 +1403,7 @@ void	LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString, LE
 	if( keepReferences == kLEOInvalidateReferences )
 		inStorage->base.refObjectID = kLEOObjectIDINVALID;
 	inStorage->string.string = (char*)inString;
+	inStorage->string.stringLen = strlen(inString);
 }
 
 
@@ -1396,7 +1417,7 @@ void	LEOSetStringConstantValueAsNumber( LEOValuePtr self, LEONumber inNumber, st
 	// Turn this into a non-constant string:
 	self->base.isa = &kLeoValueTypeString;
 	self->string.string = calloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH, sizeof(char) );
-	snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%g", inNumber );
+	self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%g", inNumber );
 }
 
 
@@ -1410,7 +1431,7 @@ void	LEOSetStringConstantValueAsInteger( LEOValuePtr self, LEOInteger inInteger,
 	// Turn this into a non-constant string:
 	self->base.isa = &kLeoValueTypeString;
 	self->string.string = calloc( OTHER_VALUE_SHORT_STRING_MAX_LENGTH, sizeof(char) );
-	snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%lld", inInteger );
+	self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH, "%lld", inInteger );
 }
 
 
@@ -1419,13 +1440,13 @@ void	LEOSetStringConstantValueAsInteger( LEOValuePtr self, LEOInteger inInteger,
 	value into a regular (dynamic) string value.
 */
 
-void	LEOSetStringConstantValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )
+void	LEOSetStringConstantValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
 	// Turn this into a non-constant string:
 	self->base.isa = &kLeoValueTypeString;
-	size_t		theLen = strlen(inString) +1;
-	self->string.string = calloc( theLen, sizeof(char) );
-	strncpy( self->string.string, inString, theLen );
+	self->string.string = calloc( inStringLen +1, sizeof(char) );
+	self->string.stringLen = inStringLen;
+	memmove( self->string.string, inString, inStringLen );
 }
 
 
@@ -1436,6 +1457,7 @@ void	LEOSetStringConstantValueAsString( LEOValuePtr self, const char* inString, 
 void	LEOSetStringConstantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext )
 {
 	self->string.string = (inBoolean ? "true" : "false");
+	self->string.stringLen = (inBoolean ? 4 : 5);
 }
 
 
@@ -1449,6 +1471,7 @@ void	LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeep
 	if( keepReferences == kLEOInvalidateReferences )
 		dest->base.refObjectID = kLEOObjectIDINVALID;
 	dest->string.string = self->string.string;
+	dest->string.stringLen = self->string.stringLen;
 }
 
 
@@ -1466,9 +1489,9 @@ void	LEOSetStringConstantValueRangeAsString( LEOValuePtr self, LEOChunkType inTy
 				outDelChunkStart = 0,
 				outDelChunkEnd = 0,
 				inBufLen = inBuf ? strlen(inBuf) : 0,
-				selfLen = strlen( self->string.string ),
+				selfLen = self->string.stringLen,
 				finalLen = 0;
-	LEOGetChunkRanges( self->string.string, inType,
+	LEOGetChunkRanges( self->string.string, inType,		// Make NUL-safe
 						inRangeStart, inRangeEnd,
 						&outChunkStart, &outChunkEnd,
 						&outDelChunkStart, &outDelChunkEnd, inContext->itemDelimiter );
@@ -1490,6 +1513,7 @@ void	LEOSetStringConstantValueRangeAsString( LEOValuePtr self, LEOChunkType inTy
 	// Turn this into a non-constant string:
 	self->base.isa = &kLeoValueTypeString;
 	self->string.string = newStr;
+	self->string.stringLen = finalLen;
 }
 
 
@@ -1515,6 +1539,7 @@ void	LEOCleanUpStringConstantValue( LEOValuePtr self, LEOKeepReferencesFlag keep
 {
 	self->base.isa = NULL;
 	self->string.string = NULL;
+	self->string.stringLen = 0;
 	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )
 	{
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
@@ -1571,14 +1596,14 @@ bool	LEOGetBooleanValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext
 	and abort execution of the current LEOContext.
 */
 
-void	LEOSetBooleanValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )
+void	LEOSetBooleanValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
-	if( strcasecmp( inString, "true" ) == 0 )
+	if( strcasecmp( inString, "true" ) == 0 && inStringLen == 4 )
 		((struct LEOValueBoolean*)self)->boolean = true;
-	else if( strcasecmp( inString, "false" ) == 0 )
+	else if( strcasecmp( inString, "false" ) == 0 && inStringLen == 5 )
 		((struct LEOValueBoolean*)self)->boolean = false;
 	else
-		LEOCantSetValueAsString( self, inString, inContext );
+		LEOCantSetValueAsString( self, inString, inStringLen, inContext );
 }
 
 
@@ -1809,7 +1834,7 @@ void	LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 	Implementation of SetAsString for reference values.
 */
 
-void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )
+void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
@@ -1818,13 +1843,14 @@ void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, struc
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
+		// TODO: Make NUL-safe.
 		size_t		chunkStart = 0, chunkEnd = SIZE_MAX, chunkDelStart, chunkDelEnd;
 		LEODetermineChunkRangeOfSubstring( theValue, &chunkStart, &chunkEnd, &chunkDelStart, &chunkDelEnd,
 											self->reference.chunkType, self->reference.chunkStart, self->reference.chunkEnd, inContext );
 		LEOSetValuePredeterminedRangeAsString( theValue, chunkStart, chunkEnd, inString, inContext );
 	}
 	else
-		LEOSetValueAsString( theValue, inString, inContext );
+		LEOSetValueAsString( theValue, inString, inStringLen, inContext );
 }
 
 
@@ -2201,15 +2227,15 @@ void	LEOSetVariantValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct
 }
 
 
-void	LEOSetVariantValueAsString( LEOValuePtr self, const char* inString, struct LEOContext* inContext )
+void	LEOSetVariantValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
 	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
-	LEOInitStringValue( self, inString, strlen(inString), kLEOKeepReferences, inContext );
+	LEOInitStringValue( self, inString, inStringLen, kLEOKeepReferences, inContext );
 	self->base.isa = &kLeoValueTypeStringVariant;
 }
 
 
-void	LEOSetVariantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext )				// Makes it a constant string.
+void	LEOSetVariantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext )
 {
 	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
 	LEOInitBooleanValue( self, inBoolean, kLEOKeepReferences, inContext );
@@ -2255,9 +2281,9 @@ void	LEOSetVariantValuePredeterminedRangeAsString( LEOValuePtr self,
 LEOValuePtr	LEOGetStringVariantValueForKey( LEOValuePtr self, const char* keyName, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	struct LEOArrayEntry	*	convertedArray = NULL;
-	if( self->string.string != NULL && strlen(self->string.string) != 0 )
+	if( self->string.string != NULL && self->string.stringLen != 0 )
 	{
-		convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
+		convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
 			LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
@@ -2289,9 +2315,9 @@ LEOValuePtr	LEOGetStringVariantValueForKey( LEOValuePtr self, const char* keyNam
 
 void	LEOSetStringVariantValueValueForKey( LEOValuePtr self, const char* inKey, LEOValuePtr inValue, struct LEOContext * inContext )
 {
-	if( self->string.string[0] != 0 )	// Not an empty string
+	if( self->string.stringLen != 0 )	// Not an empty string
 	{
-		struct LEOArrayEntry	*	convertedArray = LEOCreateArrayFromString( self->string.string, inContext );
+		struct LEOArrayEntry	*	convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
 			LEOContextStopWithError( inContext, "Expected array here, found \"%s\".", self->string.string );
@@ -2450,7 +2476,7 @@ void	LEOSetArrayValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, s
 #pragma mark -
 
 
-struct LEOArrayEntry	*	LEOCreateArrayFromString( const char* inString, struct LEOContext* inContext )
+struct LEOArrayEntry	*	LEOCreateArrayFromString( const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
 	struct LEOArrayEntry*	theArray = NULL;
 	size_t					x = 0, keyStartOffs = 0, keyEndOffs = 0,
@@ -2458,7 +2484,7 @@ struct LEOArrayEntry	*	LEOCreateArrayFromString( const char* inString, struct LE
 	bool					isInKey = true;
 	char					keyStr[LEO_MAX_ARRAY_KEY_SIZE] = { 0 };
 	
-	for( ; inString[x] != 0; x++ )
+	for( ; x < inStringLen; x++ )
 	{
 		if( isInKey && inString[x] == ':' )
 		{
@@ -2530,6 +2556,38 @@ struct LEOArrayEntry	*	LEOAllocNewEntry( const char* inKey, LEOValuePtr inValue,
 	newEntry->largerItem = NULL;
 	
 	return newEntry;
+}
+
+
+LEOValuePtr	LEOAddIntegerArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOInteger inNum, struct LEOContext* inContext )
+{
+	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, NULL, inContext );
+	LEOInitIntegerValue( outValue, inNum, kLEOInvalidateReferences, inContext );
+	return outValue;
+}
+
+
+LEOValuePtr	LEOAddNumberArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEONumber inNum, struct LEOContext* inContext )
+{
+	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, NULL, inContext );
+	LEOInitNumberValue( outValue, inNum, kLEOInvalidateReferences, inContext );
+	return outValue;
+}
+
+
+LEOValuePtr	LEOAddCStringArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, const char* inCStr, struct LEOContext* inContext )
+{
+	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, NULL, inContext );
+	LEOInitStringValue( outValue, inCStr, strlen(inCStr), kLEOInvalidateReferences, inContext );
+	return outValue;
+}
+
+
+LEOValuePtr	LEOAddStringArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, const char* inStr, size_t inLen, struct LEOContext* inContext )
+{
+	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, NULL, inContext );
+	LEOInitStringValue( outValue, inStr, inLen, kLEOInvalidateReferences, inContext );
+	return outValue;
 }
 
 

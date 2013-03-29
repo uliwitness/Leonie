@@ -190,7 +190,7 @@ void	LEOAssignStringFromTableInstruction( LEOContext* inContext )
 	if( inContext->currentInstruction->param2 < script->numStrings )
 		theString = script->strings[inContext->currentInstruction->param2];
 	
-	LEOSetValueAsString( theValue, theString, inContext );
+	LEOSetValueAsString( theValue, theString, strlen(theString), inContext );	// TODO: Make NUL-safe.
 	
 	inContext->currentInstruction++;
 }
@@ -1550,9 +1550,9 @@ void	LEOSetStringInstruction( LEOContext* inContext )
 {
 	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	destValue = onStack ? (inContext->stackEndPtr -2) : inContext->stackBasePtr +inContext->currentInstruction->param1;
-	char			str[1024] = { 0 };
-	LEOGetValueAsString( inContext->stackEndPtr -1, str, sizeof(str), inContext );
-	LEOSetValueAsString( destValue, str, inContext );
+	char			strBuf[1024] = { 0 };
+	const char*		str = LEOGetValueAsString( inContext->stackEndPtr -1, strBuf, sizeof(strBuf), inContext );
+	LEOSetValueAsString( destValue, str, strlen(str), inContext );	// TODO: Make NUL-safe.
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr +(onStack ? -2 : -1) );
 	
 	inContext->currentInstruction++;
