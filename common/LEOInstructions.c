@@ -633,10 +633,12 @@ void	LEOPushChunkInstruction( LEOContext* inContext )
 
 void	LEOSetChunkPropertyInstruction( LEOContext* inContext )
 {
+	LEODebugPrintContext( inContext );
+	
 	LEOValuePtr		chunkTarget = NULL;
 	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	if( onStack )
-		chunkTarget = inContext->stackEndPtr -3;
+		chunkTarget = inContext->stackEndPtr -5;
 	else
 		chunkTarget = (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
 	LEOValuePtr		propName = inContext->stackEndPtr -1;
@@ -663,6 +665,8 @@ void	LEOSetChunkPropertyInstruction( LEOContext* inContext )
 	LEOSetValueForKeyOfRange( chunkTarget, completePropNameStr, propValue, chunkStartOffs, chunkEndOffs, inContext );
 	
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+
+	LEODebugPrintContext( inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -1757,7 +1761,9 @@ LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
 	LEONumToCharInstruction,
 	LEOCharToNumInstruction,
 	LEONumToHexInstruction,
-	LEOHexToNumInstruction
+	LEOHexToNumInstruction,
+	LEOSetChunkPropertyInstruction,
+	LEOPushChunkPropertyInstruction
 };
 
 
@@ -1828,7 +1834,9 @@ const char*	gDefaultInstructionNames[] =
 	"NumToChar",
 	"CharToNum",
 	"NumToHex",
-	"HexToNum"
+	"HexToNum",
+	"SetChunkProperty",
+	"PushChunkProperty"
 };
 
 
