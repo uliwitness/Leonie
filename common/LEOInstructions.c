@@ -633,8 +633,6 @@ void	LEOPushChunkInstruction( LEOContext* inContext )
 
 void	LEOSetChunkPropertyInstruction( LEOContext* inContext )
 {
-	LEODebugPrintContext( inContext );
-	
 	LEOValuePtr		chunkTarget = NULL;
 	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	if( onStack )
@@ -664,9 +662,7 @@ void	LEOSetChunkPropertyInstruction( LEOContext* inContext )
 	LEOGetChunkRanges( completeStr, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
 	LEOSetValueForKeyOfRange( chunkTarget, completePropNameStr, propValue, chunkStartOffs, chunkEndOffs, inContext );
 	
-	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
-
-	LEODebugPrintContext( inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -4 -(onStack ? 1 : 0) );
 	
 	inContext->currentInstruction++;
 }
