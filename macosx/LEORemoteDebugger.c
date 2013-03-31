@@ -25,6 +25,12 @@
 #include "LEOInstructions.h"
 
 
+void	LEORemoteDebuggerUpdateState( struct LEOContext* inContext );
+void	LEORemoteDebuggerAddHandler( struct LEOHandler* inHandler );
+void	LEORemoteDebuggerDoNothingPreInstructionProc( LEOContext* inContext );
+
+
+
 LEOInstruction**	gLEORemoteDebuggerBreakpoints = NULL;
 size_t				gLEONumRemoteDebuggerBreakpoints = 0;
 
@@ -124,7 +130,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 					referenceObjectSeed = currValue->reference.objectSeed;
 				}
 			
-				char*	theTypeName = (currValue && currValue->base.isa) ? currValue->base.isa->displayTypeName : "*** INVALID ***";
+				const char*	theTypeName = (currValue && currValue->base.isa) ? currValue->base.isa->displayTypeName : "*** INVALID ***";
 				dataLen = (uint32_t) (strlen(str) +1 +strlen(theTypeName) +1 +strlen(theRealName) +1 +sizeof(objectID) +sizeof(referenceObjectID) +sizeof(referenceObjectSeed));
 				
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, "VARI", 4 );
@@ -211,7 +217,7 @@ void	LEORemoteDebuggerAddFile( const char* filecontents, uint16_t inFileID, stru
 	size_t		filenameLen = strlen(filename) +1;
 	size_t		filecontentsLen = strlen(filecontents) +1;
 	size_t		actuallyWritten = write( gLEORemoteDebuggerSocketFD, "SOUR", 4 );
-	uint32_t	dataLen = sizeof(uint16_t) + filenameLen + filecontentsLen;
+	uint32_t	dataLen = (uint32_t) sizeof(uint16_t) + filenameLen + filecontentsLen;
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &inFileID, sizeof(uint16_t) );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filename, filenameLen );
@@ -232,7 +238,7 @@ void	LEORemoteDebuggerAddFile( const char* filecontents, uint16_t inFileID, stru
 
 void	LEORemoteDebuggerDoNothingPreInstructionProc( LEOContext* inContext )
 {
-	
+#pragma unused(inContext)
 }
 
 

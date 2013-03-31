@@ -71,6 +71,7 @@ typedef double					LEONumber;
 
 
 struct LEOContext;
+struct LEOArrayEntry;
 
 
 // Layout of the virtual function tables:

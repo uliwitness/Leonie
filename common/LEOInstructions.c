@@ -27,6 +27,32 @@
 #include <string.h>
 
 
+void	LEOInvalidInstruction( LEOContext* inContext );
+void	LEOExitToTopInstruction( LEOContext* inContext );
+void	LEONoOpInstruction( LEOContext* inContext );
+void	LEOPushStringFromTableInstruction( LEOContext* inContext );
+void	LEOPushStringVariantFromTableInstruction( LEOContext* inContext );
+void	LEOPopValueInstruction( LEOContext* inContext );
+void	LEOPopSimpleValueInstruction( LEOContext* inContext );
+void	LEOPushBooleanInstruction( LEOContext* inContext );
+void	LEOAssignStringFromTableInstruction( LEOContext* inContext );
+void	LEOJumpRelativeInstruction( LEOContext* inContext );
+void	LEOJumpRelativeIfTrueInstruction( LEOContext* inContext );
+void	LEOJumpRelativeIfFalseInstruction( LEOContext* inContext );
+void	LEOJumpRelativeIfGreaterThanZeroInstruction( LEOContext* inContext );
+void	LEOJumpRelativeIfLessThanZeroInstruction( LEOContext* inContext );
+void	LEOJumpRelativeIfGreaterSameThanZeroInstruction( LEOContext* inContext );
+void	LEOJumpRelativeIfLessSameThanZeroInstruction( LEOContext* inContext );
+void	LEOPushNumberInstruction( LEOContext* inContext );
+void	LEOPushIntegerInstruction( LEOContext* inContext );
+void	LEOAddNumberInstruction( LEOContext* inContext );
+void	LEOAddIntegerInstruction( LEOContext* inContext );
+void	LEOCallHandlerInstruction( LEOContext* inContext );
+void	LEOReturnFromHandlerInstruction( LEOContext* inContext );
+void	LEOSetReturnValueInstruction( LEOContext* inContext );
+void	LEOPushReferenceInstruction( LEOContext* inContext );
+
+
 #pragma mark Instruction Functions
 
 /*!

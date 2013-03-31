@@ -18,6 +18,11 @@ LEOInstruction**	gLEODebuggerBreakpoints = NULL;
 size_t				gLEONumDebuggerBreakpoints = 0;
 
 
+
+void LEODebuggerPrompt( struct LEOContext* inContext );
+
+
+
 void LEODebuggerPrompt( struct LEOContext* inContext )
 {
 	bool	stayInDebuggerPrompt = true;

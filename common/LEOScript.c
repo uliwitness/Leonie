@@ -20,6 +20,11 @@
 #define		NUM_STRINGS_PER_CHUNK			16
 
 
+void	LEOInitHandlerWithID( LEOHandler* inStorage, LEOHandlerID inHandlerName );
+void	LEOCleanUpHandler( LEOHandler* inStorage );
+
+
+
 void	LEOInitHandlerWithID( LEOHandler* inStorage, LEOHandlerID inHandlerName )
 {
 	inStorage->handlerName = inHandlerName;

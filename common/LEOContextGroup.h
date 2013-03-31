@@ -62,7 +62,7 @@ typedef struct LEOContextGroup
 	@seealso //leo_ref/c/func/LEOContextGroupRetain LEOContextGroupRetain
 	@seealso //leo_ref/c/func/LEOContextGroupRelease LEOContextGroupRelease
 */
-LEOContextGroup*	LEOContextGroupCreate();	// Gives referenceCount of 1.
+LEOContextGroup*	LEOContextGroupCreate( void );	// Gives referenceCount of 1.
 
 
 /*!

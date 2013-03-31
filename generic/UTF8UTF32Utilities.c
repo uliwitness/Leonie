@@ -11,6 +11,12 @@
 #include <stdint.h>
 
 
+size_t		GetLengthOfUTF8SequenceStartingWith( unsigned char inChar );
+uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset );
+void		UTF8BytesForUTF32Character( uint32_t utf32Char, char* utf8, size_t *outLength );
+uint32_t	UTF32CharacterToLower( uint32_t inUTF32Char );
+
+
 size_t	GetLengthOfUTF8SequenceStartingWith( unsigned char inChar )
 {
 	size_t		outLength = 0;
@@ -44,7 +50,10 @@ uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, si
 	uint32_t			utf32Char = 0L;
 	size_t				numBytesInSequence = 0;
 	numBytesInSequence = GetLengthOfUTF8SequenceStartingWith( *currUTF8Byte );
-
+	
+	if( len < numBytesInSequence )
+		return 0xffffffff;
+	
 	switch( numBytesInSequence )
 	{
 		case 4:

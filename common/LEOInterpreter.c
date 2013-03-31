@@ -30,6 +30,10 @@
 #define LEOCallStackEntriesChunkSize			16
 
 
+void	LEODoNothingPreInstructionProc( LEOContext* inContext );
+
+
+
 
 char*	*	gFileNamesTable = NULL;
 size_t		gFileNamesTableSize = 0;
@@ -37,7 +41,7 @@ size_t		gFileNamesTableSize = 0;
 
 uint16_t		LEOFileIDForFileName( const char* inFileName )
 {
-	for( int x = 0; x < gFileNamesTableSize; x++ )
+	for( size_t x = 0; x < gFileNamesTableSize; x++ )
 	{
 		if( strcmp(inFileName, gFileNamesTable[x]) == 0 )
 			return x;
@@ -67,7 +71,7 @@ const char*	LEOFileNameForFileID( uint16_t inFileID )
 
 void	LEODoNothingPreInstructionProc( LEOContext* inContext )
 {
-	
+#pragma unused(inContext)
 }
 
 

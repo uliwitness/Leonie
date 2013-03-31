@@ -42,7 +42,7 @@ struct LEOObject	// What a LEOObjectID refers to. These are kept in a big array 
 
 
 
-LEOContextGroup*	LEOContextGroupCreate()
+LEOContextGroup*	LEOContextGroupCreate( void )
 {
 	LEOContextGroup*	theGroup = calloc( 1, sizeof(LEOContextGroup) );
 	theGroup->referenceCount = 1;
