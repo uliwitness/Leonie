@@ -114,9 +114,7 @@ enum eLEOCallHandlerFlags // at most uint16_t
 //	Globals:
 // -----------------------------------------------------------------------------
 
-extern LEOInstructionFuncPtr*	gInstructions;
-extern const char**				gInstructionNames;
-extern size_t					gNumInstructions;
-
+extern struct LEOInstructionEntry*	gInstructions;
+extern size_t						gNumInstructions;
 
 #endif // LEO_INSTRUCTIONS_H

@@ -196,7 +196,7 @@ void	LEORemoteDebuggerAddHandler( struct LEOHandler* inHandler )
 		char				instructionStr[256] = { 0 };
 		unsigned long long	instructionPointer = (intptr_t) (inHandler->instructions +x);	// Address so we can find the right string for the right instruction to show.
 		assert( sizeof(instructionPointer) >= sizeof(LEOInstruction*) );
-		snprintf( instructionStr, 255, "%s( %d, %d )", gInstructionNames[inHandler->instructions[x].instructionID],
+		snprintf( instructionStr, 255, "%s( %d, %d )", gInstructions[inHandler->instructions[x].instructionID].name,
 						inHandler->instructions[x].param1, inHandler->instructions[x].param2 );
 		size_t	dataLen = strlen(instructionStr) +1 +sizeof(instructionPointer);
 		size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "INST", 4 );

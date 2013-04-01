@@ -64,7 +64,12 @@
 // -----------------------------------------------------------------------------
 
 /*! Index into our instruction function array. Index 0 contains the
-	"unimplemented" error exit function. */
+	"unimplemented" error exit function.
+	
+	Note that instruction IDs are sequential and not intended to be saved to
+	disk. If you want to save bytecode to disk, you should save a look-up-table
+	from some persistent instruction opcode along to the file and then when
+	loading fix up all the instruction IDs based on that name. */
 typedef uint16_t	LEOInstructionID;
 
 
@@ -75,15 +80,58 @@ typedef uint16_t	LEOInstructionID;
 typedef void (*LEOInstructionFuncPtr)( struct LEOContext* inContext );
 
 
-/*! This is how an instruction looks in bytecode. It has the instruction's ID
-	as the first item, and then one 16-bit and one 32-bit argument that depends
-	on the particular instruction. */
+/*! A LEOInstruction is how an instruction looks in bytecode. It has the
+	instruction's ID as the first item, and then one 16-bit and one 32-bit
+	argument that depends on the particular instruction. */
 typedef struct LEOInstruction
 {
 	LEOInstructionID		instructionID;
 	uint16_t				param1;
 	uint32_t				param2;
 } LEOInstruction;
+
+
+/*!	A LEOInstructionEntry is how we look up the function associated with an
+	instruction ID. We keep a master table of all instructions we know, and you
+	can add your own instructions by simply adding to that list. You
+	generally do not use this directly. Instead, you use the LEOINSTR_START,
+	LEOINSTR, and LEOINSTR_LAST macros below to declare a global array:
+	
+		LEOINSTR_START(FrobnitzWebService,NUM_WEBSERVICE_INSTRUCTIONS)
+		LEOINSTR(MyWebServiceStartInstruction)
+		LEOINSTR_LAST(MyWebServiceStopInstruction)
+	
+	and pass that to LEOAddInstructionsToInstructionArray:
+	
+		size_t outFirstNewInstruction = 0;
+		LEOAddInstructionsToInstructionArray( gFrobnitzWebServiceInstructions,
+						NUM_WEBSERVICE_INSTRUCTIONS, &outFirstNewInstruction );
+	
+	Assuming you've declared your instruction IDs in an enum like this:
+	
+		enum
+		{
+			MyWebServiceStartInstruction = 0,
+			MyWebServiceStopInstruction,
+			NUM_WEBSERVICE_INSTRUCTIONS
+		};
+	
+	The instruction IDs to generate can now be calculated like:
+	
+		LEOHandlerAddInstruction( theHandler, outFirstNewInstruction +MyWebServiceStartInstruction, 0, 0 );
+	
+	or the likes. */
+struct LEOInstructionEntry
+{
+	LEOInstructionFuncPtr		proc;	//!< The function to call for this instruction
+	const char*					name;	//!< String representation of the function's name
+};
+
+
+#define LEOINSTR_DECL(n,c)	extern struct LEOInstructionEntry	g ## n ##Instructions[c];
+#define LEOINSTR_START(n,c)	struct LEOInstructionEntry	g ## n ##Instructions[c] = {
+#define LEOINSTR(n)				{ n, #n }, 
+#define LEOINSTR_LAST(n)		{ n, #n } };
 
 
 /*! @functiongroup Static typecasting functions */
@@ -100,9 +148,9 @@ inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum ) __attribute__((alway
 inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum )	{ assert(sizeof(LEONumber) <= sizeof(uint32_t));  return *(LEONumber*)&inNum; }
 
 
-void	LEOInitInstructionArray();
+void	LEOInitInstructionArray( void );
 
-void	LEOAddInstructionsToInstructionArray( LEOInstructionFuncPtr *inInstructionArray, const char* *inInstructionNames, size_t inNumInstructions, size_t *outFirstNewInstruction );
+void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, size_t inNumInstructions, size_t *outFirstNewInstruction );
 
 
 

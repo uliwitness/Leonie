@@ -1024,7 +1024,7 @@ void		LEOSetVariantValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray
 void		LEOInitArrayVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
 // Array value-specific:
-void		LEOInitArrayValue( LEOValuePtr self, struct LEOArrayEntry *inArray, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// Takes over ownership of the array.
+void		LEOInitArrayValue( struct LEOValueArray* self, struct LEOArrayEntry *inArray, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// Takes over ownership of the array.
 void		LEOInitArrayValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOPutArrayValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
 const char*	LEOGetArrayValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );

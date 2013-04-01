@@ -17,8 +17,7 @@ enum
 };
 
 
-extern LEOInstructionFuncPtr	gDownloadInstructions[LEO_NUMBER_OF_DOWNLOAD_INSTRUCTIONS];
-extern const char*				gDownloadInstructionNames[LEO_NUMBER_OF_DOWNLOAD_INSTRUCTIONS];
+LEOINSTR_DECL(Download,LEO_NUMBER_OF_DOWNLOAD_INSTRUCTIONS)
 
 extern size_t					kFirstDownloadInstruction;
 

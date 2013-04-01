@@ -340,7 +340,7 @@ bool	LEOContinueRunningContext( LEOContext *inContext )
 	LEOInstructionID	currID = inContext->currentInstruction->instructionID;
 	if( currID >= gNumInstructions )
 		currID = 0;	// First instruction is the special "unimplemented" instruction.
-	gInstructions[currID](inContext);
+	gInstructions[currID].proc(inContext);
 	
 	return( inContext->currentInstruction != NULL && inContext->keepRunning );
 }
@@ -370,7 +370,7 @@ void	LEODebugPrintInstr( LEOInstruction* instruction )
 	if( currID >= gNumInstructions )
 		printf("UNKNOWN_%d",currID);
 	else
-		printf("%s",gInstructionNames[currID]);
+		printf("%s",gInstructions[currID].name);
 	printf("( %u, %d );\n", instruction->param1, instruction->param2 );
 }
 

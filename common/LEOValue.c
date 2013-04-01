@@ -724,8 +724,8 @@ void	LEODetermineChunkRangeOfSubstringOfAnyValue( LEOValuePtr self, size_t *ioBy
 														LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
 														struct LEOContext* inContext )
 {
-	char		strBuf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
-	char*		str = LEOGetValueAsString( self, strBuf, sizeof(strBuf), inContext );
+	char			strBuf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
+	const char*		str = LEOGetValueAsString( self, strBuf, sizeof(strBuf), inContext );
 	str += (*ioBytesStart);
 	
 	size_t		chunkStart, chunkEnd, delChunkStart, delChunkEnd;
@@ -1706,7 +1706,7 @@ void	LEOInitReferenceValueWithIDs( LEOValuePtr self, LEOObjectID referencedObjec
 
 const char*	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	char*			theStr = outBuf;
+	const char*		theStr = outBuf;
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
@@ -2246,7 +2246,7 @@ void	LEOSetVariantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOCo
 void	LEOSetVariantValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext )
 {
 	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
-	LEOInitArrayValue( self, NULL, kLEOKeepReferences, inContext );
+	LEOInitArrayValue( &self->array, NULL, kLEOKeepReferences, inContext );
 	self->array.array = LEOCopyArray( inArray, inContext );
 	self->base.isa = &kLeoValueTypeArrayVariant;
 }
@@ -2298,7 +2298,7 @@ LEOValuePtr	LEOGetStringVariantValueForKey( LEOValuePtr self, const char* keyNam
 	
 	// Transform us into an array:
 	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
-	LEOInitArrayValue( self, NULL, kLEOKeepReferences, inContext );
+	LEOInitArrayValue( &self->array, NULL, kLEOKeepReferences, inContext );
 	self->array.array = convertedArray;
 	self->base.isa = &kLeoValueTypeArrayVariant;
 	
@@ -2325,12 +2325,12 @@ void	LEOSetStringVariantValueValueForKey( LEOValuePtr self, const char* inKey, L
 		}
 		
 		LEOCleanUpValue( self, kLEOKeepReferences, inContext );
-		LEOInitArrayValue( self, convertedArray, kLEOKeepReferences, inContext );
+		LEOInitArrayValue( &self->array, convertedArray, kLEOKeepReferences, inContext );
 	}
 	else
 	{
 		LEOCleanUpValue( self, kLEOKeepReferences, inContext );
-		LEOInitArrayValue( self, NULL, kLEOKeepReferences, inContext );
+		LEOInitArrayValue( &self->array, NULL, kLEOKeepReferences, inContext );
 	}
 	self->base.isa = &kLeoValueTypeArrayVariant;
 	LEOAddArrayEntryToRoot( &self->array.array, inKey, inValue, inContext );
@@ -2374,12 +2374,12 @@ void	LEOInitArrayVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepRe
 #pragma mark -
 #pragma mark Arrays
 
-void	LEOInitArrayValue( LEOValuePtr self, struct LEOArrayEntry *inArray, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+void	LEOInitArrayValue( struct LEOValueArray* self, struct LEOArrayEntry *inArray, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	self->base.isa = &kLeoValueTypeArray;
 	if( keepReferences == kLEOInvalidateReferences )
 		self->base.refObjectID = kLEOObjectIDINVALID;
-	self->array.array = inArray;	// *** takes over ownership.
+	self->array = inArray;	// *** takes over ownership.
 }
 
 
@@ -2504,12 +2504,12 @@ struct LEOArrayEntry	*	LEOCreateArrayFromString( const char* inString, size_t in
 					memmove( keyStr, inString +keyStartOffs, keyLen );
 				else	// Error, not a valid array!
 				{
-					LEOCleanUpArray( &theArray, inContext );
+					LEOCleanUpArray( theArray, inContext );
 					return NULL;
 				}
 				keyStr[keyLen] = 0;
 				
-				struct LEOArrayEntry*	newValue = LEOAddArrayEntryToRoot( &theArray, keyStr, NULL, inContext );
+				LEOValuePtr	newValue = LEOAddArrayEntryToRoot( &theArray, keyStr, NULL, inContext );
 				LEOInitStringValue( newValue, inString +valueStartOffs, valueEndOffs -valueStartOffs, kLEOInvalidateReferences, inContext );
 				
 				isInKey = true;
@@ -2531,12 +2531,12 @@ struct LEOArrayEntry	*	LEOCreateArrayFromString( const char* inString, size_t in
 			memmove( keyStr, inString +keyStartOffs, keyLen );
 		else	// Error, not a valid array!
 		{
-			LEOCleanUpArray( &theArray, inContext );
+			LEOCleanUpArray( theArray, inContext );
 			return NULL;
 		}
 		keyStr[keyLen] = 0;
 		
-		struct LEOArrayEntry*	newValue = LEOAddArrayEntryToRoot( &theArray, keyStr, NULL, inContext );
+		LEOValuePtr	newValue = LEOAddArrayEntryToRoot( &theArray, keyStr, NULL, inContext );
 		LEOInitStringValue( newValue, inString +valueStartOffs, valueEndOffs -valueStartOffs, kLEOInvalidateReferences, inContext );
 	}
 	

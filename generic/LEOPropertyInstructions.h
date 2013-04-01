@@ -19,8 +19,7 @@ enum
 };
 
 
-extern LEOInstructionFuncPtr	gPropertyInstructions[LEO_NUMBER_OF_PROPERTY_INSTRUCTIONS];
-extern const char*				gPropertyInstructionNames[LEO_NUMBER_OF_PROPERTY_INSTRUCTIONS];
+LEOINSTR_DECL(Property,LEO_NUMBER_OF_PROPERTY_INSTRUCTIONS)
 
 extern size_t					kFirstPropertyInstruction;
 

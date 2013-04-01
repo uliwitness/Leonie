@@ -17,8 +17,7 @@ enum
 };
 
 
-extern LEOInstructionFuncPtr	gMsgInstructions[LEO_NUMBER_OF_MSG_INSTRUCTIONS];
-extern const char*				gMsgInstructionNames[LEO_NUMBER_OF_MSG_INSTRUCTIONS];
+LEOINSTR_DECL(Msg,LEO_NUMBER_OF_MSG_INSTRUCTIONS)
 
 extern size_t					kFirstMsgInstruction;
 

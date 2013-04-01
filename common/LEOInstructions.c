@@ -632,7 +632,7 @@ void	LEOPushChunkInstruction( LEOContext* inContext )
 		return;
 	
 	char	str[1024] = { 0 };
-	char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
+	const char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
 	
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
@@ -679,10 +679,10 @@ void	LEOSetChunkPropertyInstruction( LEOContext* inContext )
 		return;
 
 	char	propNameStr[1024] = { 0 };
-	char*	completePropNameStr = LEOGetValueAsString( propName, propNameStr, sizeof(propNameStr), inContext );
+	const char*	completePropNameStr = LEOGetValueAsString( propName, propNameStr, sizeof(propNameStr), inContext );
 	
 	char	str[1024] = { 0 };
-	char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
+	const char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
 	
 	size_t	startDelOffs = 0, endDelOffs = 0;
 	LEOGetChunkRanges( completeStr, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
@@ -727,10 +727,10 @@ void	LEOPushChunkPropertyInstruction( LEOContext* inContext )
 		return;
 	
 	char	propNameStr[1024] = { 0 };
-	char*	completePropNameStr = LEOGetValueAsString( propName, propNameStr, sizeof(propNameStr), inContext );
+	const char*	completePropNameStr = LEOGetValueAsString( propName, propNameStr, sizeof(propNameStr), inContext );
 	
 	char	str[1024] = { 0 };
-	char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
+	const char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
 	
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
@@ -835,7 +835,7 @@ void	LEOPushParametersInstruction( LEOContext* inContext )
 	if( inArray != NULL )
 	{
 		LEOCleanUpValue( valueTarget, kLEOInvalidateReferences, inContext );
-		LEOInitArrayValue( valueTarget, inArray, kLEOInvalidateReferences, inContext );
+		LEOInitArrayValue( &valueTarget->array, inArray, kLEOInvalidateReferences, inContext );
 	}
 	
 	inContext->currentInstruction++;
@@ -888,7 +888,7 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 	}
 	
 	LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
-	char*		firstArgumentString = LEOGetValueAsString( firstArgumentValue, NULL, 0, inContext );
+	const char*		firstArgumentString = LEOGetValueAsString( firstArgumentValue, NULL, 0, inContext );
 	if( !firstArgumentString )
 		firstArgumentString = LEOGetValueAsString( firstArgumentValue, tempStr2, sizeof(tempStr2), inContext );
 	LEOInitStringValue( &resultValue, firstArgumentString, strlen(firstArgumentString), kLEOInvalidateReferences, inContext );
@@ -927,7 +927,7 @@ void	LEOConcatenateValuesWithSpaceInstruction( LEOContext* inContext )
 	offs = 1;
 	
 	LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
-	char*		firstArgumentString = LEOGetValueAsString( firstArgumentValue, NULL, 0, inContext );
+	const char*		firstArgumentString = LEOGetValueAsString( firstArgumentValue, NULL, 0, inContext );
 	if( !firstArgumentString )
 		firstArgumentString = LEOGetValueAsString( firstArgumentValue, tempStr2, sizeof(tempStr2), inContext );
 	LEOInitStringValue( &resultValue, firstArgumentString, strlen(firstArgumentString), kLEOInvalidateReferences, inContext );
@@ -1466,7 +1466,7 @@ void	LEOAssignChunkArrayInstruction( LEOContext* inContext )
 		LEOCleanUpValue( dstValue, kLEOKeepReferences, inContext );
 	
 	LEODoForEachChunk( tempStr, strlen(tempStr), inContext->currentInstruction->param2, LEOAssignChunkArrayChunkCallback, inContext->itemDelimiter, &userData );
-	LEOInitArrayValue( dstValue, userData.array, kLEOKeepReferences, inContext );
+	LEOInitArrayValue( &dstValue->array, userData.array, kLEOKeepReferences, inContext );
 
 	inContext->currentInstruction++;
 }
@@ -1711,155 +1711,79 @@ void	LEOHexToNumInstruction( LEOContext* inContext )
 #pragma mark -
 #pragma mark Instruction table
 
-LEOInstructionFuncPtr*	gInstructions = NULL;
-const char**			gInstructionNames = NULL;
-size_t					gNumInstructions = 0;
+struct LEOInstructionEntry*	gInstructions = NULL;
+size_t						gNumInstructions = 0;
 
 
-LEOInstructionFuncPtr	gDefaultInstructions[LEO_NUMBER_OF_INSTRUCTIONS] =
-{
-	LEOInvalidInstruction,
-	LEOExitToTopInstruction,
-	LEONoOpInstruction,
-	LEOPushStringFromTableInstruction,
-	LEOPopValueInstruction,
-	LEOPushBooleanInstruction,
-	LEOAssignStringFromTableInstruction,
-	LEOJumpRelativeInstruction,
-	LEOJumpRelativeIfTrueInstruction,
-	LEOJumpRelativeIfFalseInstruction,
-	LEOJumpRelativeIfGreaterThanZeroInstruction,
-	LEOJumpRelativeIfLessThanZeroInstruction,
-	LEOJumpRelativeIfGreaterSameThanZeroInstruction,
-	LEOJumpRelativeIfLessSameThanZeroInstruction,
-	LEOPushNumberInstruction,
-	LEOPushIntegerInstruction,
-	LEOAddNumberInstruction,
-	LEOAddIntegerInstruction,
-	LEOCallHandlerInstruction,
-	LEOReturnFromHandlerInstruction,
-	LEOPushReferenceInstruction,
-	LEOPushChunkReferenceInstruction,
-	LEOParameterInstruction,
-	LEOParameterCountInstruction,
-	LEOSetReturnValueInstruction,
-	LEOParameterKeepRefsInstruction,
-	LEOPushParametersInstruction,
-	LEOConcatenateValuesInstruction,
-	LEOAndOperatorInstruction,
-	LEOOrOperatorInstruction,
-	LEOConcatenateValuesWithSpaceInstruction,
-	LEONegateBooleanInstruction,
-	LEOSubtractCommandInstruction,
-	LEOAddCommandInstruction,
-	LEOMultiplyCommandInstruction,
-	LEODivideCommandInstruction,
-	LEOSubtractOperatorInstruction,
-	LEOAddOperatorInstruction,
-	LEOMultiplyOperatorInstruction,
-	LEODivideOperatorInstruction,
-	LEOGreaterThanOperatorInstruction,
-	LEOLessThanOperatorInstruction,
-	LEOGreaterThanEqualOperatorInstruction,
-	LEOLessThanEqualOperatorInstruction,
-	LEONegateNumberInstruction,
-	LEOModuloOperatorInstruction,
-	LEOPowerOperatorInstruction,
-	LEOEqualOperatorInstruction,
-	LEONotEqualOperatorInstruction,
-	LEOLineMarkerInstruction,
-	LEOAssignChunkArrayInstruction,
-	LEOGetArrayItemInstruction,
-	LEOCountChunksInstruction,
-	LEOGetArrayItemCountInstruction,
-	LEOPopSimpleValueInstruction,
-	LEOSetStringInstruction,
-	LEOPushChunkInstruction,
-	LEOPushItemDelimiterInstruction,
-	LEOSetItemDelimiterInstruction,
-	LEOPushGlobalReferenceInstruction,
-	LEOPutValueIntoValueInstruction,
-	LEOPushStringVariantFromTableInstruction,
-	LEONumToCharInstruction,
-	LEOCharToNumInstruction,
-	LEONumToHexInstruction,
-	LEOHexToNumInstruction,
-	LEOSetChunkPropertyInstruction,
-	LEOPushChunkPropertyInstruction
-};
-
-
-const char*	gDefaultInstructionNames[] =
-{
-	"Invalid",
-	"ExitToTop",
-	"NoOp",
-	"PushStringFromTable",
-	"PopValue",
-	"PushBoolean",
-	"AssignStringFromTable",
-	"JumpRelative",
-	"JumpRelativeIfTrue",
-	"JumpRelativeIfFalse",
-	"JumpRelativeIfGreaterThanZero",
-	"JumpRelativeIfLessThanZero",
-	"JumpRelativeIfGreaterSameThanZero",
-	"JumpRelativeIfLessSameThanZero",
-	"PushNumber",
-	"PushInteger",
-	"AddNumber",
-	"AddInteger",
-	"CallHandler",
-	"ReturnFromHandler",
-	"PushReference",
-	"PushChunkReference",
-	"Parameter",
-	"ParameterCount",
-	"SetReturnValue",
-	"ParameterKeepRefs",
-	"ParametersKeepRefs",
-	"ConcatenateValues",
-	"And",
-	"Or",
-	"ConcatenateValuesWithSpace",
-	"NegateBoolean",
-	"SubtractCommand",
-	"AddCommand",
-	"MultiplyCommand",
-	"DivideCommand",
-	"Subtract",
-	"Add",
-	"Multiply",
-	"Divide",
-	"GreaterThan",
-	"LessThan",
-	"GreaterThanEqual",
-	"LessThanEqual",
-	"NegateNumber",
-	"Modulo",
-	"Power",
-	"Equal",
-	"NotEqual",
-	"# Line",
-	"AssignChunkArray",
-	"GetArrayItem",
-	"CountChunks",
-	"GetArrayItemCount",
-	"PopSimpleValue",
-	"SetString",
-	"PushChunk",
-	"PushItemDelimiter",
-	"SetItemDelimiter",
-	"PushGlobalReference",
-	"PutValueIntoValue",
-	"PushStringVariantFromTable",
-	"NumToChar",
-	"CharToNum",
-	"NumToHex",
-	"HexToNum",
-	"SetChunkProperty",
-	"PushChunkProperty"
-};
+LEOINSTR_START(Default,LEO_NUMBER_OF_INSTRUCTIONS)
+LEOINSTR(LEOInvalidInstruction)
+LEOINSTR(LEOExitToTopInstruction)
+LEOINSTR(LEONoOpInstruction)
+LEOINSTR(LEOPushStringFromTableInstruction)
+LEOINSTR(LEOPopValueInstruction)
+LEOINSTR(LEOPushBooleanInstruction)
+LEOINSTR(LEOAssignStringFromTableInstruction)
+LEOINSTR(LEOJumpRelativeInstruction)
+LEOINSTR(LEOJumpRelativeIfTrueInstruction)
+LEOINSTR(LEOJumpRelativeIfFalseInstruction)
+LEOINSTR(LEOJumpRelativeIfGreaterThanZeroInstruction)
+LEOINSTR(LEOJumpRelativeIfLessThanZeroInstruction)
+LEOINSTR(LEOJumpRelativeIfGreaterSameThanZeroInstruction)
+LEOINSTR(LEOJumpRelativeIfLessSameThanZeroInstruction)
+LEOINSTR(LEOPushNumberInstruction)
+LEOINSTR(LEOPushIntegerInstruction)
+LEOINSTR(LEOAddNumberInstruction)
+LEOINSTR(LEOAddIntegerInstruction)
+LEOINSTR(LEOCallHandlerInstruction)
+LEOINSTR(LEOReturnFromHandlerInstruction)
+LEOINSTR(LEOPushReferenceInstruction)
+LEOINSTR(LEOPushChunkReferenceInstruction)
+LEOINSTR(LEOParameterInstruction)
+LEOINSTR(LEOParameterCountInstruction)
+LEOINSTR(LEOSetReturnValueInstruction)
+LEOINSTR(LEOParameterKeepRefsInstruction)
+LEOINSTR(LEOPushParametersInstruction)
+LEOINSTR(LEOConcatenateValuesInstruction)
+LEOINSTR(LEOAndOperatorInstruction)
+LEOINSTR(LEOOrOperatorInstruction)
+LEOINSTR(LEOConcatenateValuesWithSpaceInstruction)
+LEOINSTR(LEONegateBooleanInstruction)
+LEOINSTR(LEOSubtractCommandInstruction)
+LEOINSTR(LEOAddCommandInstruction)
+LEOINSTR(LEOMultiplyCommandInstruction)
+LEOINSTR(LEODivideCommandInstruction)
+LEOINSTR(LEOSubtractOperatorInstruction)
+LEOINSTR(LEOAddOperatorInstruction)
+LEOINSTR(LEOMultiplyOperatorInstruction)
+LEOINSTR(LEODivideOperatorInstruction)
+LEOINSTR(LEOGreaterThanOperatorInstruction)
+LEOINSTR(LEOLessThanOperatorInstruction)
+LEOINSTR(LEOGreaterThanEqualOperatorInstruction)
+LEOINSTR(LEOLessThanEqualOperatorInstruction)
+LEOINSTR(LEONegateNumberInstruction)
+LEOINSTR(LEOModuloOperatorInstruction)
+LEOINSTR(LEOPowerOperatorInstruction)
+LEOINSTR(LEOEqualOperatorInstruction)
+LEOINSTR(LEONotEqualOperatorInstruction)
+LEOINSTR(LEOLineMarkerInstruction)
+LEOINSTR(LEOAssignChunkArrayInstruction)
+LEOINSTR(LEOGetArrayItemInstruction)
+LEOINSTR(LEOCountChunksInstruction)
+LEOINSTR(LEOGetArrayItemCountInstruction)
+LEOINSTR(LEOPopSimpleValueInstruction)
+LEOINSTR(LEOSetStringInstruction)
+LEOINSTR(LEOPushChunkInstruction)
+LEOINSTR(LEOPushItemDelimiterInstruction)
+LEOINSTR(LEOSetItemDelimiterInstruction)
+LEOINSTR(LEOPushGlobalReferenceInstruction)
+LEOINSTR(LEOPutValueIntoValueInstruction)
+LEOINSTR(LEOPushStringVariantFromTableInstruction)
+LEOINSTR(LEONumToCharInstruction)
+LEOINSTR(LEOCharToNumInstruction)
+LEOINSTR(LEONumToHexInstruction)
+LEOINSTR(LEOHexToNumInstruction)
+LEOINSTR(LEOSetChunkPropertyInstruction)
+LEOINSTR_LAST(LEOPushChunkPropertyInstruction)
 
 
 
@@ -1868,39 +1792,32 @@ void	LEOInitInstructionArray()
 	if( gInstructions == NULL )
 	{
 		gInstructions = gDefaultInstructions;
-		gInstructionNames = gDefaultInstructionNames;
 		gNumInstructions = LEO_NUMBER_OF_INSTRUCTIONS;
 	}
 }
 
 
-void	LEOAddInstructionsToInstructionArray( LEOInstructionFuncPtr *inInstructionArray, const char* *inInstructionNames, size_t inNumInstructions, size_t *outFirstNewInstruction )
+void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, size_t inNumInstructions, size_t *outFirstNewInstruction )
 {
 	LEOInitInstructionArray();
 	
-	LEOInstructionFuncPtr*	instrArray = NULL;
-	const char**			instrNames = NULL;
+	struct LEOInstructionEntry*	instrArray = NULL;
 	
 	if( gNumInstructions == LEO_NUMBER_OF_INSTRUCTIONS )	// Static buffer:
 	{
-		instrArray = calloc( gNumInstructions +inNumInstructions, sizeof(LEOInstructionFuncPtr) );
-		instrNames = calloc( gNumInstructions +inNumInstructions, sizeof(const char*) );
-		memmove( instrArray, gInstructions, gNumInstructions *sizeof(LEOInstructionFuncPtr) );
-		memmove( instrNames, gInstructionNames, gNumInstructions *sizeof(const char*) );
+		instrArray = calloc( gNumInstructions +inNumInstructions, sizeof(struct LEOInstructionEntry) );
+		memmove( instrArray, gInstructions, gNumInstructions *sizeof(struct LEOInstructionEntry) );
 	}
 	else	// Dynamic buffer, already added something before:
 	{
-		instrArray = realloc( gInstructions, (gNumInstructions +inNumInstructions) * sizeof(LEOInstructionFuncPtr) );
-		instrNames = realloc( gInstructionNames, (gNumInstructions +inNumInstructions) * sizeof(const char*) );
+		instrArray = realloc( gInstructions, (gNumInstructions +inNumInstructions) * sizeof(struct LEOInstructionEntry) );
 	}
 	
-	if( instrArray && instrNames )
+	if( instrArray )
 	{
 		gInstructions = instrArray;
-		gInstructionNames = instrNames;
 		
-		memmove( gInstructions +gNumInstructions, inInstructionArray, inNumInstructions * sizeof(LEOInstructionFuncPtr) );
-		memmove( gInstructionNames +gNumInstructions, inInstructionNames, inNumInstructions * sizeof(const char*) );
+		memmove( gInstructions +gNumInstructions, inInstructionArray, inNumInstructions * sizeof(struct LEOInstructionEntry) );
 		
 		*outFirstNewInstruction = gNumInstructions;
 		gNumInstructions += inNumInstructions;
