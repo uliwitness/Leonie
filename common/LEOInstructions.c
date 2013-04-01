@@ -52,6 +52,51 @@ void	LEOReturnFromHandlerInstruction( LEOContext* inContext );
 void	LEOSetReturnValueInstruction( LEOContext* inContext );
 void	LEOPushReferenceInstruction( LEOContext* inContext );
 
+void	LEOPushChunkReferenceInstruction( LEOContext* inContext );
+void	LEOPushChunkInstruction( LEOContext* inContext );
+void	LEOSetChunkPropertyInstruction( LEOContext* inContext );
+void	LEOPushChunkPropertyInstruction( LEOContext* inContext );
+void	LEOParameterInstruction( LEOContext* inContext );
+void	LEOParameterKeepRefsInstruction( LEOContext* inContext );
+void	LEOPushParametersInstruction( LEOContext* inContext );
+void	LEOParameterCountInstruction( LEOContext* inContext );
+void	LEOConcatenateValuesInstruction( LEOContext* inContext );
+void	LEOConcatenateValuesWithSpaceInstruction( LEOContext* inContext );
+void	LEOAndOperatorInstruction( LEOContext* inContext );
+void	LEOOrOperatorInstruction( LEOContext* inContext );
+void	LEONegateBooleanInstruction( LEOContext* inContext );
+void	LEOSubtractCommandInstruction( LEOContext* inContext );
+void	LEOAddCommandInstruction( LEOContext* inContext );
+void	LEOMultiplyCommandInstruction( LEOContext* inContext );
+void	LEODivideCommandInstruction( LEOContext* inContext );
+void	LEOSubtractOperatorInstruction( LEOContext* inContext );
+void	LEOAddOperatorInstruction( LEOContext* inContext );
+void	LEOMultiplyOperatorInstruction( LEOContext* inContext );
+void	LEODivideOperatorInstruction( LEOContext* inContext );
+void	LEOGreaterThanOperatorInstruction( LEOContext* inContext );
+void	LEOLessThanOperatorInstruction( LEOContext* inContext );
+void	LEOGreaterThanEqualOperatorInstruction( LEOContext* inContext );
+void	LEOLessThanEqualOperatorInstruction( LEOContext* inContext );
+void	LEONegateNumberInstruction( LEOContext* inContext );
+void	LEOModuloOperatorInstruction( LEOContext* inContext );
+void	LEOPowerOperatorInstruction( LEOContext* inContext );
+void	LEOEqualOperatorInstruction( LEOContext* inContext );
+void	LEONotEqualOperatorInstruction( LEOContext* inContext );
+void	LEOLineMarkerInstruction( LEOContext* inContext );
+void	LEOAssignChunkArrayInstruction( LEOContext* inContext );
+void	LEOCountChunksInstruction( LEOContext* inContext );
+void	LEOGetArrayItemInstruction( LEOContext* inContext );
+void	LEOGetArrayItemCountInstruction( LEOContext* inContext );
+void	LEOSetStringInstruction( LEOContext* inContext );
+void	LEOPushItemDelimiterInstruction( LEOContext* inContext );
+void	LEOSetItemDelimiterInstruction( LEOContext* inContext );
+void	LEOPushGlobalReferenceInstruction( LEOContext* inContext );
+void	LEOPutValueIntoValueInstruction( LEOContext* inContext );
+void	LEONumToCharInstruction( LEOContext* inContext );
+void	LEOCharToNumInstruction( LEOContext* inContext );
+void	LEONumToHexInstruction( LEOContext* inContext );
+void	LEOHexToNumInstruction( LEOContext* inContext );
+
 
 #pragma mark Instruction Functions
 
@@ -553,7 +598,7 @@ void	LEOPushReferenceInstruction( LEOContext* inContext )
 {
 	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	union LEOValue	tmpRefValue = { 0 };
+	union LEOValue	tmpRefValue = {};
 	LEOValuePtr		refValueOnStack = NULL;
 	
 	LEOInitReferenceValue( &tmpRefValue, theValue, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
@@ -580,7 +625,7 @@ void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
 	LEOValuePtr		chunkTarget = (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
 	LEOValuePtr		chunkEnd = inContext->stackEndPtr -1;
 	LEOValuePtr		chunkStart = inContext->stackEndPtr -2;
-	union LEOValue	tmpRefValue = { 0 };
+	union LEOValue	tmpRefValue = {};
 	LEOValuePtr		refValueOnStack = NULL;
 	
 	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext) -1;
@@ -1429,7 +1474,7 @@ static bool LEOAssignChunkArrayChunkCallback( const char *currStr, size_t currLe
 	char									keyString[20] = { 0 };
 	snprintf( keyString, sizeof(keyString) -1, "%lu", ++ud->numItems );
 	
-	union LEOValue		tempStringValue = { 0 };
+	union LEOValue		tempStringValue = {};
 	LEOInitStringValue( &tempStringValue, currStr, currLen, kLEOInvalidateReferences, ud->context );
 	LEOAddArrayEntryToRoot( &ud->array, keyString, &tempStringValue, ud->context );
 	LEOCleanUpValue( &tempStringValue, kLEOInvalidateReferences, ud->context );
@@ -1615,13 +1660,13 @@ void	LEOPushGlobalReferenceInstruction( LEOContext* inContext )
 	LEOValuePtr	theGlobal = LEOGetArrayValueForKey( inContext->group->globals, globalName );
 	if( !theGlobal )
 	{
-		union LEOValue		emptyString = { 0 };
+		union LEOValue		emptyString = {};
 		LEOInitStringVariantValue( &emptyString, "", kLEOInvalidateReferences, inContext );
 		theGlobal = LEOAddArrayEntryToRoot( &inContext->group->globals, globalName, &emptyString, inContext );
 		LEOCleanUpValue( &emptyString, kLEOInvalidateReferences, inContext );
 	}
 	
-	union LEOValue	tmpRefValue = { 0 };
+	union LEOValue	tmpRefValue = {};
 	
 	LEOInitReferenceValue( &tmpRefValue, theGlobal, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
@@ -1684,7 +1729,7 @@ void	LEONumToHexInstruction( LEOContext* inContext )
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
 	
 	char	hexStr[16] = { 0 };
-	snprintf( hexStr, sizeof(hexStr), "%lx", theNumber );
+	snprintf( hexStr, sizeof(hexStr), "%llx", theNumber );
 	LEOInitStringValue( inContext->stackEndPtr -1, hexStr, strlen(hexStr),
 						kLEOInvalidateReferences, inContext );
 	

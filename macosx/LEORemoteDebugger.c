@@ -217,7 +217,7 @@ void	LEORemoteDebuggerAddFile( const char* filecontents, uint16_t inFileID, stru
 	size_t		filenameLen = strlen(filename) +1;
 	size_t		filecontentsLen = strlen(filecontents) +1;
 	size_t		actuallyWritten = write( gLEORemoteDebuggerSocketFD, "SOUR", 4 );
-	uint32_t	dataLen = (uint32_t) sizeof(uint16_t) + filenameLen + filecontentsLen;
+	uint32_t	dataLen = (uint32_t) (sizeof(uint16_t) + filenameLen + filecontentsLen);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &inFileID, sizeof(uint16_t) );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filename, filenameLen );
