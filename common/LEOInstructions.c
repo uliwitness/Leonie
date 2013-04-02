@@ -1097,8 +1097,8 @@ void	LEOMultiplyCommandInstruction( LEOContext* inContext )
 
 void	LEODivideCommandInstruction( LEOContext* inContext )
 {
-	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
-	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
+	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -2;
+	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -1;
 	
 	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
 	if( !inContext->keepRunning )
@@ -1114,9 +1114,7 @@ void	LEODivideCommandInstruction( LEOContext* inContext )
 	}
 	LEOSetValueAsNumber( firstArgumentValue, firstArgument / secondArgument, inContext );
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
-	
-	LEOPushNumberOnStack( inContext, firstArgument / secondArgument );
-	
+		
 	inContext->currentInstruction++;
 }
 
