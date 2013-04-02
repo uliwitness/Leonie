@@ -1732,7 +1732,7 @@ void	LEOPutValueIntoValueInstruction( LEOContext* inContext )
 
 void	LEONumToCharInstruction( LEOContext* inContext )
 {
-	uint32_t utf32Char = LEOGetValueAsInteger( inContext->stackEndPtr -1, inContext );
+	uint32_t utf32Char = (uint32_t) LEOGetValueAsInteger( inContext->stackEndPtr -1, inContext );
 	if( !inContext->keepRunning )
 		return;
 	
