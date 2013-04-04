@@ -7,17 +7,24 @@
 //
 
 #include "LEOInstructions.h"
+#include "ForgeTypes.h"
 
 
 enum
 {
 	DOWNLOAD_INSTR = 0,
+	SET_DOWNLOADS_INSTR,
+	PUSH_DOWNLOADS_INSTR,
 	
 	LEO_NUMBER_OF_DOWNLOAD_INSTRUCTIONS
 };
+
+
+#define NUM_DOWNLOAD_PROPERTIES		1
 
 
 LEOINSTR_DECL(Download,LEO_NUMBER_OF_DOWNLOAD_INSTRUCTIONS)
 
 extern size_t					kFirstDownloadInstruction;
 
+extern struct TGlobalPropertyEntry	gDownloadGlobalProperties[NUM_DOWNLOAD_PROPERTIES +1];
