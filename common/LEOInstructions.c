@@ -753,15 +753,29 @@ void	LEOSetChunkPropertyInstruction( LEOContext* inContext )
 
 void	LEOPushChunkPropertyInstruction( LEOContext* inContext )
 {
+	/*
+		We need to remove all but the topmost parameter from
+		the stack, because the top param gets to hold the
+		return value. However, to determine the return value,
+		we need to still have the target value. Thus, we push
+		the target value last, and replace the chunkStart (first
+		on stack) with the result, and only *then* free all the
+		others.
+	*/
+	
 	LEOValuePtr		chunkTarget = NULL;
+	size_t			shiftForTarget = 0;
 	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	if( onStack )
-		chunkTarget = inContext->stackEndPtr -3;
+	{
+		chunkTarget = inContext->stackEndPtr -1;
+		shiftForTarget = 1;
+	}
 	else
 		chunkTarget = (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	LEOValuePtr		propName = inContext->stackEndPtr -1;
-	LEOValuePtr		chunkEnd = inContext->stackEndPtr -2;
-	LEOValuePtr		chunkStart = inContext->stackEndPtr -3;
+	LEOValuePtr		propName = inContext->stackEndPtr -1 -shiftForTarget;
+	LEOValuePtr		chunkEnd = inContext->stackEndPtr -2 -shiftForTarget;
+	LEOValuePtr		chunkStart = inContext->stackEndPtr -3 -shiftForTarget;
 	
 	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext) -1;
 	if( !inContext->keepRunning )
@@ -777,13 +791,13 @@ void	LEOPushChunkPropertyInstruction( LEOContext* inContext )
 	char	str[1024] = { 0 };
 	const char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
 	
-	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
-	
 	size_t	startDelOffs = 0, endDelOffs = 0;
 	LEOGetChunkRanges( completeStr, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
-	LEOCleanUpValue( inContext->stackEndPtr -2, kLEOInvalidateReferences, inContext );
+	LEOCleanUpValue( chunkStart, kLEOInvalidateReferences, inContext );
 	
-	LEOGetValueForKeyOfRange( chunkTarget, completePropNameStr, chunkStartOffs, chunkEndOffs, chunkTarget, inContext );
+	LEOGetValueForKeyOfRange( chunkTarget, completePropNameStr, chunkStartOffs, chunkEndOffs, chunkStart, inContext );
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -(onStack ? 3 : 2) );
 	
 	inContext->currentInstruction++;
 }
