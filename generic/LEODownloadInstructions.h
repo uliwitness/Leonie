@@ -27,4 +27,4 @@ LEOINSTR_DECL(Download,LEO_NUMBER_OF_DOWNLOAD_INSTRUCTIONS)
 
 extern size_t					kFirstDownloadInstruction;
 
-extern struct TGlobalPropertyEntry	gDownloadGlobalProperties[NUM_DOWNLOAD_PROPERTIES +1];
+extern struct TGlobalPropertyEntry	gDownloadGlobalProperties[];
