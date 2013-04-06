@@ -1,5 +1,5 @@
 /*
- *  LEOInstructionsGeneric.c
+ *  LEOMsgInstructionsGeneric.c
  *  Leonie
  *
  *  Created by Uli Kusterer on 09.10.10.
@@ -8,20 +8,17 @@
  */
 
 /*!
-	@header LEOInstructionsGeneric
-	These functions implement the actual instructions the Leonie bytecode
-	interpreter actually understands. Or at least those that are not portable
-	between platforms. These implementations are generic versions that try to
-	rely on ANSI (or at least POSIX) ways of implementing functionality.
-	
-	Some may even simply abort and return an error because they're not available.
-	This file should be suitable for implementing command line tools that run
-	bytecode, or as a starting point for porting Leonie to a new platform or host.
+	@header LEOMsgInstructionsGeneric
+	Generic implementation of console I/O instructions. Should work on all ANSI C
+	systems.
 */
 
 #include <stdio.h>
-#include "LEOMsgInstructions.h"
+#include "LEOMsgInstructionsGeneric.h"
 #include "LEOInterpreter.h"
+
+
+size_t					kFirstMsgInstruction = 0;
 
 
 /*!
@@ -49,13 +46,5 @@ void	LEOPrintInstruction( LEOContext* inContext )
 }
 
 
-LEOInstructionFuncPtr	gMsgInstructions[LEO_NUMBER_OF_MSG_INSTRUCTIONS] =
-{
-	LEOPrintInstruction
-};
-
-
-const char*		gMsgInstructionNames[LEO_NUMBER_OF_MSG_INSTRUCTIONS] =
-{
-	"Print"
-};
+LEOINSTR_START(Msg,LEO_NUMBER_OF_MSG_INSTRUCTIONS)
+LEOINSTR_LAST(LEOPrintInstruction)

@@ -1,5 +1,5 @@
 /*
- *  LEOInstructionsMac.m
+ *  LEOMsgInstructionsMac.m
  *  Leonie
  *
  *  Created by Uli Kusterer on 09.10.10.
@@ -9,6 +9,13 @@
 
 #import "LeonieAppDelegate.h"
 #import "LEOInterpreter.h"
+#import "LEOMsgInstructionsMac.h"
+
+
+size_t					kFirstMsgInstruction = 0;
+
+
+void	LEOPrintInstruction( LEOContext* inContext );
 
 
 void	LEOPrintInstruction( LEOContext* inContext )
@@ -25,3 +32,7 @@ void	LEOPrintInstruction( LEOContext* inContext )
 	
 	inContext->currentInstruction++;
 }
+
+
+LEOINSTR_START(Msg,LEO_NUMBER_OF_MSG_INSTRUCTIONS)
+LEOINSTR_LAST(LEOPrintInstruction)

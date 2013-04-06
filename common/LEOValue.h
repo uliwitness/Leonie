@@ -623,8 +623,16 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 	@param	l	The length of the string provided in <tt>s</tt>.
 	@param	c	The context in which your script is currently running and in
 				which errors will be stored.
+	@seealso //leo_ref/c/func/LEOSetValueAsCString LEOSetValueAsCString
 */
 #define 	LEOSetValueAsString(v,s,l,c)		((LEOValuePtr)(v))->base.isa->SetAsString(((LEOValuePtr)(v)),(s),(l),(c))
+
+/*!
+	@function LEOSetValueAsCString
+	Like LEOSetValueAsString, but takes a zero-terminated C string instead of buffer and length byte.
+	@seealso //leo_ref/c/func/LEOSetValueAsString LEOSetValueAsString
+*/
+#define		LEOSetValueAsCString(v,s,c)		LEOSetValueAsString(v,s,strlen(s),c)
 
 /*!
 	@function LEOSetValueAsBoolean

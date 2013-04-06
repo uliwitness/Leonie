@@ -17,8 +17,11 @@
 #include <stdbool.h>
 
 
-#define ASSERT(expr)	({ if( !(expr) ) printf( "error: Test failed: %s\n", #expr ); else printf( "note: Test passed: %s\n", #expr ); })
-#define ASSERT_STRING_MATCH(a,b)	({ if( strcmp( (a), (b) ) != 0 ) printf( "error: Test failed: \"%s\" != \"%s\"\n", (a), (b) ); else printf( "note: Test passed: \"%s\" == \"%s\"\n", (a), (b) ); })
+bool		gAnyTestFailed = false;
+
+
+#define ASSERT(expr)	({ if( !(expr) ) { printf( "error: Test failed: %s\n", #expr ); gAnyTestFailed = true; } else printf( "note: Test passed: %s\n", #expr ); })
+#define ASSERT_STRING_MATCH(a,b)	({ if( strcmp( (a), (b) ) != 0 ) { printf( "error: Test failed: \"%s\" != \"%s\"\n", (a), (b) ); gAnyTestFailed = true; } else printf( "note: Test passed: \"%s\" == \"%s\"\n", (a), (b) ); })
 
 
 void	ASSERT_RANGE_MATCHES_STRING( const char* theStr, size_t chunkStart, size_t chunkEnd, const char* matchStr )
@@ -42,7 +45,7 @@ void	ASSERT_RANGE_MATCHES_STRING( const char* theStr, size_t chunkStart, size_t 
 void	DoScriptTest( void )
 {
 	LEOContextGroup	*	group = LEOContextGroupCreate();
-	LEOScript		*	theScript = LEOScriptCreateForOwner( 0, 0 );
+	LEOScript		*	theScript = LEOScriptCreateForOwner( 0, 0, NULL );
 	LEOHandler		*	newHandler = NULL;
 	LEOHandler		*	foundHandler = NULL;
 	
@@ -495,7 +498,7 @@ void	DoReferenceTest( void )
 	LEOGetValueAsRangeOfString( &theValue, kLEOChunkTypeCharacter, 0, 4,
 								str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"I am") == 0 );
-	LEOSetValueAsString( &theValue, "Even when set indirectly", &ctx );
+	LEOSetValueAsCString( &theValue, "Even when set indirectly", &ctx );
 	
 	memset( str, 'X', sizeof(str) );
 	LEOGetValueAsString( &originalValue, str, sizeof(str), &ctx );
@@ -530,7 +533,7 @@ void	DoReferenceTest( void )
 	bool	theBool = LEOGetValueAsBoolean( &theValue, &ctx );
 	ASSERT( theBool == true );
 	
-	LEOSetValueAsString( &theValue, "false", &ctx );
+	LEOSetValueAsCString( &theValue, "false", &ctx );
 	theBool = LEOGetValueAsBoolean( &originalValue, &ctx );
 	ASSERT( theBool == false );
 	
@@ -801,7 +804,7 @@ void	DoChunkReferenceTests( void )
 	ASSERT( strcasecmp(str,"true") == 0 );
 	ASSERT( LEOGetValueAsBoolean( &valueReference, &ctx ) == true && ctx.keepRunning == true );
 
-	LEOSetValueAsString( &valueReference, "this,that", &ctx );
+	LEOSetValueAsCString( &valueReference, "this,that", &ctx );
 	memset( str, 'X', sizeof(str) );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"The this,that reference") == 0 );
@@ -813,7 +816,7 @@ void	DoChunkReferenceTests( void )
 	LEOGetValueAsString( &valueRefReference, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"this") == 0 );
 	
-	LEOSetValueAsString( &valueRefReference, "THIS", &ctx );
+	LEOSetValueAsCString( &valueRefReference, "THIS", &ctx );
 	memset( str, 'X', sizeof(str) );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"The THIS,that reference") == 0 );
@@ -1013,6 +1016,8 @@ void	DoAllChunksTest()
 
 int main( int argc, char** argv )
 {
+	LEOInitInstructionArray();
+	
 	DoChunkTests();
 	DoChunkValueTests();
 	DoReferenceTest();
@@ -1025,6 +1030,9 @@ int main( int argc, char** argv )
 	DoScriptTest();
 	
 	DoChunkReferenceTests();
+	
+	if( gAnyTestFailed )
+		printf( "* BUILD FAILED *\n" );
 	
 	return EXIT_SUCCESS;
 }

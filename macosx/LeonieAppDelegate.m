@@ -13,6 +13,7 @@
 #import "LEOChunks.h"
 #import "LEOContextGroup.h"
 #import "LEOScript.h"
+#import "LEOMsgInstructionsMac.h"
 #import <stdio.h>
 
 
@@ -33,6 +34,10 @@
 	
 	[busyIndicator startAnimation: self];
 	
+	// Initialize the runtime:
+	LEOInitInstructionArray();
+	LEOAddInstructionsToInstructionArray( gMsgInstructions, LEO_NUMBER_OF_MSG_INSTRUCTIONS, &kFirstMsgInstruction );
+	
 	// --- Start of code to run some raw code:
 	LEOContextGroup*	group = LEOContextGroupCreate();
 	LEOContext			context;
@@ -40,7 +45,7 @@
 	LEOContextGroupRelease(group);	// Context retains it.
 
 	// === start of stuff that a parser/compiler would generate:
-	LEOScript*			script = LEOScriptCreateForOwner(0,0);	
+	LEOScript*			script = LEOScriptCreateForOwner(0,0,NULL);
 	
 	LEOHandlerID		startUpHandlerID = LEOContextGroupHandlerIDForHandlerName( group, "startUp" );	// Handler ID is like a SEL.
 	LEOHandlerID		testMeHandlerID = LEOContextGroupHandlerIDForHandlerName( group, "testMe" );	// Handler ID is like a SEL.
@@ -52,7 +57,7 @@
 	LEOHandler*			startUpHandler = LEOScriptAddCommandHandlerWithID( script, startUpHandlerID );
 	LEOHandlerAddInstruction( startUpHandler, PUSH_INTEGER_INSTR, 0, NUM_LOOPS );		// Create our loop counter local var and init to 10'000 iterations.
 	LEOHandlerAddInstruction( startUpHandler, JUMP_RELATIVE_IF_LT_ZERO_INSTR, 0, 4 );	// 0 at BP-relative offset, our counter. Jump past this loop if counter goes below 0.
-	LEOHandlerAddInstruction( startUpHandler, PRINT_VALUE_INSTR, 0, 0 );				// Print counter.
+	LEOHandlerAddInstruction( startUpHandler, PRINT_VALUE_INSTR +kFirstMsgInstruction, 0, 0 );				// Print counter.
 	LEOHandlerAddInstruction( startUpHandler, ADD_INTEGER_INSTR, 0, -1 );				// Subtract 1 from counter
 	LEOHandlerAddInstruction( startUpHandler, JUMP_RELATIVE_INSTR, 0, -3 );				// Jump back to loop condition.
 	LEOHandlerAddInstruction( startUpHandler, PUSH_STR_FROM_TABLE_INSTR, BACK_OF_STACK, LEOScriptAddString( script, "Top 'o the mornin' to ya, sir!" ) );	// Push a string as a parameter.
@@ -66,7 +71,7 @@
 	LEOHandler*			testMeHandler = LEOScriptAddCommandHandlerWithID( script, testMeHandlerID );
 	startUpHandler = LEOScriptFindCommandHandlerWithID( script, startUpHandlerID );		// Need to fetch again since adding testMeHandler may have invalidated the pointer.
 	LEOHandlerAddInstruction( testMeHandler, PARAMETER_INSTR, BACK_OF_STACK, 1 );		// Push the first parameter on the stack.
-	LEOHandlerAddInstruction( testMeHandler, PRINT_VALUE_INSTR, BACK_OF_STACK, 0 );		// Output that string & pop off the stack.
+	LEOHandlerAddInstruction( testMeHandler, PRINT_VALUE_INSTR +kFirstMsgInstruction, BACK_OF_STACK, 0 );		// Output that string & pop off the stack.
 	LEOHandlerAddInstruction( testMeHandler, RETURN_FROM_HANDLER_INSTR, 0, 0 );			// This handler is finished.
 	// === end of stuff that a parser/compiler would generate:
 		

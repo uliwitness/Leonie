@@ -177,9 +177,6 @@ void	LEOPushStringVariantFromTableInstruction( LEOContext* inContext )
 }
 
 
-void	LEOPrintInstruction( LEOContext* inContext );
-
-
 /*!
 	Pop the last value off the stack. (POP_VALUE_INSTR)
 	
