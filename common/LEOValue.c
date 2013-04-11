@@ -877,6 +877,11 @@ void LEOSetNumberValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct 
 
 void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, size_t inNumberLen, struct LEOContext* inContext )
 {
+	if( inNumber == NULL || inNumberLen == 0 )
+	{
+		LEOContextStopWithError( inContext, "Expected %s, found empty.", self->base.isa->displayTypeName );
+		return;
+	}
 	char		buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH +1] = {0};
 	if( inNumberLen > OTHER_VALUE_SHORT_STRING_MAX_LENGTH )
 	{
@@ -1010,6 +1015,11 @@ void LEOSetIntegerValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct
 
 void LEOSetIntegerValueAsString( LEOValuePtr self, const char* inInteger, size_t inIntegerLen, struct LEOContext* inContext )
 {
+	if( inInteger == NULL || inIntegerLen == 0 )
+	{
+		LEOContextStopWithError( inContext, "Expected %s, found empty.", self->base.isa->displayTypeName );
+		return;
+	}
 	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH +1] = { 0 };
 	if( inIntegerLen > OTHER_VALUE_SHORT_STRING_MAX_LENGTH )
 	{
@@ -1193,11 +1203,17 @@ void	LEOGetStringValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 
 
 /*!
-	Implementation of SetAsString for string values.
+	Implementation of SetAsString for string values. This turns the string value
+	into a constant string if the passed-in string is NULL (from delete) or 0-length.
 */
 
 void LEOSetStringValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
+	if( inString == NULL || inStringLen == 0 )
+	{
+		LEOSetStringValueAsStringConstant( self, "", inContext );
+		return;
+	}
 	if( self->string.string )
 		free( self->string.string );
 	self->string.stringLen = inStringLen;
@@ -1277,13 +1293,14 @@ void	LEODetermineChunkRangeOfSubstringOfStringValue( LEOValuePtr self, size_t *i
 		chunkStart = maxOffs;
 	if( chunkEnd > maxOffs )
 		chunkEnd = maxOffs;
+	size_t	oldBytesStart = *ioBytesStart;
 	(*ioBytesStart) += chunkStart;
 	(*ioBytesEnd) = (*ioBytesStart) + (chunkEnd -chunkStart);
 	if( delChunkStart > maxOffs )
 		delChunkStart = maxOffs;
 	if( delChunkEnd > maxOffs )
 		delChunkEnd = maxOffs;
-	(*ioBytesDelStart) = (*ioBytesStart) +delChunkStart;
+	(*ioBytesDelStart) = oldBytesStart +delChunkStart;
 	(*ioBytesDelEnd) = (*ioBytesDelStart) + (delChunkEnd -delChunkStart);
 }
 
@@ -1442,6 +1459,12 @@ void	LEOSetStringConstantValueAsInteger( LEOValuePtr self, LEOInteger inInteger,
 
 void	LEOSetStringConstantValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
+	if( inString == NULL || inStringLen == 0 )
+	{
+		self->string.string = "";
+		self->string.stringLen = 0;
+		return;
+	}
 	// Turn this into a non-constant string:
 	self->base.isa = &kLeoValueTypeString;
 	self->string.string = calloc( inStringLen +1, sizeof(char) );
@@ -1844,10 +1867,10 @@ void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, size_
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
 		// TODO: Make NUL-safe.
-		size_t		chunkStart = 0, chunkEnd = SIZE_MAX, chunkDelStart, chunkDelEnd;
+		size_t		chunkStart = 0, chunkEnd = SIZE_MAX, chunkDelStart = 0, chunkDelEnd = 0;
 		LEODetermineChunkRangeOfSubstring( theValue, &chunkStart, &chunkEnd, &chunkDelStart, &chunkDelEnd,
 											self->reference.chunkType, self->reference.chunkStart, self->reference.chunkEnd, inContext );
-		LEOSetValuePredeterminedRangeAsString( theValue, chunkStart, chunkEnd, inString, inContext );
+		LEOSetValuePredeterminedRangeAsString( theValue, (inString ? chunkStart : chunkDelStart), (inString ? chunkEnd : chunkDelEnd), inString, inContext );
 	}
 	else
 		LEOSetValueAsString( theValue, inString, inStringLen, inContext );
@@ -2230,7 +2253,7 @@ void	LEOSetVariantValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct
 void	LEOSetVariantValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
 	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
-	LEOInitStringValue( self, inString, inStringLen, kLEOKeepReferences, inContext );
+	LEOInitStringValue( self, (inString ? inString : ""), (inString ? inStringLen : 0), kLEOKeepReferences, inContext );
 	self->base.isa = &kLeoValueTypeStringVariant;
 }
 
