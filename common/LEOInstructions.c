@@ -526,6 +526,8 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 			{
 				if( currScript->GetParentScript )
 					currScript = currScript->GetParentScript( currScript, inContext );
+				else
+					currScript = NULL;
 				if( !currScript )
 					break;
 			}
