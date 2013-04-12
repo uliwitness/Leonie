@@ -48,3 +48,20 @@ void	LEOPrintInstruction( LEOContext* inContext )
 
 LEOINSTR_START(Msg,LEO_NUMBER_OF_MSG_INSTRUCTIONS)
 LEOINSTR_LAST(LEOPrintInstruction)
+
+struct THostCommandEntry		gMsgCommands[] =
+{
+	{
+		EPutIdentifier, PRINT_VALUE_INSTR, 0, 0, 'X',
+		{
+			{ EHostParamExpression, ELastIdentifier_Sentinel, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', 'X' },
+			{ EHostParam_Sentinel, ELastIdentifier_Sentinel, EHostParameterOptional, INVALID_INSTR2, 0, 0, '\0', '\0' }
+		}
+	},
+	{
+		ELastIdentifier_Sentinel, INVALID_INSTR2, 0, 0, '\0',
+		{
+			{ EHostParam_Sentinel, ELastIdentifier_Sentinel, EHostParameterOptional, INVALID_INSTR2, 0, 0, '\0', '\0' }
+		}
+	}
+};

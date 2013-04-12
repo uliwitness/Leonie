@@ -7,6 +7,7 @@
 //
 
 #include "LEOInstructions.h"
+#include "ForgeTypes.h"
 
 
 enum
@@ -19,5 +20,6 @@ enum
 
 LEOINSTR_DECL(Msg,LEO_NUMBER_OF_MSG_INSTRUCTIONS)
 
-extern size_t					kFirstMsgInstruction;
+extern size_t						kFirstMsgInstruction;
 
+extern struct THostCommandEntry		gMsgCommands[];
