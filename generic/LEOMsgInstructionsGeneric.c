@@ -46,6 +46,17 @@ void	LEOPrintInstruction( LEOContext* inContext )
 }
 
 
+void	LEODeleteInstruction( LEOContext* inContext )
+{
+	union LEOValue*	theValue = inContext->stackEndPtr -1;
+	LEOSetValueAsString( theValue, NULL, 0, inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	inContext->currentInstruction++;
+}
+
+
 LEOINSTR_START(Msg,LEO_NUMBER_OF_MSG_INSTRUCTIONS)
-LEOINSTR_LAST(LEOPrintInstruction)
+LEOINSTR(LEOPrintInstruction)
+LEOINSTR_LAST(LEODeleteInstruction)
 
