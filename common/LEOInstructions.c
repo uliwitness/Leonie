@@ -48,6 +48,7 @@ void	LEOPushIntegerInstruction( LEOContext* inContext );
 void	LEOAddNumberInstruction( LEOContext* inContext );
 void	LEOAddIntegerInstruction( LEOContext* inContext );
 void	LEOCallHandlerInstruction( LEOContext* inContext );
+void	LEOCleanUpHandlerStackInstruction( LEOContext* inContext );
 void	LEOReturnFromHandlerInstruction( LEOContext* inContext );
 void	LEOSetReturnValueInstruction( LEOContext* inContext );
 void	LEOPushReferenceInstruction( LEOContext* inContext );
@@ -536,7 +537,10 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 	
 	if( !foundHandler )
 	{
-		LEOContextStopWithError( inContext, "Couldn't find handler \"%s\".", LEOContextGroupHandlerNameForHandlerID( inContext->group, handlerName ) );
+		if( inContext->callNonexistentHandler )
+			inContext->callNonexistentHandler( inContext, handlerName );
+		else
+			LEOContextStopWithError( inContext, "Couldn't find handler \"%s\".", LEOContextGroupHandlerNameForHandlerID( inContext->group, handlerName ) );
 		inContext->currentInstruction++;
 	}
 	
@@ -545,15 +549,103 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 
 
 /*!
+	Clean up the stack so that the parameters and local variables and temporaries
+	allocated by LEOCallHandlerInstruction and the handler's actual code will be
+	popped off the stack, leaving only the return value. (CLEAN_UP_HANDLER_STACK_INSTR)
+	
+	This method is intended for use by an actual handler that has been called and
+	now wants to clean up behind itself without having to remember how many
+	parameters it receives or what to do.
+	
+	*** This instruction ignores currentInstruction, making it safe to call
+	from other instructions without it looking at the wrong parameters,
+	however it does advance the instruction pointer when it's done. ***
+	
+	@seealso //leo_ref/c/func/LEOCleanUpHandlerParametersFromEndOfStack LEOCleanUpHandlerParametersFromEndOfStack
+	@seealso //leo_ref/c/func/LEOCallHandlerInstruction LEOCallHandlerInstruction
+	@seealso //leo_ref/c/func/LEOReturnFromHandlerInstruction LEOReturnFromHandlerInstruction
+*/
+
+void	LEOCleanUpHandlerStackInstruction( LEOContext* inContext )
+{
+	//LEODebugPrintContext( inContext );
+	
+	if( inContext->stackBasePtr != inContext->stackEndPtr )
+	{
+		union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
+		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+		LEOCleanUpStackToPtr( inContext, inContext->stackBasePtr -1 -paramCount );
+	}
+	
+	inContext->currentInstruction++;
+	
+	//LEODebugPrintContext( inContext );
+}
+
+
+/*!
+	Clean up the stack so that the parameters allocated by LEOCallHandlerInstruction
+	will be popped off the stack, leaving only the return value.
+	
+	This helper function is intended for the case where we attempted to call a handler
+	but couldn't find it, and the handler has not set up its base pointer yet or
+	allocated local variables, and we want to gracefully recover from this in some
+	way.
+	
+	@seealso //leo_ref/c/func/LEOCleanUpHandlerStackInstruction LEOCleanUpHandlerStackInstruction
+	@seealso //leo_ref/c/func/LEOCallHandlerInstruction LEOCallHandlerInstruction
+	@seealso //leo_ref/c/func/LEOReturnFromHandlerInstruction LEOReturnFromHandlerInstruction
+*/
+
+void	LEOCleanUpHandlerParametersFromEndOfStack( LEOContext* inContext )
+{
+	//LEODebugPrintContext( inContext );
+	
+	if( inContext->stackBasePtr != inContext->stackEndPtr )
+	{
+		union LEOValue*	paramCountValue = inContext->stackEndPtr -1;
+		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+		LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 -paramCount );
+	}
+	
+	//LEODebugPrintContext( inContext );
+}
+
+
+/*!
+	Grab the given parameter off the stack. May return NULL if there is no parameter
+	at the given (zero-based) index.
+
+	This helper function is intended for the case where we attempted to call a handler
+	but couldn't find it, and the handler has not set up its base pointer yet or
+	allocated local variables, and we want to gracefully recover from this in some
+	way and need to look at the parameters to do that.
+	
+	@seealso //leo_ref/c/func/LEOCleanUpHandlerParametersFromEndOfStack LEOCleanUpHandlerParametersFromEndOfStack
+*/
+
+LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInteger paramIndex )
+{
+	if( inContext->stackBasePtr != inContext->stackEndPtr )
+	{
+		union LEOValue*	paramCountValue = inContext->stackEndPtr -1;
+		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+		if( paramCount <= paramIndex )
+			return NULL;
+		return( inContext->stackEndPtr -1 -paramIndex );
+	}
+	return NULL;
+}
+
+/*!
 	Return to the calling handler (RETURN_FROM_HANDLER_INSTR)
 	
 	This restores the previously-saved base pointer, jumps to the saved return
 	address and releases its ownership of the current script (as established by
 	CALL_HANDLER_INSTR).
 	
-	param1		-		If this is BACK_OF_STACK, a return value will be popped
-						off the back of the stack and stored in the return value
-						area (right preceding the parameters on the stack).
+	*** This instruction ignores currentInstruction, making it safe to call
+	from other instructions without it looking at the wrong parameters. ***
 	
 	@seealso //leo_ref/c/func/LEOCallHandlerInstruction LEOCallHandlerInstruction
 */
@@ -571,7 +663,8 @@ void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 
 
 /*!
-	Push a reference to the given value onto the stack (SET_RETURN_VALUE_INSTR)
+	Pop a value off the back of the stack and copy it to the return value that
+	our caller will look at when we return. (SET_RETURN_VALUE_INSTR)
 */
 
 void	LEOSetReturnValueInstruction( LEOContext* inContext )
@@ -1837,6 +1930,7 @@ LEOINSTR(LEOPushIntegerInstruction)
 LEOINSTR(LEOAddNumberInstruction)
 LEOINSTR(LEOAddIntegerInstruction)
 LEOINSTR(LEOCallHandlerInstruction)
+LEOINSTR(LEOCleanUpHandlerStackInstruction)
 LEOINSTR(LEOReturnFromHandlerInstruction)
 LEOINSTR(LEOPushReferenceInstruction)
 LEOINSTR(LEOPushChunkReferenceInstruction)

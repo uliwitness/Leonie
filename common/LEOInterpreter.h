@@ -38,6 +38,7 @@
 // -----------------------------------------------------------------------------
 
 #include "LEOValue.h"
+#include "LEOHandlerID.h"
 #include <stdint.h>
 #include <assert.h>
 
@@ -78,6 +79,12 @@ typedef uint16_t	LEOInstructionID;
 	inContext->currentInstruction so it'll advance to the next instruction. The
 	instruction functions are looked up in the gInstructions array. */
 typedef void (*LEOInstructionFuncPtr)( struct LEOContext* inContext );
+
+
+/*! If a handler call can't find the handler in the current script and no parent
+	for that script exist that handles the call, this function is called to
+	allow the host application to provide default behaviour for unhandled messages. */
+typedef void (*LEONonexistentHandlerFuncPtr)( struct LEOContext* inContext, LEOHandlerID inHandler );
 
 
 /*! A LEOInstruction is how an instruction looks in bytecode. It has the
@@ -205,6 +212,7 @@ typedef struct LEOContext
 	LEOCallStackEntry*		callStackEntries;		// Array of call stack entries to allow showing a simple backtrace and picking handlers from the current script.
 	LEOInstructionFuncPtr	preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
 	LEOInstructionFuncPtr	promptProc;				// On certain errors, this function is called to enter into the debugger prompt.
+	LEONonexistentHandlerFuncPtr	callNonexistentHandler;	// When a handler is called that doesn't exist, and a script has no parent, this function is called (e.g. to display an error message or call an XCMD).
 	size_t					numSteps;				// Used by LEODebugger's PreInstructionProc to implement single-stepping.
 	LEOInstruction			*currentInstruction;	// PC
 	union LEOValue			*stackBasePtr;			// BP
@@ -376,7 +384,18 @@ LEOValuePtr			LEOContextPeekBasePtr( LEOContext* inContext );
 void				LEOContextPopHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext );
 
 
+/*!
+	Generate a file ID for the given file name or file path (or could even be an
+	object 'path' of some sort). This is used e.g. by the debugger to associate
+	a source file with certain instructions.
+	@seealso //leo_ref/c/func/LEOFileIDForFileName	LEOFileIDForFileName
+*/
 uint16_t		LEOFileIDForFileName( const char* inFileName );
+
+/*!
+	Return the file name that corresponds to the given file ID.
+	@seealso //leo_ref/c/func/LEOFileIDForFileName	LEOFileIDForFileName
+*/
 const char*		LEOFileNameForFileID( uint16_t inFileID );
 
 

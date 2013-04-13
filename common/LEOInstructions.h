@@ -43,6 +43,7 @@ enum
 	ADD_NUMBER_INSTR,
 	ADD_INTEGER_INSTR,
 	CALL_HANDLER_INSTR,
+	CLEAN_UP_HANDLER_STACK_INSTR,
 	RETURN_FROM_HANDLER_INSTR,
 	PUSH_REFERENCE_INSTR,
 	PUSH_CHUNK_REFERENCE_INSTR,
@@ -108,6 +109,15 @@ enum eLEOCallHandlerFlags // at most uint16_t
 	kLEOCallHandler_IsFunctionFlag	= (1 << 0),	// Otherwise we assume it's a command.
 	kLEOCallHandler_PassMessage		= (1 << 1),	// Don't send the message to "me", start looking for a handler in the parent script.
 };
+
+
+// -----------------------------------------------------------------------------
+//	Helper functions:
+// -----------------------------------------------------------------------------
+
+// For handling messages for which no handler exists:
+void		LEOCleanUpHandlerParametersFromEndOfStack( LEOContext* inContext );
+LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInteger paramIndex );
 
 
 // -----------------------------------------------------------------------------
