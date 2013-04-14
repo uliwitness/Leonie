@@ -425,6 +425,13 @@ void	LEODebugPrintContext( LEOContext* ctx )
 			
 			char		str[1024] = { 0 };
 			LEOGetValueAsString( currValue, str, sizeof(str), ctx );
+			if( !ctx->keepRunning && ctx->errMsg[0] != 0 )
+			{
+				ctx->keepRunning = true;
+				strcpy( str, ctx->errMsg );
+				ctx->errMsg[0] = 0;
+				
+			}
 			printf( "\"%s\" (%s)", str, currValue->base.isa->displayTypeName );
 			
 			long		bpRelativeAddress = currValue -ctx->stackBasePtr;
