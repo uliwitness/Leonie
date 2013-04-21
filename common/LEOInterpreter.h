@@ -212,7 +212,7 @@ typedef struct LEOContext
 	LEOCallStackEntry*		callStackEntries;		// Array of call stack entries to allow showing a simple backtrace and picking handlers from the current script.
 	LEOInstructionFuncPtr	preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
 	LEOInstructionFuncPtr	promptProc;				// On certain errors, this function is called to enter into the debugger prompt.
-	LEONonexistentHandlerFuncPtr	callNonexistentHandler;	// When a handler is called that doesn't exist, and a script has no parent, this function is called (e.g. to display an error message or call an XCMD).
+	LEONonexistentHandlerFuncPtr	callNonexistentHandlerProc;	// When a handler is called that doesn't exist, and a script has no parent, this function is called (e.g. to display an error message or call an XCMD).
 	size_t					numSteps;				// Used by LEODebugger's PreInstructionProc to implement single-stepping.
 	LEOInstruction			*currentInstruction;	// PC
 	union LEOValue			*stackBasePtr;			// BP

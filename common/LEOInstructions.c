@@ -537,8 +537,8 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 	
 	if( !foundHandler )
 	{
-		if( inContext->callNonexistentHandler )
-			inContext->callNonexistentHandler( inContext, handlerName );
+		if( inContext->callNonexistentHandlerProc )
+			inContext->callNonexistentHandlerProc( inContext, handlerName );
 		else
 			LEOContextStopWithError( inContext, "Couldn't find handler \"%s\".", LEOContextGroupHandlerNameForHandlerID( inContext->group, handlerName ) );
 		inContext->currentInstruction++;

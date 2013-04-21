@@ -80,7 +80,7 @@ void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup )
 	memset( theContext, 0, sizeof(LEOContext) );
 	theContext->preInstructionProc = LEODoNothingPreInstructionProc;
 	theContext->promptProc = LEODoNothingPreInstructionProc;
-	theContext->callNonexistentHandler = NULL;
+	theContext->callNonexistentHandlerProc = NULL;
 	theContext->itemDelimiter = ',';
 	theContext->group = LEOContextGroupRetain( inGroup );
 	theContext->keepRunning = true;
