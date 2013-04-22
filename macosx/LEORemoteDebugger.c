@@ -300,7 +300,7 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 				break;
 			
 			default:
-				printf( "Remote Debugger: Unknown command '%c%c%c%c'\n", currBytesPtr[0], currBytesPtr[1], currBytesPtr[2], currBytesPtr[3] );
+				printf( "Remote Debugger: Unknown command '%c%c%c%c' (%d %d %d %d)\n", currBytesPtr[0], currBytesPtr[1], currBytesPtr[2], currBytesPtr[3], currBytesPtr[0], currBytesPtr[1], currBytesPtr[2], currBytesPtr[3] );
 				break;
 		}
 		
