@@ -121,6 +121,8 @@ struct LEOValueType
 	
 	void		(*GetValueForKeyOfRange)( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext );
 	void		(*SetValueForKeyOfRange)( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext );
+	
+	void		(*SetValueAsNativeObject)( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
 };
 
 
@@ -146,11 +148,13 @@ extern struct LEOValueType	kLeoValueTypeStringConstant;
 extern struct LEOValueType	kLeoValueTypeBoolean;
 extern struct LEOValueType	kLeoValueTypeReference;
 extern struct LEOValueType	kLeoValueTypeArray;
+extern struct LEOValueType	kLeoValueTypeNativeObject;
 extern struct LEOValueType	kLeoValueTypeArrayVariant;
 extern struct LEOValueType	kLeoValueTypeNumberVariant;
 extern struct LEOValueType	kLeoValueTypeIntegerVariant;
 extern struct LEOValueType	kLeoValueTypeStringVariant;
 extern struct LEOValueType	kLeoValueTypeBooleanVariant;
+extern struct LEOValueType	kLeoValueTypeNativeObjectVariant;
 
 
 // -----------------------------------------------------------------------------
@@ -350,6 +354,17 @@ void		LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString, L
 void		LEOInitBooleanValue( LEOValuePtr inStorage, bool inBoolean, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
 
 /*!
+ Initialize the given storage so it's a valid native object value containing the
+ given pointer. Native objects are essentially just opaque 'things' that the
+ scripter hands to native functions. A wrapper to a pointer that you can't answer
+ and can't put into a field or property. You can store it in variants (like local
+ variables or globals), though.
+ 
+ @seealso //leo_ref/c/macro/LEOGetNativeObjectValueSize LEOGetNativeObjectValueSize
+ */
+void		LEOInitNativeObjectValue( LEOValuePtr inStorage, void* inNativeObject, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
+
+/*!
 	Initialize the given storage so it's a valid reference value that
 	points to the given original value. If the original value is destructed
 	while a reference still points to it, method calls to such a reference will
@@ -460,6 +475,25 @@ void		LEOInitStringVariantValue( LEOValuePtr self, const char* inString, LEOKeep
 */
 void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
+/*!
+	Initialize the given storage so it's a valid native object variant value
+ 	containing the given pointer.
+	
+	A variant is a value whose type changes depending on what type of data you
+	put in it. So while this value is initially a boolean, if you call
+	LEOSetValueAsString() on it, it will turn itself into a string variant
+	value, or if you call LEOSetValueAsNumber() a number variant value.
+	
+	As such, assignments to variants can never fail due to a type mismatch,
+	but retrieving a variant as a certain type still can.
+	
+	@seealso //leo_ref/c/func/LEOInitStringVariantValue LEOInitStringVariantValue
+	@seealso //leo_ref/c/func/LEOInitNumberVariantValue LEOInitNumberVariantValue
+	@seealso //leo_ref/c/func/LEOInitIntegerVariantValue LEOInitIntegerVariantValue
+	@seealso //leo_ref/c/macro/LEOGetVariantValueSize LEOGetVariantValueSize
+*/
+void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+
 
 /*! @functiongroup LEOValue storage measuring */
 /*!
@@ -503,7 +537,14 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 	Returns the size (in bytes) of storage you need to provide to LEOInitCopy for
 	a new boolean value.
 */
-#define		LEOGetBooleanValueSize()			(kLeoValueTypeBoolean.size)		
+#define		LEOGetBooleanValueSize()			(kLeoValueTypeBoolean.size)
+
+/*!
+	@function LEOGetBooleanValueSize
+	Returns the size (in bytes) of storage you need to provide to LEOInitCopy for
+	a new boolean value.
+*/
+#define		LEOGetNativeObjectValueSize()			(kLeoValueTypeNativeObject.size)		
 
 /*!
 	@function LEOGetReferenceValueSize
@@ -864,15 +905,32 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 #define		LEOSetValueAsArray(v,a,c)		((LEOValuePtr)(v))->base.isa->SetValueAsArray(((LEOValuePtr)(v)),(a),(c))
 
 
+/*!
+ @function LEOSetValueAsNativeObject
+ Replace the value of a variant or native object with the given native object value.
+ @param	v	The value you wish to change.
+ @param	a	The new value for that value.
+ @param	c	The context in which your script is currently running and in
+ which errors will be stored.
+ */
+#define		LEOSetValueAsNativeObject(v,o,c)	((LEOValuePtr)(v))->base.isa->SetValueAsNativeObject(((LEOValuePtr)(v)),(o),(c))
+
+
 // Failure indicators we re-use in many places:
+const char*	LEOCantGetValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
+void		LEOCantDetermineChunkRangeOfSubstringOfValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd, size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
+														 LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd, struct LEOContext* inContext );
 LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
 bool		LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
+void		LEOCantGetValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
+										   char* outBuf, size_t bufSize, struct LEOContext* inContext );
 LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOCantSetValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext );
 void		LEOCantSetValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext );
 void		LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, struct LEOContext* inContext );
 void		LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext* inContext );
+void		LEOCantSetValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
 void		LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext );
@@ -973,6 +1031,12 @@ void		LEOInitBooleanValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepRefere
 void		LEOPutBooleanValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
 void		LEOCleanUpBooleanValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
+// Native object instance methods:
+void		LEOInitNativeObjectValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+void		LEOSetNativeObjectValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
+void		LEOPutNativeObjectValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
+void		LEOCleanUpNativeObjectValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+
 
 // Reference instance methods:
 const char*	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
@@ -984,6 +1048,7 @@ void		LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType
 											char* outBuf, size_t bufSize, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, size_t inLength, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
+void		LEOSetReferenceValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsInteger( LEOValuePtr self, LEOInteger inNumber, struct LEOContext* inContext );
 void		LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
@@ -1016,6 +1081,7 @@ void		LEOSetVariantValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct L
 void		LEOSetVariantValueAsInteger( LEOValuePtr self, LEOInteger inNumber, struct LEOContext* inContext );
 void		LEOSetVariantValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext );
 void		LEOSetVariantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
+void		LEOSetVariantValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
 void		LEOSetVariantValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
 											const char* inBuf, struct LEOContext* inContext );
@@ -1027,6 +1093,7 @@ void		LEOSetStringVariantValueValueForKey( LEOValuePtr self, const char* keyName
 void		LEOInitNumberVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitIntegerVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitBooleanVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+void		LEOInitNativeObjectVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitStringVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOSetVariantValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext );
 void		LEOInitArrayVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );

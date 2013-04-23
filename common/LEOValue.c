@@ -78,7 +78,9 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOCantGetKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOCantSetValueAsNativeObject
 };
 
 
@@ -116,7 +118,9 @@ struct LEOValueType	kLeoValueTypeInteger =
 	LEOCantGetKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOCantSetValueAsNativeObject
 };
 
 
@@ -154,7 +158,9 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOCantGetKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOCantSetValueAsNativeObject
 };
 
 
@@ -192,7 +198,9 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOCantGetKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOCantSetValueAsNativeObject
 };
 
 
@@ -232,7 +240,49 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOCantGetKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOCantSetValueAsNativeObject
+};
+
+
+struct LEOValueType	kLeoValueTypeNativeObject =
+{
+	"native object",
+	sizeof(struct LEOValueObject),
+	
+	LEOCantGetValueAsNumber,
+	LEOCantGetValueAsInteger,
+	LEOCantGetValueAsString,
+	LEOCantGetValueAsBoolean,
+	LEOCantGetValueAsRangeOfString,	// Only works as long as booleans can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
+	
+	LEOCantSetValueAsNumber,
+	LEOCantSetValueAsInteger,
+	LEOCantSetValueAsString,
+	LEOCantSetValueAsBoolean,
+	LEOCantSetValueRangeAsString,
+	LEOCantSetValuePredeterminedRangeAsString,
+	
+	LEOInitNativeObjectValueCopy,
+	LEOInitNativeObjectValueCopy,
+	LEOPutNativeObjectValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
+	LEOCantDetermineChunkRangeOfSubstringOfValue,
+	
+	LEOCleanUpNativeObjectValue,
+	
+	LEOCantCanGetValueAsNumber,
+	
+	LEOCantGetValueForKey,
+	LEOCantSetValueForKey,
+	LEOCantSetValueAsArray,
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOSetNativeObjectValueAsNativeObject
 };
 
 
@@ -270,7 +320,9 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOGetReferenceValueKeyCount,
 	
 	LEOGetReferenceValueForKeyOfRange,
-	LEOSetReferenceValueForKeyOfRange
+	LEOSetReferenceValueForKeyOfRange,
+	
+	LEOSetReferenceValueAsNativeObject
 };
 
 
@@ -308,7 +360,9 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOCantGetKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOSetVariantValueAsNativeObject
 };
 
 
@@ -346,7 +400,9 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	LEOCantGetKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOSetVariantValueAsNativeObject
 };
 
 
@@ -384,7 +440,9 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOCantGetKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOSetVariantValueAsNativeObject
 };
 
 
@@ -422,7 +480,49 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOCantGetKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOSetVariantValueAsNativeObject
+};
+
+
+struct LEOValueType	kLeoValueTypeNativeObjectVariant =
+{
+	VARIANT_NAME("native object"),
+	sizeof(union LEOValue),
+	
+	LEOCantGetValueAsNumber,
+	LEOCantGetValueAsInteger,
+	LEOCantGetValueAsString,
+	LEOCantGetValueAsBoolean,
+	LEOCantGetValueAsRangeOfString,	// Only works as long as booleans can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
+	
+	LEOSetVariantValueAsNumber,
+	LEOSetVariantValueAsInteger,
+	LEOSetVariantValueAsString,
+	LEOSetVariantValueAsBoolean,
+	LEOSetVariantValueRangeAsString,
+	LEOSetVariantValuePredeterminedRangeAsString,
+	
+	LEOInitNativeObjectVariantValueCopy,
+	LEOInitNativeObjectValueCopy,
+	LEOPutNativeObjectValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
+	LEODetermineChunkRangeOfSubstringOfAnyValue,
+	
+	LEOCleanUpNativeObjectValue,
+	
+	LEOCantCanGetValueAsNumber,
+	
+	LEOCantGetValueForKey,
+	LEOCantSetValueForKey,
+	LEOSetVariantValueAsArray,
+	LEOCantGetKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOSetVariantValueAsNativeObject
 };
 
 
@@ -460,7 +560,9 @@ struct LEOValueType	kLeoValueTypeArray =
 	LEOGetArrayValueKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOCantSetValueAsNativeObject
 };
 
 
@@ -498,7 +600,9 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 	LEOGetArrayValueKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
-	LEOCantSetValueForKeyOfRange
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOSetVariantValueAsNativeObject
 };
 
 
@@ -508,6 +612,30 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 /*!
 	@functiongroup Shared LEOValue Method Implementations
 */
+
+
+/*!
+	Generic method implementation used for values to return a "can't get as string"
+	error message and abort execution of the current LEOContext.
+ 
+	Note that you should not need this as *all* types should convert to string.
+	The one exception are native pointers when we wrap them in a NativeObject value.
+*/
+
+const char*	LEOCantGetValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+{
+	LEOContextStopWithError( inContext,"Can't make %s into a string", self->base.isa->displayTypeName );
+	return "";
+}
+
+
+void	LEOCantDetermineChunkRangeOfSubstringOfValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
+													 size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
+													 LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
+													 struct LEOContext* inContext )
+{
+	LEOContextStopWithError( inContext, "Can't make %s into a string.", self->base.isa->displayTypeName );
+}
 
 
 /*!
@@ -546,6 +674,22 @@ bool	LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext )
 	LEOContextStopWithError( inContext, "Can't make %s into a boolean", self->base.isa->displayTypeName );
 	
 	return false;
+}
+
+
+/*!
+ Generic method implementation used for values to return a "can't get as string"
+ error message and abort execution of the current LEOContext.
+ 
+ Note that you should not need this as *all* types should convert to string.
+ The one exception are native pointers when we wrap them in a NativeObject value.
+*/
+
+void	LEOCantGetValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
+										size_t inRangeStart, size_t inRangeEnd,
+										char* outBuf, size_t bufSize, struct LEOContext* inContext )
+{
+	LEOContextStopWithError( inContext, "Can't make %s into a string", self->base.isa->displayTypeName );
 }
 
 
@@ -672,6 +816,11 @@ void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext
 	LEOContextStopWithError( inContext, "Expected %s, found boolean", self->base.isa->displayTypeName );
 }
 
+
+void	LEOCantSetValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
+{
+	LEOContextStopWithError( inContext, "Expected %s, found native object", self->base.isa->displayTypeName );
+}
 
 /*!
 	Generic method implementation used for values to return a "can't set range as string"
@@ -1659,7 +1808,6 @@ void	LEOPutBooleanValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEO
 }
 
 
-
 /*!
 	Destructor for boolean values. If this value has references, this makes sure
 	that they will produce an error message if they ever try to access it again.
@@ -1676,6 +1824,60 @@ void	LEOCleanUpBooleanValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferen
 	}
 }
 
+
+#pragma mark -
+#pragma mark Native Object
+
+
+void	LEOInitNativeObjectValue( LEOValuePtr self, void* inNativeObject, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	self->base.isa = &kLeoValueTypeNativeObject;
+	if( keepReferences == kLEOInvalidateReferences )
+		self->base.refObjectID = kLEOObjectIDINVALID;
+	self->object.object = inNativeObject;
+}
+
+
+void	LEOSetNativeObjectValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
+{
+	self->object.object = inNativeObject;
+}
+
+
+/*!
+ Implementation of InitCopy for native object values.
+*/
+
+void	LEOInitNativeObjectValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	dest->base.isa = &kLeoValueTypeNativeObject;
+	if( keepReferences == kLEOInvalidateReferences )
+		dest->base.refObjectID = kLEOObjectIDINVALID;
+	dest->object.object = self->object.object;
+}
+
+
+void	LEOPutNativeObjectValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+{
+	LEOSetValueAsNativeObject( dest, self->object.object, inContext );
+}
+
+
+/*!
+	Destructor for native object values. If this value has references, this makes sure
+	that they will produce an error message if they ever try to access it again.
+*/
+
+void	LEOCleanUpNativeObjectValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	self->base.isa = NULL;
+	self->object.object = NULL;
+	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )
+	{
+		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+		self->base.refObjectID = 0;
+	}
+}
 
 
 #pragma mark -
@@ -1895,6 +2097,26 @@ void	LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEO
 	}
 	else
 		LEOSetValueAsBoolean( theValue, inBoolean, inContext );
+}
+
+
+/*!
+	Implementation of SetAsNativeObject for reference values.
+*/
+
+void	LEOSetReferenceValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+	}
+	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
+	{
+		LEOContextStopWithError( inContext, "Can't combine chunk expressions and native strings." );
+	}
+	else
+		LEOSetValueAsNativeObject( theValue, inNativeObject, inContext );
 }
 
 
@@ -2234,6 +2456,13 @@ void	LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefere
 }
 
 
+void	LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitNativeObjectValue( self, inNativeObject, keepReferences, inContext );
+	self->base.isa = &kLeoValueTypeNativeObjectVariant;
+}
+
+
 void	LEOSetVariantValueAsNumber( LEOValuePtr self, LEONumber inNumber, struct LEOContext* inContext )
 {
 	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
@@ -2263,6 +2492,14 @@ void	LEOSetVariantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOCo
 	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
 	LEOInitBooleanValue( self, inBoolean, kLEOKeepReferences, inContext );
 	self->base.isa = &kLeoValueTypeBooleanVariant;
+}
+
+
+void	LEOSetVariantValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
+{
+	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+	LEOInitNativeObjectValue( self, inNativeObject, kLEOKeepReferences, inContext );
+	self->base.isa = &kLeoValueTypeNativeObjectVariant;
 }
 
 
@@ -2378,6 +2615,13 @@ void	LEOInitBooleanVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeep
 {
 	LEOInitBooleanValueCopy( self, dest, keepReferences, inContext );
 	dest->base.isa = &kLeoValueTypeBooleanVariant;
+}
+
+
+void	LEOInitNativeObjectVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitNativeObjectValueCopy( self, dest, keepReferences, inContext );
+	dest->base.isa = &kLeoValueTypeNativeObjectVariant;
 }
 
 
