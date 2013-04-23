@@ -211,7 +211,8 @@ LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCo
 	
 	theContext->stackEndPtr++;
 	
-	LEOInitCopy( inValueToCopy, theValue, kLEOInvalidateReferences, theContext );
+	if( inValueToCopy )
+		LEOInitCopy( inValueToCopy, theValue, kLEOInvalidateReferences, theContext );
 	
 	return theValue;
 }
