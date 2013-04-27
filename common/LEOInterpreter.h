@@ -130,8 +130,8 @@ typedef struct LEOInstruction
 	or the likes. */
 struct LEOInstructionEntry
 {
-	LEOInstructionFuncPtr		proc;	//!< The function to call for this instruction
-	const char*					name;	//!< String representation of the function's name. *must be* a constant or otherwise guaranteed to stay around as long as Leonie needs it.
+	LEOInstructionFuncPtr		proc;	//! The function to call for this instruction
+	const char*					name;	//! String representation of the function's name. *must be* a constant or otherwise guaranteed to stay around as long as Leonie needs it.
 };
 
 

@@ -557,9 +557,9 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 	now wants to clean up behind itself without having to remember how many
 	parameters it receives or what to do.
 	
-	*** This instruction ignores currentInstruction, making it safe to call
+	<b>This instruction ignores currentInstruction, making it safe to call
 	from other instructions without it looking at the wrong parameters,
-	however it does advance the instruction pointer when it's done. ***
+	however it does advance the instruction pointer when it's done.</b>
 	
 	@seealso //leo_ref/c/func/LEOCleanUpHandlerParametersFromEndOfStack LEOCleanUpHandlerParametersFromEndOfStack
 	@seealso //leo_ref/c/func/LEOCallHandlerInstruction LEOCallHandlerInstruction
@@ -644,8 +644,8 @@ LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInte
 	address and releases its ownership of the current script (as established by
 	CALL_HANDLER_INSTR).
 	
-	*** This instruction ignores currentInstruction, making it safe to call
-	from other instructions without it looking at the wrong parameters. ***
+	<b>This instruction ignores currentInstruction, making it safe to call
+	from other instructions without it looking at the wrong parameters.</b>
 	
 	@seealso //leo_ref/c/func/LEOCallHandlerInstruction LEOCallHandlerInstruction
 */

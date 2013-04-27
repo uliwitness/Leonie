@@ -540,11 +540,11 @@ void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, L
 #define		LEOGetBooleanValueSize()			(kLeoValueTypeBoolean.size)
 
 /*!
-	@function LEOGetBooleanValueSize
+	@function LEOGetNativeObjectValueSize
 	Returns the size (in bytes) of storage you need to provide to LEOInitCopy for
-	a new boolean value.
+	a new native object value.
 */
-#define		LEOGetNativeObjectValueSize()			(kLeoValueTypeNativeObject.size)		
+#define		LEOGetNativeObjectValueSize()		(kLeoValueTypeNativeObject.size)
 
 /*!
 	@function LEOGetReferenceValueSize
@@ -827,7 +827,7 @@ void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, L
 	Fetches the value with the given key from the array in the specified value.
 	Returns NULL if there is no value under that key yet.
 	@param	v	The value you wish to examine.
-	@param	k	The key of the array item to fetch.
+	@param	ak	The key of the array item to fetch.
 	@param	so	The start offset of the byte range.
 	@param	eo	The end offset of the byte range.
 	@param	ov	This value will be set to a copy of value of the key of that range.
@@ -842,7 +842,7 @@ void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, L
 	Stores a value under the given key in the array in the specified value.
 	
 	@param	v	The value you wish to examine.
-	@param	k	The key of the array item to fetch.
+	@param	ak	The key of the array item to fetch.
 	@param	s	The source value to copy into the array.
 	@param	so	The start offset of the byte range.
 	@param	eo	The end offset of the byte range.
@@ -909,7 +909,7 @@ void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, L
  @function LEOSetValueAsNativeObject
  Replace the value of a variant or native object with the given native object value.
  @param	v	The value you wish to change.
- @param	a	The new value for that value.
+ @param	o	The new value for that value.
  @param	c	The context in which your script is currently running and in
  which errors will be stored.
  */
