@@ -54,7 +54,7 @@ typedef int		LEOKeepReferencesFlag;
 //	Types:
 // -----------------------------------------------------------------------------
 
-// A LEOValueTypePtr is a pointer to a method look-up table for an object used internally.
+/*! A LEOValueTypePtr is a pointer to a method look-up table for an object used internally. */
 typedef struct LEOValueType *	LEOValueTypePtr;
 /*! A LEOValuePtr is a generic pointer to a LEOValue or one of its subclasses. */
 typedef union LEOValue	*		LEOValuePtr;

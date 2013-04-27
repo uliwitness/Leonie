@@ -12,8 +12,9 @@
 
 /*!
 	@header LEORemoteDebugger
-	These are hooks and utility functions for a little debugger
-	that can be used to analyze your bytecode while it is running.
+	These are hooks and utility functions for communicating with the ForgeDebugger
+	application that can be used to analyze your bytecode while it is running using
+	a GUI.
 */
 
 // -----------------------------------------------------------------------------

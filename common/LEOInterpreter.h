@@ -82,7 +82,7 @@ typedef void (*LEOInstructionFuncPtr)( struct LEOContext* inContext );
 
 
 /*! If a handler call can't find the handler in the current script and no parent
-	for that script exist that handles the call, this function is called to
+	for that script exists that handles the call, this function is called to
 	allow the host application to provide default behaviour for unhandled messages. */
 typedef void (*LEONonexistentHandlerFuncPtr)( struct LEOContext* inContext, LEOHandlerID inHandler );
 
@@ -118,20 +118,20 @@ typedef struct LEOInstruction
 	
 		enum
 		{
-			MyWebServiceStartInstruction = 0,
-			MyWebServiceStopInstruction,
+			MY_WEBSERVICE_START_INSTR = 0,
+			MY_WEBSERVICE_STOP_INSTR,
 			NUM_WEBSERVICE_INSTRUCTIONS
 		};
 	
 	The instruction IDs to generate can now be calculated like:
 	
-		LEOHandlerAddInstruction( theHandler, outFirstNewInstruction +MyWebServiceStartInstruction, 0, 0 );
+		LEOHandlerAddInstruction( theHandler, outFirstNewInstruction +MY_WEB_SERVICE_START_INSTR, 0, 0 );
 	
 	or the likes. */
 struct LEOInstructionEntry
 {
 	LEOInstructionFuncPtr		proc;	//!< The function to call for this instruction
-	const char*					name;	//!< String representation of the function's name
+	const char*					name;	//!< String representation of the function's name. *must be* a constant or otherwise guaranteed to stay around as long as Leonie needs it.
 };
 
 
@@ -155,8 +155,18 @@ inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum ) __attribute__((alway
 inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum )	{ assert(sizeof(LEONumber) <= sizeof(uint32_t));  return *(LEONumber*)&inNum; }
 
 
+/*! Call this method once before calling any other interpreter functions. This initializes
+	the instruction look-up table with the built-in instructions. */
 void	LEOInitInstructionArray( void );
 
+/*! Use this method to register new instructions for your host application. The new
+	entries will be appended to the built-in instruction array (and your array copied),
+	and the index of your first instruction will be returned in outFirstNewInstruction.
+	You can now add this value to your instruction indices to calculate the actual
+	LEOInstructionID you need to generate Leonie bytecode.
+	
+	See the <tt>LEOInstructionEntry</tt> documentation on information on how to most easily
+	declare your instruction array. */
 void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, size_t inNumInstructions, size_t *outFirstNewInstruction );
 
 
@@ -190,7 +200,8 @@ typedef struct LEOCallStackEntry
 	@field	itemDelimiter		The delimiter to use for the "item" chunk expression. Defaults to comma (',').
 	@field	preInstructionProc	A function to call on each instruction before it
 								is executed. Useful as a hook-up-point for a debugger,
-								or to process events while a script is running.
+								or to process events while a script is running (e.g. user cancellation).
+	@field	callNonexistentHandlerProc	When a handler is called that doesn't exist, and a script has no parent, this function is called (e.g. to display an error message or call an XCMD or equivalent third-party plugin).
 	@field	numSteps			Used by LEODebugger's PreInstructionProc to implement single-stepping.
 	@field	currentInstruction	The instruction currently being executed. Essentially the Program Counter of our virtual CPU.
 	@field	stackBasePtr		Base pointer into stack, used during function calls to find parameters & start of local variable section.
@@ -276,15 +287,31 @@ LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCo
 LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger );
 
 
+/*! Push a copy of the given number onto the stack, returning a pointer to it.
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ */
 LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber );
 
 
+/*! Push a copy of the given boolean onto the stack, returning a pointer to it.
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ */
 LEOValuePtr	LEOPushBooleanOnStack( LEOContext* theContext, bool inBoolean );
 
 
+/*! Push an empty string onto the stack, returning a pointer to it.
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ */
 LEOValuePtr	LEOPushEmptyValueOnStack( LEOContext* theContext );
 
 
+/*! Push a copy of the given string onto the stack, returning a pointer to it.
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ */
 LEOValuePtr	LEOPushStringValueOnStack( LEOContext* theContext, const char* inString, size_t strLen );
 
 
@@ -309,7 +336,8 @@ void	LEODebugPrintInstr( LEOInstruction* instruction );
 */
 void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions );
 
-/*! Print the given context to the console for debugging purposes.
+/*! Print the given context to the console for debugging purposes. This includes
+	the stack, and is very useful for debugging new instructions.
 	@seealso //leo_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
 	@seealso //leo_ref/c/func/LEOContextDebugPrintCallStack	LEOContextDebugPrintCallStack
 */
