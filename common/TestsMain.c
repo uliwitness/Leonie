@@ -267,7 +267,7 @@ void	DoChunkValueTests( void )
 	char				str[256];
 	LEOContextGroup*	group = LEOContextGroupCreate();
 	
-	LEOInitContext( &ctx, group );
+	LEOInitContext( &ctx, group, NULL, NULL );
 	LEOContextGroupRelease( group );
 	
 	printf( "\nnote: Value Chunk Range tests\n" );
@@ -484,7 +484,7 @@ void	DoReferenceTest( void )
 	
 	printf( "\nnote: Reference to string value tests\n" );
 		
-	LEOInitContext( &ctx, group );
+	LEOInitContext( &ctx, group, NULL, NULL );
 	LEOContextGroupRelease( group );
 	
 	LEOInitStringConstantValue( &originalValue, "I am as real as it gets.", kLEOInvalidateReferences, &ctx );
@@ -769,7 +769,7 @@ void	DoChunkReferenceTests( void )
 	char				str[256];
 	LEOContextGroup*	group = LEOContextGroupCreate();
 	
-	LEOInitContext( &ctx, group );
+	LEOInitContext( &ctx, group, NULL, NULL );
 	LEOContextGroupRelease( group );
 	
 	printf( "\nnote: Chunked reference tests\n" );

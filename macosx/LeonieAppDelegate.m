@@ -41,7 +41,7 @@
 	// --- Start of code to run some raw code:
 	LEOContextGroup*	group = LEOContextGroupCreate();
 	LEOContext			context;
-	LEOInitContext( &context, group );
+	LEOInitContext( &context, group, NULL, NULL );
 	LEOContextGroupRelease(group);	// Context retains it.
 
 	// === start of stuff that a parser/compiler would generate:
