@@ -87,6 +87,11 @@ typedef void (*LEOInstructionFuncPtr)( struct LEOContext* inContext );
 typedef void (*LEONonexistentHandlerFuncPtr)( struct LEOContext* inContext, LEOHandlerID inHandler );
 
 
+/*! Callback you can give to a context when you attach user data to it, which
+ 	it will call when it is cleaned up to allow disposing of the user data. */
+typedef void (*LEOUserDataCleanUpFuncPtr)( void* inUserData );
+
+
 /*! A LEOInstruction is how an instruction looks in bytecode. It has the
 	instruction's ID as the first item, and then one 16-bit and one 32-bit
 	argument that depends on the particular instruction. */
@@ -215,20 +220,22 @@ typedef struct LEOCallStackEntry
 
 typedef struct LEOContext
 {
-	struct LEOContextGroup	*group;					// The group this context belongs to, containing its global state, references etc.
-	bool					keepRunning;			// ExitToShell and errors set this to FALSE to stop interpreting of code.
-	char					errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
-	char					itemDelimiter;			// item delimiter to use for chunk expressions in values.
-	size_t					numCallStackEntries;	// Number of items in callStackEntries.
-	LEOCallStackEntry*		callStackEntries;		// Array of call stack entries to allow showing a simple backtrace and picking handlers from the current script.
-	LEOInstructionFuncPtr	preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
-	LEOInstructionFuncPtr	promptProc;				// On certain errors, this function is called to enter into the debugger prompt.
+	struct LEOContextGroup	*		group;					// The group this context belongs to, containing its global state, references etc.
+	bool							keepRunning;			// ExitToShell and errors set this to FALSE to stop interpreting of code.
+	char							errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
+	char							itemDelimiter;			// item delimiter to use for chunk expressions in values.
+	size_t							numCallStackEntries;	// Number of items in callStackEntries.
+	LEOCallStackEntry		*		callStackEntries;		// Array of call stack entries to allow showing a simple backtrace and picking handlers from the current script.
+	LEOInstructionFuncPtr			preInstructionProc;		// For each instruction, this function gets called, to let you do idle processing, hook in a debugger etc. This should NOT be an instruction, as that would advance the PC and screw up the call of the actual instruction.
+	LEOInstructionFuncPtr			promptProc;				// On certain errors, this function is called to enter into the debugger prompt.
 	LEONonexistentHandlerFuncPtr	callNonexistentHandlerProc;	// When a handler is called that doesn't exist, and a script has no parent, this function is called (e.g. to display an error message or call an XCMD).
-	size_t					numSteps;				// Used by LEODebugger's PreInstructionProc to implement single-stepping.
-	LEOInstruction			*currentInstruction;	// PC
-	union LEOValue			*stackBasePtr;			// BP
-	union LEOValue			*stackEndPtr;			// SP (always points at element after last element)
-	union LEOValue			stack[LEO_STACK_SIZE];	// The stack.
+	size_t							numSteps;				// Used by LEODebugger's PreInstructionProc to implement single-stepping.
+	LEOInstruction			*		currentInstruction;		// PC
+	union LEOValue			*		stackBasePtr;			// BP
+	union LEOValue			*		stackEndPtr;			// SP (always points at element after last element)
+	union LEOValue					stack[LEO_STACK_SIZE];	// The stack.
+	void*							userData;
+	LEOUserDataCleanUpFuncPtr		cleanUpUserData;
 } LEOContext;
 
 
@@ -245,7 +252,8 @@ typedef struct LEOContext
 	@seealso //leo_ref/c/func/LEOContextGroupCreate	LEOContextGroupCreate
 	@seealso //leo_ref/c/func/LEOContextGroupRelease LEOContextGroupRelease
 */
-void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup );
+void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup,
+					    void* inUserData, LEOUserDataCleanUpFuncPtr inCleanUpFunc );
 
 /*! Shorthand for LEOPrepareContextForRunning and a loop of LEOContinueRunningContext.
 	@seealso //leo_ref/c/func/LEOPrepareContextForRunning LEOPrepareContextForRunning

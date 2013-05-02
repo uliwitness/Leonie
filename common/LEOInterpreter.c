@@ -75,7 +75,7 @@ void	LEODoNothingPreInstructionProc( LEOContext* inContext )
 }
 
 
-void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup )
+void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup, void* inUserData, LEOUserDataCleanUpFuncPtr inCleanUpFunc )
 {
 	memset( theContext, 0, sizeof(LEOContext) );
 	theContext->preInstructionProc = LEODoNothingPreInstructionProc;
@@ -84,6 +84,8 @@ void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup )
 	theContext->itemDelimiter = ',';
 	theContext->group = LEOContextGroupRetain( inGroup );
 	theContext->keepRunning = true;
+	theContext->userData = inUserData;
+	theContext->cleanUpUserData = inCleanUpFunc;
 }
 
 
@@ -104,6 +106,13 @@ void	LEOCleanUpContext( LEOContext* theContext )
 		free( theContext->callStackEntries );
 		theContext->callStackEntries = NULL;
 		theContext->numCallStackEntries = 0;
+	}
+	
+	if( theContext->cleanUpUserData )
+	{
+		theContext->cleanUpUserData( theContext->userData );
+		theContext->cleanUpUserData = NULL;
+		theContext->userData = NULL;
 	}
 }
 
