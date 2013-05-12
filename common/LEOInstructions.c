@@ -97,6 +97,8 @@ void	LEONumToCharInstruction( LEOContext* inContext );
 void	LEOCharToNumInstruction( LEOContext* inContext );
 void	LEONumToHexInstruction( LEOContext* inContext );
 void	LEOHexToNumInstruction( LEOContext* inContext );
+void	LEONumToBinaryInstruction( LEOContext* inContext );
+void	LEOBinaryToNumInstruction( LEOContext* inContext );
 
 
 #pragma mark Instruction Functions
@@ -1903,6 +1905,59 @@ void	LEOHexToNumInstruction( LEOContext* inContext )
 }
 
 
+void	LEONumToBinaryInstruction( LEOContext* inContext )
+{
+	LEOInteger theNumber = LEOGetValueAsInteger( inContext->stackEndPtr -1, inContext );
+	if( !inContext->keepRunning )
+		return;
+	
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	
+	char	binStr[65] = { 0 };
+	if( theNumber == 0 )
+		binStr[0] = '0';
+	else
+	{
+		int		numDigits = 0;
+		for( int x = 63; x >= 0; x-- )
+		{
+			if( theNumber & (1ULL << x) )
+			{
+				numDigits = x;
+				break;
+			}
+		}
+		for( int x = numDigits; x >= 0; x-- )
+		{
+			if( theNumber & (1ULL << x) )
+				binStr[numDigits -x] = '1';
+			else
+				binStr[numDigits -x] = '0';
+		}
+	}
+	LEOInitStringValue( inContext->stackEndPtr -1, binStr, strlen(binStr),
+						kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOBinaryToNumInstruction( LEOContext* inContext )
+{
+	char	hexStr[16] = { 0 };
+	char*	endPtr = NULL;
+	
+	const char* theStr = LEOGetValueAsString( inContext->stackEndPtr -1, hexStr, sizeof(hexStr), inContext );
+	
+	LEOInteger theNumber = strtol( theStr, &endPtr, 2 );
+	
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	LEOInitIntegerValue( inContext->stackEndPtr -1, theNumber, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
 #pragma mark -
 #pragma mark Instruction table
 
@@ -1978,6 +2033,8 @@ LEOINSTR(LEONumToCharInstruction)
 LEOINSTR(LEOCharToNumInstruction)
 LEOINSTR(LEONumToHexInstruction)
 LEOINSTR(LEOHexToNumInstruction)
+LEOINSTR(LEONumToBinaryInstruction)
+LEOINSTR(LEOBinaryToNumInstruction)
 LEOINSTR(LEOSetChunkPropertyInstruction)
 LEOINSTR_LAST(LEOPushChunkPropertyInstruction)
 
