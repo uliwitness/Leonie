@@ -2761,7 +2761,7 @@ struct LEOArrayEntry	*	LEOCreateArrayFromString( const char* inString, size_t in
 		}
 		else if( !isInKey && inString[x] == '\n' )
 		{
-			if( x <= 1 || inString[x-2] != 0xc2 || inString[x-1] != 0xac )	// Is a real return end-of-entry, not an escaped return in data?
+			if( x <= 1 || inString[x-2] != ((char)0xc2) || inString[x-1] != ((char)0xac) )	// Is a real return end-of-entry, not an escaped return in data?
 			{
 				valueEndOffs = x;	// No +1, the return at the end is a delimiter that should be removed.
 				size_t	keyLen = keyEndOffs -keyStartOffs;
