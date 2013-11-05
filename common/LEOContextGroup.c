@@ -74,6 +74,14 @@ void	LEOContextGroupRelease( LEOContextGroup* inGroup )
 }
 
 
+void	LEOContextGroupCreateNewObjectIDAndSeedForPointer( LEOContextGroup* inContext, LEOObjectID *outObjectID, LEOObjectSeed *outSeed, void* theValue )
+{
+	*outObjectID = LEOContextGroupCreateNewObjectIDForPointer( inContext, theValue );
+	if( (*outObjectID) != kLEOObjectIDINVALID )
+		*outSeed = LEOContextGroupGetSeedForObjectID( inContext, *outObjectID );
+}
+
+
 LEOObjectID	LEOContextGroupCreateNewObjectIDForPointer( LEOContextGroup* inContext, void* theValue )
 {
 	LEOObjectID		newObjectID = kLEOObjectIDINVALID;

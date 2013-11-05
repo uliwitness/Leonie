@@ -89,19 +89,37 @@ void	LEOContextGroupRelease( LEOContextGroup* inGroup );	// Subtracts 1 from ref
 
 // Used to implement references to values that can disappear:
 /*!
-	Create a new object ID that can be used to reference the given pointer.
+	Create a new object ID and seed that can be used to reference the given pointer.
+	@seealso //leo_ref/c/func/LEOContextGroupRecycleObjectID LEOContextGroupRecycleObjectID
+*/
+void	LEOContextGroupCreateNewObjectIDAndSeedForPointer( LEOContextGroup* inContext, LEOObjectID *outObjectID, LEOObjectSeed *outSeed, void* theValue );
+
+/*!
+	Create a new object ID that can be used to reference the given pointer. In general, you want
+	to call <tt>LEOContextGroupCreateNewObjectIDAndSeedForPointer</tt> instead of this, an object ID is
+	useless without a seed. For historical reasons, old code still calls this followed by
+	<tt>LEOContextGroupGetSeedForObjectID</tt>
+
+	@deprecated
+	
+	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDAndSeedForPointer LEOContextGroupCreateNewObjectIDAndSeedForPointer
 	@seealso //leo_ref/c/func/LEOContextGroupGetSeedForObjectID LEOContextGroupGetSeedForObjectID
 	@seealso //leo_ref/c/func/LEOContextGroupRecycleObjectID LEOContextGroupRecycleObjectID
 	@seealso //leo_ref/c/func/LEOContextGroupGetPointerForObjectIDAndSeed LEOContextGroupGetPointerForObjectIDAndSeed
 */
 LEOObjectID		LEOContextGroupCreateNewObjectIDForPointer( LEOContextGroup* inContext, void* theValue );
 
-/*! Get the seed for the given object ID. References to an object ID must store
-	this seed to ensure they are getting the actual pointer they originally
+/*!
+	Before <tt>LEOContextGroupCreateNewObjectIDAndSeedForPointer</tt> existed, you used this
+	method to get the seed for a given object ID after calling
+	<tt>LEOContextGroupCreateNewObjectIDForPointer</tt>, because references to an object ID
+	must store a seed to ensure they are getting the actual pointer they originally
 	wanted to reference and not a pointer that is in there because the slot has
-	been reused. Use this to get the initial value for storing the seed along
-	with an object ID, not to retrieve the seed for an object ID you've stashed
-	away alone.
+	been reused.
+	
+	@deprecated
+	
+	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDAndSeedForPointer LEOContextGroupCreateNewObjectIDAndSeedForPointer
 	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDForPointer LEOContextGroupCreateNewObjectIDForPointer
 	@seealso //leo_ref/c/func/LEOContextGroupRecycleObjectID LEOContextGroupRecycleObjectID
 	@seealso //leo_ref/c/func/LEOContextGroupGetPointerForObjectIDAndSeed LEOContextGroupGetPointerForObjectIDAndSeed
@@ -111,16 +129,14 @@ LEOObjectSeed	LEOContextGroupGetSeedForObjectID( LEOContextGroup* inContext, LEO
 /*! If a pointer to which references exist is going away, it needs to unregister
 	using this call. Anyone requesting the pointer for this object ID and seed
 	will from then on get NULL back.
-	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDForPointer LEOContextGroupCreateNewObjectIDForPointer
-	@seealso //leo_ref/c/func/LEOContextGroupGetSeedForObjectID LEOContextGroupGetSeedForObjectID
+	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDAndSeedForPointer LEOContextGroupCreateNewObjectIDAndSeedForPointer
 	@seealso //leo_ref/c/func/LEOContextGroupGetPointerForObjectIDAndSeed LEOContextGroupGetPointerForObjectIDAndSeed
 */
 void	LEOContextGroupRecycleObjectID( LEOContextGroup* inContext, LEOObjectID inObjectID );
 
 /*! Obtain the pointer that corresponds to the given object ID and seed pair. If
 	the given pointer has already been recycled, this will return NULL.
-	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDForPointer LEOContextGroupCreateNewObjectIDForPointer
-	@seealso //leo_ref/c/func/LEOContextGroupGetSeedForObjectID LEOContextGroupGetSeedForObjectID
+	@seealso //leo_ref/c/func/LEOContextGroupCreateNewObjectIDAndSeedForPointer LEOContextGroupCreateNewObjectIDAndSeedForPointer
 	@seealso //leo_ref/c/func/LEOContextGroupRecycleObjectID LEOContextGroupRecycleObjectID
 */
 void*	LEOContextGroupGetPointerForObjectIDAndSeed( LEOContextGroup* inContext, LEOObjectID inObjectID, LEOObjectSeed inObjectSeed );
