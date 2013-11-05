@@ -40,7 +40,7 @@
 // -----------------------------------------------------------------------------
 /*!	This struct is used to keep information for the debugger and for error
 	display about each local variable, and each global imported into local
-	scope:
+	scope by adding a local variable containing a reference to the global.
 	@field variableName			Name of the variable as Leonie sees it
 								internally. User-defined variables get a prefix
 								so they can't collide with temporaries the
@@ -49,7 +49,9 @@
 								defining it. Identical to variableName if not a
 								user-defined variable.
 	@field bpRelativeAddress	The basepointer-relative address of this variable
-								on the stack. */
+								on the stack.
+	@seealso //leo_ref/c/func/LEOHandlerAddVariableNameMapping LEOHandlerAddVariableNameMapping
+	@seealso //leo_ref/c/tdef/LEOHandler LEOHandler */
 // -----------------------------------------------------------------------------
 
 typedef struct LEOVariableNameMapping
@@ -66,7 +68,15 @@ typedef struct LEOVariableNameMapping
 	@field numInstructions	The number of instructions in the instructions
 							array.
 	@field instructions		An array that holds the instructions for this
-							handler. */
+							handler.
+	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerWithID LEOScriptAddCommandHandlerWithID
+	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerWithID LEOScriptAddFunctionHandlerWithID
+	@seealso //leo_ref/c/func/LEOScriptFindCommandHandlerWithID LEOScriptFindCommandHandlerWithID
+	@seealso //leo_ref/c/func/LEOScriptFindFunctionHandlerWithID LEOScriptFindFunctionHandlerWithID
+	@seealso //leo_ref/c/func/LEOHandlerAddInstruction LEOHandlerAddInstruction
+	@seealso //leo_ref/c/func/LEOHandlerAddVariableNameMapping LEOHandlerAddVariableNameMapping
+	@seealso //leo_ref/c/func/LEODebugPrintHandler LEODebugPrintHandler
+	@seealso //leo_ref/c/tdef/LEOScript LEOScript */
 // -----------------------------------------------------------------------------
 
 typedef struct LEOHandler
@@ -86,7 +96,9 @@ typedef struct LEOHandler
 	script in the hierarchy.
 	@field inScript		The script whose parent needs to be determined.
 	@field inContext	The execution context in which the script is being
-						run, with all its globals, references etc. */
+						run, with all its globals, references etc.
+	@seealso //leo_ref/c/tdef/LEOScript LEOScript
+	@seealso //leo_ref/c/tdef/LEOContext LEOContext */
 // -----------------------------------------------------------------------------
 
 typedef struct LEOScript*	(*LEOGetParentScriptFuncPtr)( struct LEOScript* inScript, struct LEOContext* inContext );
@@ -110,8 +122,21 @@ typedef struct LEOScript*	(*LEOGetParentScriptFuncPtr)( struct LEOScript* inScri
 								commands array.
 	@field commands				An array of handlers implementing the commands
 								this script implements.
+	@field	numStrings			Number of items in <tt>strings</tt>.
 	@field	strings				List of string constants in this script, which we can load.
-	@field	numStrings			Number of items in stringsTable. */
+	@field	GetParentScript		A pointer to a function provided by the host that
+								returns a script to which unhandled or passed
+								messages will be forwarded, or NULL if there is
+								no script behind this one to handle those messages.
+	
+	@seealso //leo_ref/c/func/LEOScriptCreateForOwner LEOScriptCreateForOwner
+	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerWithID LEOScriptAddCommandHandlerWithID
+	@seealso //leo_ref/c/func/LEOScriptAddFunctionHandlerWithID LEOScriptAddFunctionHandlerWithID
+	@seealso //leo_ref/c/func/LEOScriptFindCommandHandlerWithID LEOScriptFindCommandHandlerWithID
+	@seealso //leo_ref/c/func/LEOScriptFindFunctionHandlerWithID LEOScriptFindFunctionHandlerWithID
+	@seealso //leo_ref/c/func/LEOScriptAddString LEOScriptAddString
+	@seealso //leo_ref/c/tdef/LEOGetParentScriptFuncPtr LEOGetParentScriptFuncPtr
+	@seealso //leo_ref/c/tdef/LEODebugPrintScript LEODebugPrintScript */
 // -----------------------------------------------------------------------------
 
 typedef struct LEOScript
@@ -132,7 +157,7 @@ typedef struct LEOScript
 /*!
 	Creates a script referencing the given owner. The LEOScript* is reference-
 	counted and its reference count is set to 1, so when you're done with it,
-	you can release it. When a script is executing, it should usually be retained
+	you must release it. When a script is executing, it should usually be retained
 	so that deleting its owner doesn't pull out the rug from under the interpreter.
 	@seealso //leo_ref/c/func/LEOScriptRetain LEOScriptRetain
 	@seealso //leo_ref/c/func/LEOScriptRelease LEOScriptRelease
@@ -223,18 +248,32 @@ void	LEOHandlerAddInstruction( LEOHandler* inHandler, LEOInstructionID instructi
 
 /*!
 	Add an entry to this handler so we can display a name for this variable.
+	@param	inHandler	The handler to add this variable name mapping to.
+	@param	inName		The unique name that is used internally to identify this variable
+						(which e.g. usually includes a prefix for user-defined variables
+						so they can't collide with temporaries the compiler generates).
+	@param inRealName	The name the user specified and expects displayed back to it.
+	@param inBPRelativeAddress	The BasePointer-relative address on the stack for the
+								variable of this name.
+	@seealso //leo_ref/c/func/LEOHandlerFindVariableByName LEOHandlerFindVariableByName
+	@seealso //leo_ref/c/func/LEOHandlerFindVariableByAddress LEOHandlerFindVariableByAddress
+	@seealso //leo_ref/c/tdef/LEOVariableNameMapping	LEOVariableNameMapping
 */
 void	LEOHandlerAddVariableNameMapping( LEOHandler* inHandler, const char* inName, const char *inRealName, size_t inBPRelativeAddress );
 
 
 /*!
 	Find a variable's name in a handler based on its basePointer-relative offset.
+	@seealso //leo_ref/c/func/LEOHandlerFindVariableByName LEOHandlerFindVariableByName
+	@seealso //leo_ref/c/func/LEOHandlerAddVariableNameMapping LEOHandlerAddVariableNameMapping
 */
 void	LEOHandlerFindVariableByAddress( LEOHandler* inHandler, long bpRelativeAddress, char** outName, char**outRealName, LEOContext* inContext );
 
 
 /*!
-	Find a variable's basePointer-relative offset based on its name.
+	Find a variable's basePointer-relative offset based on its real name.
+	@seealso //leo_ref/c/func/LEOHandlerFindVariableByAddress LEOHandlerFindVariableByAddress
+	@seealso //leo_ref/c/func/LEOHandlerAddVariableNameMapping LEOHandlerAddVariableNameMapping
 */
 long	LEOHandlerFindVariableByName( LEOHandler* inHandler, const char* inName );
 
