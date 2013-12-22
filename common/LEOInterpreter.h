@@ -435,5 +435,21 @@ uint16_t		LEOFileIDForFileName( const char* inFileName );
 const char*		LEOFileNameForFileID( uint16_t inFileID );
 
 
+/*!
+	Tell the interpreter to log the current context (current instruction and stack) to the console before executing the specified instruction.
+	@param inID	The instruction ID constant of the instruction you're interested in.
+	@seealso //leo_ref/c/func/LEOSetInstructionIDToDebugPrintAfter	LEOSetInstructionIDToDebugPrintAfter
+*/
+void	LEOSetInstructionIDToDebugPrintBefore( LEOInstructionID inID );
+
+
+/*!
+	Tell the interpreter to log the current context (current instruction and stack) to the console after executing the specified instruction.
+	@param inID	The instruction ID constant of the instruction you're interested in.
+	@seealso //leo_ref/c/func/LEOSetInstructionIDToDebugPrintBefore	LEOSetInstructionIDToDebugPrintBefore
+*/
+void	LEOSetInstructionIDToDebugPrintAfter( LEOInstructionID inID );
+
+
 
 #endif // LEO_INTERPRETER_H

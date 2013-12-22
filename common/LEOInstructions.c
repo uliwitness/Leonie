@@ -501,8 +501,6 @@ void	LEOAddIntegerInstruction( LEOContext* inContext )
 
 void	LEOCallHandlerInstruction( LEOContext* inContext )
 {
-	//LEODebugPrintContext( inContext );
-	
 	LEOHandlerID	handlerName = inContext->currentInstruction->param2;
 	LEOScript*		currScript = LEOContextPeekCurrentScript( inContext );
 	if( (inContext->currentInstruction->param1 & kLEOCallHandler_PassMessage) == kLEOCallHandler_PassMessage
@@ -545,8 +543,6 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 			LEOContextStopWithError( inContext, "Couldn't find handler \"%s\".", LEOContextGroupHandlerNameForHandlerID( inContext->group, handlerName ) );
 		inContext->currentInstruction++;
 	}
-	
-	//LEODebugPrintContext( inContext );
 }
 
 
@@ -570,8 +566,6 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 
 void	LEOCleanUpHandlerStackInstruction( LEOContext* inContext )
 {
-	//LEODebugPrintContext( inContext );
-	
 	if( inContext->stackBasePtr != inContext->stackEndPtr )
 	{
 		union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
@@ -580,8 +574,6 @@ void	LEOCleanUpHandlerStackInstruction( LEOContext* inContext )
 	}
 	
 	inContext->currentInstruction++;
-	
-	//LEODebugPrintContext( inContext );
 }
 
 
@@ -601,16 +593,12 @@ void	LEOCleanUpHandlerStackInstruction( LEOContext* inContext )
 
 void	LEOCleanUpHandlerParametersFromEndOfStack( LEOContext* inContext )
 {
-	//LEODebugPrintContext( inContext );
-	
 	if( inContext->stackBasePtr != inContext->stackEndPtr )
 	{
 		union LEOValue*	paramCountValue = inContext->stackEndPtr -1;
 		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
 		LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 -paramCount );
 	}
-	
-	//LEODebugPrintContext( inContext );
 }
 
 
@@ -654,13 +642,9 @@ LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInte
 
 void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 {
-	//LEODebugPrintContext( inContext );
-	
 	inContext->currentInstruction = LEOContextPeekReturnAddress( inContext );
 	inContext->stackBasePtr = LEOContextPeekBasePtr( inContext );
 	LEOContextPopHandlerScriptReturnAddressAndBasePtr( inContext );
-	
-	//LEODebugPrintContext( inContext );
 }
 
 

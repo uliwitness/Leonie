@@ -35,8 +35,22 @@ void	LEODoNothingPreInstructionProc( LEOContext* inContext );
 
 
 
-char*	*	gFileNamesTable = NULL;
-size_t		gFileNamesTableSize = 0;
+char*	*			gFileNamesTable = NULL;
+size_t				gFileNamesTableSize = 0;
+LEOInstructionID	gInstructionIDToDebugPrintBefore = INVALID_INSTR;
+LEOInstructionID	gInstructionIDToDebugPrintAfter = INVALID_INSTR;
+
+
+void	LEOSetInstructionIDToDebugPrintBefore( LEOInstructionID inID )
+{
+	gInstructionIDToDebugPrintBefore = inID;
+}
+
+
+void	LEOSetInstructionIDToDebugPrintAfter( LEOInstructionID inID )
+{
+	gInstructionIDToDebugPrintAfter = inID;
+}
 
 
 uint16_t		LEOFileIDForFileName( const char* inFileName )
@@ -351,7 +365,14 @@ bool	LEOContinueRunningContext( LEOContext *inContext )
 	LEOInstructionID	currID = inContext->currentInstruction->instructionID;
 	if( currID >= gNumInstructions )
 		currID = 0;	// First instruction is the special "unimplemented" instruction.
+		
+	if( gInstructionIDToDebugPrintBefore == currID )
+		LEODebugPrintContext(inContext);
+		
 	gInstructions[currID].proc(inContext);
+	
+	if( gInstructionIDToDebugPrintAfter == currID )
+		LEODebugPrintContext(inContext);
 	
 	return( inContext->currentInstruction != NULL && inContext->keepRunning );
 }
