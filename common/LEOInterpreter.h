@@ -292,14 +292,14 @@ LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCo
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
  @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
  */
-LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger );
+LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger, LEOUnit inUnit );
 
 
 /*! Push a copy of the given number onto the stack, returning a pointer to it.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
  @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
  */
-LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber );
+LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber, LEOUnit inUnit );
 
 
 /*! Push a copy of the given boolean onto the stack, returning a pointer to it.

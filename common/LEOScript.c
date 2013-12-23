@@ -136,7 +136,7 @@ void	LEOHandlerFindVariableByAddress( LEOHandler* inHandler, long bpRelativeAddr
 	else if( bpRelativeAddress < 0 )
 	{
 		LEOValuePtr	paramCountObj = (inContext->stackBasePtr -1);
-		LEOInteger	paramCount = LEOGetValueAsInteger( paramCountObj, inContext );
+		LEOInteger	paramCount = LEOGetValueAsInteger( paramCountObj, NULL, inContext );
 		
 		if( bpRelativeAddress >= (-paramCount -1) )
 		{

@@ -271,7 +271,7 @@ LEOValuePtr	LEOPushStringValueOnStack( LEOContext* theContext, const char* inStr
 }
 
 
-LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger )
+LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger, LEOUnit inUnit )
 {
 	if( !theContext->stackEndPtr )
 		theContext->stackEndPtr = theContext->stack;
@@ -280,13 +280,13 @@ LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger 
 	
 	theContext->stackEndPtr++;
 	
-	LEOInitIntegerValue( theValue, inInteger, kLEOInvalidateReferences, theContext );
+	LEOInitIntegerValue( theValue, inInteger, inUnit, kLEOInvalidateReferences, theContext );
 	
 	return theValue;
 }
 
 
-LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber )
+LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber, LEOUnit inUnit )
 {
 	if( !theContext->stackEndPtr )
 		theContext->stackEndPtr = theContext->stack;
@@ -295,7 +295,7 @@ LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber )
 	
 	theContext->stackEndPtr++;
 	
-	LEOInitNumberValue( theValue, inNumber, kLEOInvalidateReferences, theContext );
+	LEOInitNumberValue( theValue, inNumber, inUnit, kLEOInvalidateReferences, theContext );
 	
 	return theValue;
 }

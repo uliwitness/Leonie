@@ -337,7 +337,7 @@ void	LEOJumpRelativeIfGreaterThanZeroInstruction( LEOContext* inContext )
 {
 	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	if( LEOGetValueAsNumber( theValue, inContext ) > 0 )
+	if( LEOGetValueAsNumber( theValue, NULL, inContext ) > 0 )
 		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	else
 		inContext->currentInstruction++;
@@ -359,7 +359,7 @@ void	LEOJumpRelativeIfLessThanZeroInstruction( LEOContext* inContext )
 {
 	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	if( LEOGetValueAsNumber( theValue, inContext ) < 0 )
+	if( LEOGetValueAsNumber( theValue, NULL, inContext ) < 0 )
 		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	else
 		inContext->currentInstruction++;
@@ -381,7 +381,7 @@ void	LEOJumpRelativeIfGreaterSameThanZeroInstruction( LEOContext* inContext )
 {
 	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	if( LEOGetValueAsNumber( theValue, inContext ) >= 0 )
+	if( LEOGetValueAsNumber( theValue, NULL, inContext ) >= 0 )
 		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	else
 		inContext->currentInstruction++;
@@ -403,7 +403,7 @@ void	LEOJumpRelativeIfLessSameThanZeroInstruction( LEOContext* inContext )
 {
 	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	if( LEOGetValueAsNumber( theValue, inContext ) <= 0 )
+	if( LEOGetValueAsNumber( theValue, NULL, inContext ) <= 0 )
 		inContext->currentInstruction += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
 	else
 		inContext->currentInstruction++;
@@ -415,12 +415,13 @@ void	LEOJumpRelativeIfLessSameThanZeroInstruction( LEOContext* inContext )
 /*!
 	Push the given LEONumber floating point quantity on the stack (PUSH_NUMBER_INSTR)
 	
+	param1	-	The LEOUnit for this number (kLEOUnitNone if it's really just a number).
 	param2	-	The LEONumber (typecast to a uint32_t) to push.
 */
 
 void	LEOPushNumberInstruction( LEOContext* inContext )
 {
-	LEOInitNumberValue( (LEOValuePtr) inContext->stackEndPtr, LEOCastUInt32ToLEONumber(inContext->currentInstruction->param2),
+	LEOInitNumberValue( (LEOValuePtr) inContext->stackEndPtr, LEOCastUInt32ToLEONumber(inContext->currentInstruction->param2), inContext->currentInstruction->param1,
 						kLEOInvalidateReferences, inContext );
 	inContext->stackEndPtr++;
 
@@ -431,12 +432,13 @@ void	LEOPushNumberInstruction( LEOContext* inContext )
 /*!
 	Push the given LEOInteger on the stack (PUSH_INTEGER_INSTR)
 	
+	param1	-	The LEOUnit for this integer (kLEOUnitNone if it's really just a number).
 	param2	-	The LEOInteger (typecast to a uint32_t) to push.
 */
 
 void	LEOPushIntegerInstruction( LEOContext* inContext )
 {
-	LEOInitIntegerValue( (LEOValuePtr) inContext->stackEndPtr, inContext->currentInstruction->param2,
+	LEOInitIntegerValue( (LEOValuePtr) inContext->stackEndPtr, inContext->currentInstruction->param2, inContext->currentInstruction->param1,
 							kLEOInvalidateReferences, inContext );
 	inContext->stackEndPtr++;
 
@@ -456,10 +458,10 @@ void	LEOAddNumberInstruction( LEOContext* inContext )
 {
 	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	LEONumber		theNum = LEOGetValueAsNumber( theValue, inContext );
+	LEONumber		theNum = LEOGetValueAsNumber( theValue, NULL, inContext );
 	
 	theNum += LEOCastUInt32ToLEONumber( inContext->currentInstruction->param2 );
-	LEOSetValueAsNumber( theValue, theNum, inContext );
+	LEOSetValueAsNumber( theValue, theNum, kLEOUnitNone, inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -477,10 +479,10 @@ void	LEOAddIntegerInstruction( LEOContext* inContext )
 {
 	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	LEOInteger		theNum = LEOGetValueAsInteger( theValue, inContext );
+	LEOInteger		theNum = LEOGetValueAsInteger( theValue, NULL, inContext );
 	
 	theNum += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
-	LEOSetValueAsNumber( theValue, theNum, inContext );
+	LEOSetValueAsNumber( theValue, theNum, kLEOUnitNone, inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -569,7 +571,7 @@ void	LEOCleanUpHandlerStackInstruction( LEOContext* inContext )
 	if( inContext->stackBasePtr != inContext->stackEndPtr )
 	{
 		union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
-		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
 		LEOCleanUpStackToPtr( inContext, inContext->stackBasePtr -1 -paramCount );
 	}
 	
@@ -596,7 +598,7 @@ void	LEOCleanUpHandlerParametersFromEndOfStack( LEOContext* inContext )
 	if( inContext->stackBasePtr != inContext->stackEndPtr )
 	{
 		union LEOValue*	paramCountValue = inContext->stackEndPtr -1;
-		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
 		LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 -paramCount );
 	}
 }
@@ -619,7 +621,7 @@ LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInte
 	if( inContext->stackBasePtr != inContext->stackEndPtr )
 	{
 		union LEOValue*	paramCountValue = inContext->stackEndPtr -1;
-		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
 		if( paramCount <= paramIndex )
 			return NULL;
 		return( inContext->stackEndPtr -1 -paramIndex );
@@ -656,7 +658,7 @@ void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 void	LEOSetReturnValueInstruction( LEOContext* inContext )
 {
 	union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
-	LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+	LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
 	union LEOValue*	destValue = inContext->stackBasePtr -1 -paramCount -1;
 	LEOCleanUpValue( destValue, kLEOKeepReferences, inContext );
 	LEOInitSimpleCopy( inContext->stackEndPtr -1, destValue, kLEOKeepReferences, inContext );
@@ -706,11 +708,11 @@ void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
 	union LEOValue	tmpRefValue = {};
 	LEOValuePtr		refValueOnStack = NULL;
 	
-	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext) -1;
+	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext) -1;
+	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
@@ -746,11 +748,11 @@ void	LEOPushChunkInstruction( LEOContext* inContext )
 	LEOValuePtr		chunkEnd = inContext->stackEndPtr -1;
 	LEOValuePtr		chunkStart = inContext->stackEndPtr -2;
 	
-	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext) -1;
+	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext) -1;
+	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
@@ -793,11 +795,11 @@ void	LEOSetChunkPropertyInstruction( LEOContext* inContext )
 	LEOValuePtr		chunkEnd = inContext->stackEndPtr -3;
 	LEOValuePtr		chunkStart = inContext->stackEndPtr -4;
 	
-	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext) -1;
+	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext) -1;
+	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 
@@ -855,11 +857,11 @@ void	LEOPushChunkPropertyInstruction( LEOContext* inContext )
 	LEOValuePtr		chunkEnd = inContext->stackEndPtr -2 -shiftForTarget;
 	LEOValuePtr		chunkStart = inContext->stackEndPtr -3 -shiftForTarget;
 	
-	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,inContext) -1;
+	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,inContext) -1;
+	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
 	if( !inContext->keepRunning )
 		return;
 	
@@ -900,14 +902,14 @@ void	LEOParameterInstruction( LEOContext* inContext )
 	bool		onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	int16_t		offset = (*(int16_t*)&inContext->currentInstruction->param1);
 	LEOValuePtr	paramCountValue = inContext->stackBasePtr -1;
-	LEOInteger	paramCount = LEOGetValueAsInteger( paramCountValue, inContext );
+	LEOInteger	paramCount = LEOGetValueAsInteger( paramCountValue, NULL, inContext );
 	int16_t		paramIndex = inContext->currentInstruction->param2;
 	LEOValuePtr	valueTarget = NULL;
 	
 	if( paramIndex == 0 )
 	{
 		LEOValuePtr	paramIdxValue = inContext->stackEndPtr -1;	// Ignored if param2 isn't 0.
-		paramIndex = LEOGetValueAsInteger( paramIdxValue, inContext );
+		paramIndex = LEOGetValueAsInteger( paramIdxValue, NULL, inContext );
 		if( onStack )
 		{
 			valueTarget = inContext->stackEndPtr -1;
@@ -957,14 +959,14 @@ void	LEOParameterKeepRefsInstruction( LEOContext* inContext )
 	bool		onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	int16_t		offset = (*(int16_t*)&inContext->currentInstruction->param1);
 	LEOValuePtr	paramCountValue = inContext->stackBasePtr -1;
-	LEOInteger	paramCount = LEOGetValueAsInteger( paramCountValue, inContext );
+	LEOInteger	paramCount = LEOGetValueAsInteger( paramCountValue, NULL, inContext );
 	int16_t		paramIndex = inContext->currentInstruction->param2;
 	LEOValuePtr	valueTarget = NULL;
 	
 	if( paramIndex == 0 )
 	{
 		LEOValuePtr	paramIdxValue = inContext->stackEndPtr -1;	// Ignored if param2 isn't 0.
-		paramIndex = LEOGetValueAsInteger( paramIdxValue, inContext );
+		paramIndex = LEOGetValueAsInteger( paramIdxValue, NULL, inContext );
 		if( onStack )
 		{
 			valueTarget = inContext->stackEndPtr -1;
@@ -1006,7 +1008,7 @@ void	LEOPushParametersInstruction( LEOContext* inContext )
 	LEOValuePtr	valueTarget = inContext->stackEndPtr++;
 	LEOInitStringConstantValue( valueTarget, "", kLEOInvalidateReferences, inContext );
 	LEOValuePtr	paramCountValue = inContext->stackBasePtr -1;
-	LEOInteger	paramCount = LEOGetValueAsNumber( paramCountValue, inContext );
+	LEOInteger	paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
 	struct LEOArrayEntry *inArray = NULL;
 	char	currKey[100] = {0};
 	for( int x = 1; x <= paramCount; x++ )
@@ -1041,8 +1043,8 @@ void	LEOParameterCountInstruction( LEOContext* inContext )
 	LEOValuePtr	valueTarget = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
 	if( !onStack )
 		LEOCleanUpValue( valueTarget, kLEOKeepReferences, inContext );
-	LEOInteger	paramCount = LEOGetValueAsNumber( inContext->stackBasePtr -1, inContext );
-	LEOInitIntegerValue( valueTarget, paramCount, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
+	LEOInteger	paramCount = LEOGetValueAsNumber( inContext->stackBasePtr -1, NULL, inContext );
+	LEOInitIntegerValue( valueTarget, paramCount, kLEOUnitNone, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -1181,14 +1183,23 @@ void	LEOSubtractCommandInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEOUnit			firstUnit = kLEOUnitNone;
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	LEOUnit			secondUnit = kLEOUnitNone;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
 	
-	LEOSetValueAsNumber( secondArgumentValue, secondArgument -firstArgument, inContext );
+	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+	if( commonUnit == kLEOUnit_Last )
+	{
+		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		return;
+	}
+	
+	LEOSetValueAsNumber( secondArgumentValue, secondArgument -firstArgument, commonUnit, inContext );
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
 	inContext->currentInstruction++;
@@ -1200,14 +1211,23 @@ void	LEOAddCommandInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEOUnit			firstUnit = kLEOUnitNone;
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	LEOUnit			secondUnit = kLEOUnitNone;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
+	
+	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+	if( commonUnit == kLEOUnit_Last )
+	{
+		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		return;
+	}
 
-	LEOSetValueAsNumber( secondArgumentValue, firstArgument +secondArgument, inContext );
+	LEOSetValueAsNumber( secondArgumentValue, firstArgument +secondArgument, commonUnit, inContext );
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
 	inContext->currentInstruction++;
@@ -1219,14 +1239,23 @@ void	LEOMultiplyCommandInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEOUnit			firstUnit = kLEOUnitNone;
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	LEOUnit			secondUnit = kLEOUnitNone;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
+	
+	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+	if( commonUnit == kLEOUnit_Last )
+	{
+		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		return;
+	}
 
-	LEOSetValueAsNumber( firstArgumentValue, firstArgument * secondArgument, inContext );
+	LEOSetValueAsNumber( firstArgumentValue, firstArgument * secondArgument, commonUnit, inContext );
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
 	inContext->currentInstruction++;
@@ -1238,10 +1267,12 @@ void	LEODivideCommandInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -2;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -1;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEOUnit			firstUnit = kLEOUnitNone;
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	LEOUnit			secondUnit = kLEOUnitNone;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
 	
@@ -1250,7 +1281,15 @@ void	LEODivideCommandInstruction( LEOContext* inContext )
 		LEOContextStopWithError( inContext, "Can't divide %g by 0.", firstArgument );
 		return;
 	}
-	LEOSetValueAsNumber( firstArgumentValue, firstArgument / secondArgument, inContext );
+	
+	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+	if( commonUnit == kLEOUnit_Last )
+	{
+		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		return;
+	}
+	
+	LEOSetValueAsNumber( firstArgumentValue, firstArgument / secondArgument, commonUnit, inContext );
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 		
 	inContext->currentInstruction++;
@@ -1262,16 +1301,25 @@ void	LEOSubtractOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEOUnit			firstUnit = kLEOUnitNone;
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	LEOUnit			secondUnit = kLEOUnitNone;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
-	LEOPushNumberOnStack( inContext, firstArgument -secondArgument );
+	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+	if( commonUnit == kLEOUnit_Last )
+	{
+		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		return;
+	}
+	
+	LEOPushNumberOnStack( inContext, firstArgument -secondArgument, commonUnit );
 	
 	inContext->currentInstruction++;
 }
@@ -1282,16 +1330,25 @@ void	LEOAddOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEOUnit			firstUnit = kLEOUnitNone;
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	LEOUnit			secondUnit = kLEOUnitNone;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
-	LEOPushNumberOnStack( inContext, firstArgument +secondArgument );
+	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+	if( commonUnit == kLEOUnit_Last )
+	{
+		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		return;
+	}
+	
+	LEOPushNumberOnStack( inContext, firstArgument +secondArgument, commonUnit );
 	
 	inContext->currentInstruction++;
 }
@@ -1302,16 +1359,25 @@ void	LEOMultiplyOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEOUnit			firstUnit = kLEOUnitNone;
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	LEOUnit			secondUnit = kLEOUnitNone;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
-	LEOPushNumberOnStack( inContext, firstArgument * secondArgument );
+	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+	if( commonUnit == kLEOUnit_Last )
+	{
+		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		return;
+	}
+	
+	LEOPushNumberOnStack( inContext, firstArgument * secondArgument, commonUnit );
 	
 	inContext->currentInstruction++;
 }
@@ -1322,10 +1388,12 @@ void	LEODivideOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEOUnit			firstUnit = kLEOUnitNone;
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	LEOUnit			secondUnit = kLEOUnitNone;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
 	if( !inContext->keepRunning )
 		return;
 
@@ -1337,7 +1405,14 @@ void	LEODivideOperatorInstruction( LEOContext* inContext )
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
-	LEOPushNumberOnStack( inContext, firstArgument / secondArgument );
+	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+	if( commonUnit == kLEOUnit_Last )
+	{
+		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		return;
+	}
+	
+	LEOPushNumberOnStack( inContext, firstArgument / secondArgument, commonUnit );
 	
 	inContext->currentInstruction++;
 }
@@ -1352,8 +1427,17 @@ void	LEOGreaterThanOperatorInstruction( LEOContext* inContext )
 	
 	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
-		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		LEOUnit			firstUnit = kLEOUnitNone;
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
+		LEOUnit			secondUnit = kLEOUnitNone;
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
+	
+		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+		if( commonUnit == kLEOUnit_Last )
+		{
+			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			return;
+		}
 		
 		isEqual = (firstArgument > secondArgument);
 	}
@@ -1384,8 +1468,17 @@ void	LEOLessThanOperatorInstruction( LEOContext* inContext )
 	
 	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
-		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		LEOUnit			firstUnit = kLEOUnitNone;
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
+		LEOUnit			secondUnit = kLEOUnitNone;
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
+	
+		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+		if( commonUnit == kLEOUnit_Last )
+		{
+			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			return;
+		}
 		
 		isEqual = (firstArgument < secondArgument);
 	}
@@ -1416,8 +1509,17 @@ void	LEOGreaterThanEqualOperatorInstruction( LEOContext* inContext )
 	
 	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
-		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		LEOUnit			firstUnit = kLEOUnitNone;
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
+		LEOUnit			secondUnit = kLEOUnitNone;
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
+	
+		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+		if( commonUnit == kLEOUnit_Last )
+		{
+			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			return;
+		}
 		
 		isEqual = (firstArgument >= secondArgument);
 	}
@@ -1448,8 +1550,17 @@ void	LEOLessThanEqualOperatorInstruction( LEOContext* inContext )
 	
 	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
-		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		LEOUnit			firstUnit = kLEOUnitNone;
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
+		LEOUnit			secondUnit = kLEOUnitNone;
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
+	
+		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+		if( commonUnit == kLEOUnit_Last )
+		{
+			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			return;
+		}
 		
 		isEqual = (firstArgument <= secondArgument);
 	}
@@ -1475,11 +1586,12 @@ void	LEONegateNumberInstruction( LEOContext* inContext )
 {
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -1;
 	
-	LEONumber			firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
+	LEOUnit				firstUnit = kLEOUnitNone;
+	LEONumber			firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
 	
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
 	
-	LEOPushNumberOnStack( inContext, -firstArgument );
+	LEOPushNumberOnStack( inContext, -firstArgument, firstUnit );
 	
 	inContext->currentInstruction++;
 }
@@ -1490,12 +1602,21 @@ void	LEOModuloOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	LEOUnit			firstUnit = kLEOUnitNone;
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
+	LEOUnit			secondUnit = kLEOUnitNone;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
-	LEOPushNumberOnStack( inContext, fmod(firstArgument, secondArgument) );
+	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+	if( commonUnit == kLEOUnit_Last )
+	{
+		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		return;
+	}
+	
+	LEOPushNumberOnStack( inContext, fmod(firstArgument, secondArgument), commonUnit );
 	
 	inContext->currentInstruction++;
 }
@@ -1506,12 +1627,21 @@ void	LEOPowerOperatorInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	
-	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+	LEOUnit			firstUnit = kLEOUnitNone;
+	LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
+	LEOUnit			secondUnit = kLEOUnitNone;
+	LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
 
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
 	
-	LEOPushNumberOnStack( inContext, pow(firstArgument, secondArgument) );
+	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+	if( commonUnit == kLEOUnit_Last )
+	{
+		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		return;
+	}
+	
+	LEOPushNumberOnStack( inContext, pow(firstArgument, secondArgument), commonUnit );
 	
 	inContext->currentInstruction++;
 }
@@ -1526,8 +1656,17 @@ void	LEOEqualOperatorInstruction( LEOContext* inContext )
 	
 	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
-		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		LEOUnit			firstUnit = kLEOUnitNone;
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
+		LEOUnit			secondUnit = kLEOUnitNone;
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
+	
+		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+		if( commonUnit == kLEOUnit_Last )
+		{
+			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			return;
+		}
 		
 		isEqual = (firstArgument == secondArgument);
 	}
@@ -1558,8 +1697,17 @@ void	LEONotEqualOperatorInstruction( LEOContext* inContext )
 	
 	if( LEOCanGetAsNumber(firstArgumentValue, inContext) && LEOCanGetAsNumber(secondArgumentValue, inContext) )
 	{
-		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,inContext);
-		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,inContext);
+		LEOUnit			firstUnit = kLEOUnitNone;
+		LEONumber		firstArgument = LEOGetValueAsNumber(firstArgumentValue,&firstUnit,inContext);
+		LEOUnit			secondUnit = kLEOUnitNone;
+		LEONumber		secondArgument = LEOGetValueAsNumber(secondArgumentValue,&secondUnit,inContext);
+	
+		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
+		if( commonUnit == kLEOUnit_Last )
+		{
+			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			return;
+		}
 		
 		isEqual = (firstArgument != secondArgument);
 	}
@@ -1742,7 +1890,7 @@ void	LEOGetArrayItemCountInstruction( LEOContext* inContext )
 	union LEOValue	*		srcValue = inContext->stackEndPtr -1;
 	
 	size_t	numKeys = LEOGetKeyCount( srcValue, inContext );
-	LEOInitIntegerValue( dstValue, numKeys, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
+	LEOInitIntegerValue( dstValue, numKeys, kLEOUnitNone, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -1824,7 +1972,7 @@ void	LEOPutValueIntoValueInstruction( LEOContext* inContext )
 
 void	LEONumToCharInstruction( LEOContext* inContext )
 {
-	uint32_t utf32Char = (uint32_t) LEOGetValueAsInteger( inContext->stackEndPtr -1, inContext );
+	uint32_t utf32Char = (uint32_t) LEOGetValueAsInteger( inContext->stackEndPtr -1, NULL, inContext );
 	if( !inContext->keepRunning )
 		return;
 	
@@ -1850,7 +1998,7 @@ void	LEOCharToNumInstruction( LEOContext* inContext )
 	uint32_t utf32Char = UTF8StringParseUTF32CharacterAtOffset( theStr, strlen(theStr), &ioOffset );
 	
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
-	LEOInitIntegerValue( inContext->stackEndPtr -1, utf32Char, kLEOInvalidateReferences, inContext );
+	LEOInitIntegerValue( inContext->stackEndPtr -1, utf32Char, kLEOUnitNone, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -1858,7 +2006,7 @@ void	LEOCharToNumInstruction( LEOContext* inContext )
 
 void	LEONumToHexInstruction( LEOContext* inContext )
 {
-	LEOInteger theNumber = LEOGetValueAsInteger( inContext->stackEndPtr -1, inContext );
+	LEOInteger theNumber = LEOGetValueAsInteger( inContext->stackEndPtr -1, NULL, inContext );
 	if( !inContext->keepRunning )
 		return;
 	
@@ -1883,7 +2031,7 @@ void	LEOHexToNumInstruction( LEOContext* inContext )
 	LEOInteger theNumber = strtol( theStr, &endPtr, 16 );
 	
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
-	LEOInitIntegerValue( inContext->stackEndPtr -1, theNumber, kLEOInvalidateReferences, inContext );
+	LEOInitIntegerValue( inContext->stackEndPtr -1, theNumber, kLEOUnitNone, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -1891,7 +2039,7 @@ void	LEOHexToNumInstruction( LEOContext* inContext )
 
 void	LEONumToBinaryInstruction( LEOContext* inContext )
 {
-	LEOInteger theNumber = LEOGetValueAsInteger( inContext->stackEndPtr -1, inContext );
+	LEOInteger theNumber = LEOGetValueAsInteger( inContext->stackEndPtr -1, NULL, inContext );
 	if( !inContext->keepRunning )
 		return;
 	
@@ -1936,7 +2084,7 @@ void	LEOBinaryToNumInstruction( LEOContext* inContext )
 	LEOInteger theNumber = strtol( theStr, &endPtr, 2 );
 	
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
-	LEOInitIntegerValue( inContext->stackEndPtr -1, theNumber, kLEOInvalidateReferences, inContext );
+	LEOInitIntegerValue( inContext->stackEndPtr -1, theNumber, kLEOUnitNone, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
 }
