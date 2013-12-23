@@ -103,7 +103,7 @@ enum
 
 
 extern const char*	gUnitLabels[kLEOUnit_Last +1];	// first item is none (empty string), last is a NULL (hence +1). Rest is suffixes for each unit.
-
+extern LEOUnitGroup	gUnitGroupsForLabels[kLEOUnit_Last +1];
 
 struct LEOContext;
 struct LEOArrayEntry;

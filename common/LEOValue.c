@@ -48,7 +48,7 @@ const char*		gUnitLabels[kLEOUnit_Last +1] =
 };
 
 
-static LEOUnitGroup		sUnitGroupsForLabels[kLEOUnit_Last +1] =
+LEOUnitGroup		gUnitGroupsForLabels[kLEOUnit_Last +1] =
 {
 #define X4(constName,stringSuffix,identifierSubtype,unitGroup)	unitGroup,
 	LEO_UNITS
@@ -629,10 +629,10 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 
 LEONumber	LEONumberWithUnitAsUnit( LEONumber inNumber, LEOUnit fromUnit, LEOUnit toUnit )
 {
-	assert( sUnitGroupsForLabels[fromUnit] == sUnitGroupsForLabels[toUnit] );
+	assert( gUnitGroupsForLabels[fromUnit] == gUnitGroupsForLabels[toUnit] );
 	assert( fromUnit > toUnit );
 	
-	if( sUnitGroupsForLabels[fromUnit] == kLEOUnitGroupTime )
+	if( gUnitGroupsForLabels[fromUnit] == kLEOUnitGroupTime )
 	{
 		while( fromUnit > toUnit )
 		{
@@ -641,7 +641,7 @@ LEONumber	LEONumberWithUnitAsUnit( LEONumber inNumber, LEOUnit fromUnit, LEOUnit
 			fromUnit--;
 		}
 	}
-	else if( sUnitGroupsForLabels[fromUnit] == kLEOUnitGroupBytes )
+	else if( gUnitGroupsForLabels[fromUnit] == kLEOUnitGroupBytes )
 	{
 		while( fromUnit > toUnit )
 		{
@@ -660,7 +660,7 @@ LEOUnit	LEOConvertNumbersToCommonUnit( LEONumber* firstArgument, LEOUnit firstUn
 	if( firstUnit == secondUnit )	// Already the same! Nothing to do! Math away!
 		return firstUnit;
 	
-	if( sUnitGroupsForLabels[firstUnit] != sUnitGroupsForLabels[secondUnit] )	// Comparing apples and oranges, fail!
+	if( gUnitGroupsForLabels[firstUnit] != gUnitGroupsForLabels[secondUnit] )	// Comparing apples and oranges, fail!
 		return kLEOUnit_Last;
 	
 	if( firstUnit > secondUnit )
