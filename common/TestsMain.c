@@ -513,15 +513,19 @@ void	DoReferenceTest( void )
 	printf( "\nnote: Reference to int value tests\n" );
 		
 	LEOCleanUpValue( &originalValue, kLEOInvalidateReferences, &ctx );	// Invalidates theValue's reference.
-	LEOInitNumberValue( &originalValue, 42, kLEOInvalidateReferences, &ctx );
+	LEOInitNumberValue( &originalValue, 42, kLEOUnitNone, kLEOInvalidateReferences, &ctx );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, &ctx );
 	LEOInitReferenceValue( &theValue, &originalValue, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, &ctx );
 	
-	double	theNum = LEOGetValueAsNumber( &theValue, &ctx );
+	LEOUnit	theUnit = kLEOUnitMegabytes;
+	double	theNum = LEOGetValueAsNumber( &theValue, &theUnit, &ctx );
 	ASSERT( theNum == 42.0 );
-	LEOSetValueAsNumber( &theValue, 11, &ctx );
-	theNum = LEOGetValueAsNumber( &originalValue, &ctx );
+	ASSERT( theUnit == kLEOUnitNone );
+	theUnit = kLEOUnitSeconds;
+	LEOSetValueAsNumber( &theValue, 11, kLEOUnitNone, &ctx );
+	theNum = LEOGetValueAsNumber( &originalValue, &theUnit, &ctx );
 	ASSERT( theNum == 11.0 );
+	ASSERT( theUnit == kLEOUnitNone );
 	
 	printf( "\nnote: Reference to bool value tests\n" );
 		
@@ -542,7 +546,7 @@ void	DoReferenceTest( void )
 	printf( "\nnote: Reference to disposed value tests\n" );
 		
 	// Verify we got an error about disposed original:
-	LEOSetValueAsNumber( &theValue, 1, &ctx );
+	LEOSetValueAsNumber( &theValue, 1, kLEOUnitNone, &ctx );
 	ASSERT( ctx.errMsg[0] != 0 );
 	ASSERT( strcmp(ctx.errMsg, "The referenced value doesn't exist anymore." ) == 0 );
 	ASSERT( ctx.keepRunning == false );
@@ -786,14 +790,15 @@ void	DoChunkReferenceTests( void )
 	LEOGetValueAsString( &valueReference, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"Chunked") == 0 );
 	
-	LEOSetValueAsNumber( &valueReference, 3.14, &ctx );
+	LEOSetValueAsNumber( &valueReference, 3.14, kLEOUnitNone, &ctx );
 	memset( str, 'X', sizeof(str) );
 	LEOGetValueAsString( &theValue, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"The 3.14 reference") == 0 );
 	memset( str, 'X', sizeof(str) );
 	LEOGetValueAsString( &valueReference, str, sizeof(str), &ctx );
 	ASSERT( strcmp(str,"3.14") == 0 );
-	ASSERT( ((LEOGetValueAsNumber( &valueReference, &ctx ) - 3.14) < 0.0001) && ctx.keepRunning == true );
+	LEOUnit	theUnit = kLEOUnitHours;
+	ASSERT( ((LEOGetValueAsNumber( &valueReference, &theUnit, &ctx ) - 3.14) < 0.0001) && ctx.keepRunning == true );
 
 	LEOSetValueAsBoolean( &valueReference, true, &ctx );
 	memset( str, 'X', sizeof(str) );
