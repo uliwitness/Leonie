@@ -588,6 +588,10 @@ void	LEOCleanUpHandlerStackInstruction( LEOContext* inContext )
 	allocated local variables, and we want to gracefully recover from this in some
 	way.
 	
+	You could e.g. use this in your callNonexistentHandlerProc to clean up the stack
+	after forwarding the parameters to and retrieving the return value from a native
+	code plugin (in HyperCard parlance, an XCMD).
+	
 	@seealso //leo_ref/c/func/LEOCleanUpHandlerStackInstruction LEOCleanUpHandlerStackInstruction
 	@seealso //leo_ref/c/func/LEOCallHandlerInstruction LEOCallHandlerInstruction
 	@seealso //leo_ref/c/func/LEOReturnFromHandlerInstruction LEOReturnFromHandlerInstruction
@@ -612,6 +616,9 @@ void	LEOCleanUpHandlerParametersFromEndOfStack( LEOContext* inContext )
 	but couldn't find it, and the handler has not set up its base pointer yet or
 	allocated local variables, and we want to gracefully recover from this in some
 	way and need to look at the parameters to do that.
+	
+	You could e.g. use this in your callNonexistentHandlerProc to forward the parameters
+	to and retrieving the return value from a native code plugin (in HyperCard parlance, an XCMD).
 	
 	@seealso //leo_ref/c/func/LEOCleanUpHandlerParametersFromEndOfStack LEOCleanUpHandlerParametersFromEndOfStack
 */
