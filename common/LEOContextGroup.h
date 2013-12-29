@@ -18,6 +18,10 @@
 #ifndef LEO_CONTEXT_GROUP_H
 #define LEO_CONTEXT_GROUP_H		1
 
+#if __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //	Headers:
 // -----------------------------------------------------------------------------
@@ -158,6 +162,8 @@ LEOHandlerID	LEOContextGroupHandlerIDForHandlerName( LEOContextGroup* inContext,
 const char*		LEOContextGroupHandlerNameForHandlerID( LEOContextGroup* inContext, LEOHandlerID inHandlerID );
 
 
-
+#if __cplusplus
+}
+#endif
 
 #endif // LEO_CONTEXT_GROUP_H
