@@ -215,6 +215,15 @@ void	LEOScriptRelease( LEOScript* inScript )
 			free( inScript->strings[x] );
 			inScript->strings[x] = NULL;
 		}
+		if( inScript->strings )
+			free( inScript->strings );
+		for( size_t x = 0; x < inScript->numParseErrors; x++ )
+		{
+			free( inScript->parseErrors[x].errMsg );
+			inScript->parseErrors[x].errMsg = NULL;
+		}
+		if( inScript->parseErrors )
+			free( inScript->parseErrors );
 		
 		free( inScript );
 	}
@@ -333,6 +342,45 @@ size_t	LEOScriptAddString( LEOScript* inScript, const char* inString )
 }
 
 
+size_t	LEOScriptAddSyntaxError( LEOScript* inScript, const char* inErrMsg, uint16_t inFileID, size_t inErrorLine, size_t inErrorOffset )
+{
+	// Otherwise, add new entry for this string:
+	inScript->numParseErrors ++;
+
+	if( inScript->parseErrors == NULL )
+	{
+		inScript->parseErrors = calloc( 1, sizeof(char*) );
+	}
+	else
+	{
+		LEOParseErrorEntry*	errorsArray = realloc( inScript->parseErrors, inScript->numParseErrors * sizeof(LEOParseErrorEntry) );
+		if( errorsArray )
+			inScript->parseErrors = errorsArray;
+		else
+		{
+			printf( "*** Failed to allocate syntax error entry! ***\n" );
+			return SIZE_MAX;
+		}
+	}
+	
+	if( inScript->parseErrors == NULL )
+	{
+		printf( "*** Failed to allocate syntax error entry! ***\n" );
+		return SIZE_MAX;
+	}
+	
+	size_t		inStringLen = strlen(inErrMsg) +1;
+	char*		newStr = calloc( inStringLen, sizeof(char) );
+	memmove( newStr, inErrMsg, inStringLen );
+	inScript->parseErrors[inScript->numParseErrors -1].errMsg = newStr;
+	inScript->parseErrors[inScript->numParseErrors -1].errorLine = inErrorLine;
+	inScript->parseErrors[inScript->numParseErrors -1].errorOffset = inErrorOffset;
+	inScript->parseErrors[inScript->numParseErrors -1].fileID = inFileID;
+	
+	return inScript->numParseErrors -1;
+}
+
+
 void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler )
 {
 	printf( "%s:\n", LEOContextGroupHandlerNameForHandlerID( inGroup, inHandler->handlerName ) );
@@ -357,5 +405,8 @@ void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript )
 	printf("STRINGS:\n");
 	for( size_t x = 0; x < inScript->numStrings; x++ )
 		printf( "\t\"%s\"\n", inScript->strings[x] );
+	printf("ERRORS:\n");
+	for( size_t x = 0; x < inScript->numParseErrors; x++ )
+		printf( "\t\"%s\" on line %zu (offset %zu) of file %s\n", inScript->parseErrors[x].errMsg, inScript->parseErrors[x].errorLine, inScript->parseErrors[x].errorOffset, LEOFileNameForFileID( inScript->parseErrors[x].fileID ) );
 	printf( "----------\n" );
 }

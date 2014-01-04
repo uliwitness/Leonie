@@ -183,6 +183,18 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &fileID, sizeof(fileID) );
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &lineNumber, sizeof(lineNumber) );
 	}
+	else if( inContext->currentInstruction->instructionID == PARSE_ERROR_INSTR )
+	{
+		LEOScript*	script = LEOContextPeekCurrentScript(inContext);
+		uint16_t	fileID = script->parseErrors[inContext->currentInstruction->param2].fileID;
+		uint32_t	lineNumber = script->parseErrors[inContext->currentInstruction->param2].errorLine;
+		
+		actuallyWritten = write( gLEORemoteDebuggerSocketFD, "LINE", 4 );
+		dataLen = sizeof(fileID) + sizeof(lineNumber);
+		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, sizeof(dataLen) );
+		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &fileID, sizeof(fileID) );
+		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &lineNumber, sizeof(lineNumber) );
+	}
 }
 
 

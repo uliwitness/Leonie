@@ -99,6 +99,7 @@ void	LEONumToHexInstruction( LEOContext* inContext );
 void	LEOHexToNumInstruction( LEOContext* inContext );
 void	LEONumToBinaryInstruction( LEOContext* inContext );
 void	LEOBinaryToNumInstruction( LEOContext* inContext );
+void	LEOParseErrorInstruction( LEOContext* inContext );
 
 
 #pragma mark Instruction Functions
@@ -122,6 +123,18 @@ void	LEOInvalidInstruction( LEOContext* inContext )
 void	LEOExitToTopInstruction( LEOContext* inContext )
 {
 	inContext->keepRunning = false;	// Causes interpreter loop to exit.
+}
+
+
+/*!
+	Abort execution of the current script without an error.	(PARSE_ERROR_INSTR)
+*/
+
+void	LEOParseErrorInstruction( LEOContext* inContext )
+{
+	size_t		errorIndex = inContext->currentInstruction->param2;
+	LEOScript*	script = LEOContextPeekCurrentScript( inContext );
+	LEOContextStopWithError( inContext, "%s", script->parseErrors[errorIndex].errMsg );
 }
 
 
@@ -2175,7 +2188,8 @@ LEOINSTR(LEOHexToNumInstruction)
 LEOINSTR(LEONumToBinaryInstruction)
 LEOINSTR(LEOBinaryToNumInstruction)
 LEOINSTR(LEOSetChunkPropertyInstruction)
-LEOINSTR_LAST(LEOPushChunkPropertyInstruction)
+LEOINSTR(LEOPushChunkPropertyInstruction)
+LEOINSTR_LAST(LEOParseErrorInstruction)
 
 
 
