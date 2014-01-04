@@ -183,6 +183,8 @@ LEOScript*	LEOScriptCreateForOwner( LEOObjectID ownerObject, LEOObjectSeed owner
 		theStorage->numStrings = 0;
 		theStorage->strings = NULL;
 		theStorage->GetParentScript = inGetParentScriptFunc;
+		theStorage->numParseErrors = 0;
+		theStorage->parseErrors = NULL;
 	}
 	
 	return theStorage;
@@ -349,7 +351,7 @@ size_t	LEOScriptAddSyntaxError( LEOScript* inScript, const char* inErrMsg, uint1
 
 	if( inScript->parseErrors == NULL )
 	{
-		inScript->parseErrors = calloc( 1, sizeof(char*) );
+		inScript->parseErrors = calloc( 1, sizeof(LEOParseErrorEntry) );
 	}
 	else
 	{
