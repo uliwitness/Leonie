@@ -23,6 +23,10 @@
 #ifndef LEO_VALUE_H
 #define LEO_VALUE_H		1
 
+#if __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //	Headers:
 // -----------------------------------------------------------------------------
@@ -1185,5 +1189,9 @@ struct LEOArrayEntry
 
 LEONumber	LEONumberWithUnitAsUnit( LEONumber inNumber, LEOUnit fromUnit, LEOUnit toUnit );
 LEOUnit		LEOConvertNumbersToCommonUnit( LEONumber* firstArgument, LEOUnit firstUnit, LEONumber* secondArgument, LEOUnit secondUnit );
+
+#if __cplusplus
+}
+#endif
 
 #endif // LEO_VALUE_H

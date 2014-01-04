@@ -35,6 +35,10 @@
 #include "LEOHandlerID.h"
 
 
+#if __cplusplus
+extern "C" {
+#endif
+
 #define	DBG_VAR_NAME_SIZE		40
 
 // -----------------------------------------------------------------------------
@@ -345,5 +349,9 @@ void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript )
 
 void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler );
 
+
+#if __cplusplus
+}
+#endif
 
 #endif // LEO_SCRIPT_H

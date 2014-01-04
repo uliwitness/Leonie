@@ -33,6 +33,10 @@
 #ifndef LEO_INTERPRETER_H
 #define LEO_INTERPRETER_H		1
 
+#if __cplusplus
+extern "C" {
+#endif
+
 // -----------------------------------------------------------------------------
 //	Headers:
 // -----------------------------------------------------------------------------
@@ -450,6 +454,10 @@ void	LEOSetInstructionIDToDebugPrintBefore( LEOInstructionID inID );
 */
 void	LEOSetInstructionIDToDebugPrintAfter( LEOInstructionID inID );
 
+
+#if __cplusplus
+}
+#endif
 
 
 #endif // LEO_INTERPRETER_H
