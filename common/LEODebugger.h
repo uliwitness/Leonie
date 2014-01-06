@@ -26,6 +26,11 @@
 #include "LEOInterpreter.h"
 
 
+#if __cplusplus
+extern "C" {
+#endif
+
+
 /*! Use this function as the PreInstructionProc of your LEOContext to activate
 	the debugger. */
 void LEODebuggerPreInstructionProc( struct LEOContext* inContext );
@@ -41,6 +46,12 @@ void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction );
 void LEODebuggerRemoveBreakpoint( LEOInstruction* targetInstruction );
 
 
+void LEODebuggerPrompt( struct LEOContext* inContext );
+
+
+#if __cplusplus
+}
+#endif
 
 #endif // LEO_DEBUGGER_H
 
