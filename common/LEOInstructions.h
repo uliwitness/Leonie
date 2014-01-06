@@ -10,6 +10,7 @@
 #ifndef LEO_INSTRUCTIONS_H
 #define LEO_INSTRUCTIONS_H		1
 
+
 // -----------------------------------------------------------------------------
 //	Headers:
 // -----------------------------------------------------------------------------
@@ -17,6 +18,10 @@
 #include "LEOInterpreter.h"
 #include <sys/types.h>
 
+
+#if __cplusplus
+extern "C" {
+#endif
 
 // -----------------------------------------------------------------------------
 //	Constants:
@@ -129,5 +134,9 @@ LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInte
 
 extern struct LEOInstructionEntry*	gInstructions;
 extern size_t						gNumInstructions;
+
+#if __cplusplus
+}
+#endif
 
 #endif // LEO_INSTRUCTIONS_H
