@@ -24,6 +24,11 @@
 #include "LEOInterpreter.h"
 
 
+#if __cplusplus
+extern "C" {
+#endif
+
+
 /*! Initialize the debugger and establish a connection to the debugger process.
 	To reconnect after a failed connection, pass NULL as the inHostName (it'll
 	use the host name from the previous attempt). */
@@ -55,6 +60,11 @@ void LEORemoteDebuggerAddBreakpoint( LEOInstruction* targetInstruction );
 /*! Remove a breakpoint set using LEODebuggerAddBreakpoint().
 	@seealso //leo_ref/c/func/LEODebuggerAddBreakpoint LEODebuggerAddBreakpoint */
 void LEORemoteDebuggerRemoveBreakpoint( LEOInstruction* targetInstruction );
+
+
+#if __cplusplus
+}
+#endif
 
 
 #endif // LEO_REMOTE_DEBUGGER_H
