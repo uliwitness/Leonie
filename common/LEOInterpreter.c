@@ -466,7 +466,7 @@ void	LEODebugPrintContext( LEOContext* ctx )
 			printf( "\"%s\" (%s)", str, currValue->base.isa->displayTypeName );
 			
 			long		bpRelativeAddress = currValue -ctx->stackBasePtr;
-			if( bpRelativeAddress >= 0 )
+			if( bpRelativeAddress >= 0 && ctx->numCallStackEntries > 0 )
 			{
 				char*		theName = NULL;
 				char*		theRealName = NULL;
