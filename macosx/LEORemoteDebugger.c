@@ -135,6 +135,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 				
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, "VARI", 4 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+				printf("Remote debugger: Sending 'VARI' (%u bytes) for %s\n",dataLen,theName);
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, theRealName, strlen(theRealName) +1 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, theTypeName, strlen(theTypeName) +1 );
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, str, strlen(str) +1 );
@@ -160,6 +161,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 			uint32_t		dataLen = (uint32_t) (strlen(hdlNameStr) +1);
 			actuallyWritten = write( gLEORemoteDebuggerSocketFD, "CALL", 4 );
 			actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+			printf("Remote debugger: Sending 'CALL' (%u bytes) for %s\n",dataLen,hdlNameStr);
 			actuallyWritten = write( gLEORemoteDebuggerSocketFD, hdlNameStr, strlen(hdlNameStr) +1 );
 		} while( x > 0 );
 	}
@@ -170,6 +172,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 	uint32_t		dataLen = sizeof(instructionPointer);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "CURR", 4 );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+			printf("Remote debugger: Sending 'CURR' (%u bytes) for %llx\n",dataLen,instructionPointer);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &instructionPointer, sizeof(instructionPointer) );
 
 	// Tell the debugger what source file we're dealing with:
@@ -180,6 +183,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 		uint32_t	lineNumber = inContext->currentInstruction->param2;
 		dataLen = sizeof(fileID) + sizeof(lineNumber);
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, sizeof(dataLen) );
+		printf("Remote debugger: Sending 'LINE' (%u bytes) for %u\n",dataLen,lineNumber);
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &fileID, sizeof(fileID) );
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &lineNumber, sizeof(lineNumber) );
 	}
@@ -192,6 +196,7 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, "LINE", 4 );
 		dataLen = sizeof(fileID) + sizeof(lineNumber);
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, sizeof(dataLen) );
+		printf("Remote debugger: Sending 'LINE' (%u bytes) for %u\n",dataLen,lineNumber);
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &fileID, sizeof(fileID) );
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &lineNumber, sizeof(lineNumber) );
 	}
@@ -213,6 +218,7 @@ void	LEORemoteDebuggerAddHandler( struct LEOHandler* inHandler )
 		size_t	dataLen = strlen(instructionStr) +1 +sizeof(instructionPointer);
 		size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "INST", 4 );
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+		printf("Remote debugger: Sending 'INST' (%zu bytes) for %s\n",dataLen,instructionStr);
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, instructionStr, strlen(instructionStr) +1 );
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &instructionPointer, sizeof(instructionPointer) );
 	}
@@ -231,6 +237,7 @@ void	LEORemoteDebuggerAddFile( const char* filecontents, uint16_t inFileID, stru
 	size_t		actuallyWritten = write( gLEORemoteDebuggerSocketFD, "SOUR", 4 );
 	uint32_t	dataLen = (uint32_t) (sizeof(uint16_t) + filenameLen + filecontentsLen);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+	printf("Remote debugger: Sending 'SOUR' (%u bytes) for %s\n",dataLen,filename);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &inFileID, sizeof(uint16_t) );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filename, filenameLen );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filecontents, filecontentsLen );
@@ -270,6 +277,7 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 		size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "WAIT\0\0\0\0", 8 );	// Tell remote debugger to show its prompt now and call us back when the user has made a decision.
 		printf( "Remote debugger: Returned from WAIT having written %lu bytes\n", actuallyWritten );
 		
+		printf( "Remote debugger: Now waiting for reply.\n" );
 		uint32_t		currCmd = 0;
 		size_t			amountLeft = sizeof(currCmd);
 		char*			currBytesPtr = (char*) &currCmd;
@@ -318,6 +326,7 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 		
 		inContext->promptProc = savedPrompt;
 	}
+	printf( "Remote Debugger: Exiting debugger prompt.\n" );
 }
 
 
