@@ -825,9 +825,13 @@ void	LEOSetChunkPropertyInstruction( LEOContext* inContext )
 
 	char	propNameStr[1024] = { 0 };
 	const char*	completePropNameStr = LEOGetValueAsString( propName, propNameStr, sizeof(propNameStr), inContext );
+	if( !inContext->keepRunning )
+		return;
 	
 	char	str[1024] = { 0 };
 	const char*	completeStr = LEOGetValueAsString( chunkTarget, str, sizeof(str), inContext );
+	if( !inContext->keepRunning )
+		return;
 	
 	size_t	startDelOffs = 0, endDelOffs = 0;
 	LEOGetChunkRanges( completeStr, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
