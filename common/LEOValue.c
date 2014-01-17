@@ -98,7 +98,10 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOCantSetValueAsNativeObject
+	LEOCantSetValueAsNativeObject,
+	
+	LEOCantSetValueAsRect,
+	LEOCantGetValueAsRect
 };
 
 
@@ -138,7 +141,10 @@ struct LEOValueType	kLeoValueTypeInteger =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOCantSetValueAsNativeObject
+	LEOCantSetValueAsNativeObject,
+	
+	LEOCantSetValueAsRect,
+	LEOCantGetValueAsRect
 };
 
 
@@ -178,7 +184,10 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOCantSetValueAsNativeObject
+	LEOCantSetValueAsNativeObject,
+	
+	LEOSetStringValueAsRect,
+	LEOGetStringValueAsRect
 };
 
 
@@ -218,10 +227,54 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOCantSetValueAsNativeObject
+	LEOCantSetValueAsNativeObject,
+	
+	LEOSetStringConstantValueAsRect,
+	LEOGetStringValueAsRect
 };
 
 
+struct LEOValueType	kLeoValueTypeRect =
+{
+	"rectangle",
+	sizeof(struct LEOValueRect),
+	
+	LEOCantGetValueAsNumber,
+	LEOCantGetValueAsInteger,
+	LEOGetRectValueAsString,
+	LEOCantGetValueAsBoolean,
+	LEOGetAnyValueAsRangeOfString,	// Only works as long as rects can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
+	
+	LEOCantSetValueAsNumber,
+	LEOCantSetValueAsInteger,
+	LEOSetRectValueAsString,
+	LEOCantSetValueAsBoolean,
+	LEOCantSetValueRangeAsString,
+	LEOCantSetValuePredeterminedRangeAsString,
+	
+	LEOInitRectValueCopy,
+	LEOInitRectValueCopy,
+	LEOPutRectValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
+	LEODetermineChunkRangeOfSubstringOfAnyValue,
+	
+	LEOCleanUpRectValue,
+	
+	LEOCantCanGetValueAsNumber,
+	
+	LEOGetRectValueValueForKey,
+	LEOSetRectValueValueForKey,
+	LEOSetStringLikeValueAsArray,
+	LEOGetRectValueKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOCantSetValueAsNativeObject,
+	
+	LEOSetRectValueAsRect,
+	LEOGetRectValueAsRect
+};
 
 
 struct LEOValueType	kLeoValueTypeBoolean =
@@ -260,7 +313,10 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOCantSetValueAsNativeObject
+	LEOCantSetValueAsNativeObject,
+	
+	LEOCantSetValueAsRect,
+	LEOCantGetValueAsRect
 };
 
 
@@ -300,7 +356,10 @@ struct LEOValueType	kLeoValueTypeNativeObject =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOSetNativeObjectValueAsNativeObject
+	LEOSetNativeObjectValueAsNativeObject,
+	
+	LEOCantSetValueAsRect,
+	LEOCantGetValueAsRect
 };
 
 
@@ -340,7 +399,10 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOGetReferenceValueForKeyOfRange,
 	LEOSetReferenceValueForKeyOfRange,
 	
-	LEOSetReferenceValueAsNativeObject
+	LEOSetReferenceValueAsNativeObject,
+	
+	LEOSetReferenceValueAsRect,
+	LEOGetReferenceValueAsRect
 };
 
 
@@ -380,7 +442,10 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOSetVariantValueAsNativeObject
+	LEOSetVariantValueAsNativeObject,
+	
+	LEOSetVariantValueAsRect,
+	LEOCantGetValueAsRect
 };
 
 
@@ -420,7 +485,10 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOSetVariantValueAsNativeObject
+	LEOSetVariantValueAsNativeObject,
+	
+	LEOSetVariantValueAsRect,
+	LEOCantGetValueAsRect
 };
 
 
@@ -460,7 +528,10 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOSetVariantValueAsNativeObject
+	LEOSetVariantValueAsNativeObject,
+	
+	LEOSetVariantValueAsRect,
+	LEOGetStringValueAsRect
 };
 
 
@@ -500,7 +571,53 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOSetVariantValueAsNativeObject
+	LEOSetVariantValueAsNativeObject,
+	
+	LEOSetVariantValueAsRect,
+	LEOCantGetValueAsRect
+};
+
+
+struct LEOValueType	kLeoValueTypeRectVariant =
+{
+	VARIANT_NAME("rectangle"),
+	sizeof(union LEOValue),
+	
+	LEOCantGetValueAsNumber,
+	LEOCantGetValueAsInteger,
+	LEOGetRectValueAsString,
+	LEOCantGetValueAsBoolean,
+	LEOGetAnyValueAsRangeOfString,	// Only works as long as booleans can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
+	
+	LEOSetVariantValueAsNumber,
+	LEOSetVariantValueAsInteger,
+	LEOSetVariantValueAsString,
+	LEOSetVariantValueAsBoolean,
+	LEOSetVariantValueRangeAsString,
+	LEOSetVariantValuePredeterminedRangeAsString,
+	
+	LEOInitRectVariantValueCopy,
+	LEOInitRectValueCopy,
+	LEOPutRectValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
+	LEODetermineChunkRangeOfSubstringOfAnyValue,
+	
+	LEOCleanUpRectValue,
+	
+	LEOCantCanGetValueAsNumber,
+	
+	LEOGetRectValueValueForKey,
+	LEOSetRectValueValueForKey,
+	LEOSetVariantValueAsArray,
+	LEOGetRectValueKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOSetVariantValueAsNativeObject,
+	
+	LEOSetRectValueAsRect,
+	LEOGetRectValueAsRect
 };
 
 
@@ -540,7 +657,10 @@ struct LEOValueType	kLeoValueTypeNativeObjectVariant =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOSetVariantValueAsNativeObject
+	LEOSetVariantValueAsNativeObject,
+	
+	LEOSetVariantValueAsRect,
+	LEOCantGetValueAsRect
 };
 
 
@@ -580,7 +700,10 @@ struct LEOValueType	kLeoValueTypeArray =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOCantSetValueAsNativeObject
+	LEOCantSetValueAsNativeObject,
+	
+	LEOSetVariantValueAsRect,
+	LEOGetArrayValueAsRect
 };
 
 
@@ -620,7 +743,10 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOSetVariantValueAsNativeObject
+	LEOSetVariantValueAsNativeObject,
+	
+	LEOSetArrayValueAsRect,
+	LEOGetArrayValueAsRect
 };
 
 
@@ -718,6 +844,12 @@ LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, struct LE
 	LEOContextStopWithError( inContext,"Can't make %s into a number", self->base.isa->displayTypeName );
 	
 	return 0.0;
+}
+
+
+void	LEOCantGetValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
+{
+	LEOContextStopWithError( inContext,"Can't make %s into a rect", self->base.isa->displayTypeName );
 }
 
 
@@ -884,6 +1016,17 @@ void	LEOCantSetValueAsString( LEOValuePtr self, const char* inString, size_t inS
 void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext* inContext )
 {
 	LEOContextStopWithError( inContext, "Expected %s, found boolean", self->base.isa->displayTypeName );
+}
+
+
+/*!
+	Generic method implementation used for values to return a "can't set as rect"
+	error message and abort execution of the current LEOContext.
+*/
+
+void	LEOCantSetValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
+{
+	LEOContextStopWithError( inContext, "Expected %s, found rect", self->base.isa->displayTypeName );
 }
 
 
@@ -1728,6 +1871,24 @@ bool	LEOCanGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContex
 }
 
 
+void	LEOSetStringValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
+{
+	if( self->string.string )
+		free( self->string.string );
+	self->string.string = calloc(sizeof(char), OTHER_VALUE_SHORT_STRING_MAX_LENGTH);	// +++ realloc when we know the size?
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "%lld,%lld,%lld,%lld", l, t, r, b );
+	else
+		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "left:%lld\ntop:%lld\nright:%lld\nbottom:%lld", l, t, r, b );
+}
+
+
+void	LEOGetStringValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
+{
+	LEOStringToRect( self->string.string, self->string.stringLen, l, t, r, b, inContext );
+}
+
+
 #pragma mark -
 #pragma mark String Constant
 
@@ -1892,6 +2053,17 @@ void	LEOCleanUpStringConstantValue( LEOValuePtr self, LEOKeepReferencesFlag keep
 }
 
 
+void	LEOSetStringConstantValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
+{
+	self->base.isa = &kLeoValueTypeString;
+	self->string.string = calloc(sizeof(char),OTHER_VALUE_SHORT_STRING_MAX_LENGTH);	// +++ realloc when we know the size?
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "%lld,%lld,%lld,%lld", l, t, r, b );
+	else
+		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "left:%lld\ntop:%lld\nright:%lld\nbottom:%lld", l, t, r, b );
+}
+
+
 #pragma mark -
 #pragma mark Boolean
 
@@ -1994,6 +2166,317 @@ void	LEOCleanUpBooleanValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferen
 		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
 		self->base.refObjectID = 0;
 	}
+}
+
+
+#pragma mark -
+#pragma mark Rect
+
+
+void	LEOInitRectValue( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	self->base.isa = &kLeoValueTypeRect;
+	if( keepReferences == kLEOInvalidateReferences )
+		self->base.refObjectID = kLEOObjectIDINVALID;
+	self->rect.left = l;
+	self->rect.top = t;
+	self->rect.right = r;
+	self->rect.bottom = b;
+}
+
+
+/*!
+	Implementation of GetAsString for rectangle values.
+*/
+
+const char*	LEOGetRectValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+{
+	if( outBuf )	// Can never return as string without buffer.
+	{
+		if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+			snprintf( outBuf, bufSize -1, "%lld,%lld,%lld,%lld", self->rect.left, self->rect.top, self->rect.right, self->rect.bottom );
+		else
+			snprintf( outBuf, bufSize -1, "left:%lld\ntop:%lld\nright:%lld\nbottom:%lld", self->rect.left, self->rect.top, self->rect.right, self->rect.bottom );
+	}
+	return outBuf;
+}
+
+
+void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
+{
+	if( LEOGetArrayKeyCount(convertedArray) != 4 )
+	{
+		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		return;
+	}
+	
+	// left:
+	LEOValuePtr	theNumObj = LEOGetArrayValueForKey( convertedArray, "left" );
+	if( !theNumObj )
+	{
+		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		return;
+	}
+	LEOUnit		theUnit = kLEOUnitNone;
+	LEOInteger	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
+	if( !inContext->keepRunning )
+	{
+		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		return;
+	}
+	*l = theNum;
+	
+	// top:
+	theNumObj = LEOGetArrayValueForKey( convertedArray, "top" );
+	if( !theNumObj )
+	{
+		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		return;
+	}
+	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
+	if( !inContext->keepRunning )
+	{
+		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		return;
+	}
+	*t = theNum;
+	
+	// right:
+	theNumObj = LEOGetArrayValueForKey( convertedArray, "right" );
+	if( !theNumObj )
+	{
+		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		return;
+	}
+	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
+	if( !inContext->keepRunning )
+	{
+		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		return;
+	}
+	*r = theNum;
+	
+	// bottom:
+	theNumObj = LEOGetArrayValueForKey( convertedArray, "bottom" );
+	if( !theNumObj )
+	{
+		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		return;
+	}
+	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
+	if( !inContext->keepRunning )
+	{
+		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		return;
+	}
+	*b = theNum;
+}
+
+
+void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+	{
+		// left:
+		char	numPart[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
+		char*	endPtr = NULL;
+		size_t	numPartLen = 0,
+				x = 0;
+		for( ; x < inStringLen && inString[x] != ','; x++ )
+			numPart[numPartLen++] = inString[x];
+		numPart[numPartLen] = '\0';
+		if( numPartLen == 0 )
+		{
+			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			return;
+		}
+		*l = strtoll( numPart, &endPtr, 10 );
+		if( endPtr != (numPart +numPartLen) )
+		{
+			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			return;
+		}
+		
+		// top:
+		x++;
+		numPartLen = 0;
+		for( ; x < inStringLen && inString[x] != ','; x++ )
+			numPart[numPartLen++] = inString[x];
+		numPart[numPartLen] = '\0';
+		if( numPartLen == 0 )
+		{
+			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			return;
+		}
+		*t = strtoll( numPart, &endPtr, 10 );
+		if( endPtr != (numPart +numPartLen) )
+		{
+			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			return;
+		}
+		
+		// right:
+		x++;
+		numPartLen = 0;
+		for( ; x < inStringLen && inString[x] != ','; x++ )
+			numPart[numPartLen++] = inString[x];
+		numPart[numPartLen] = '\0';
+		if( numPartLen == 0 )
+		{
+			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			return;
+		}
+		*r = strtoll( numPart, &endPtr, 10 );
+		if( endPtr != (numPart +numPartLen) )
+		{
+			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			return;
+		}
+		
+		// bottom:
+		x++;
+		numPartLen = 0;
+		for( ; x < inStringLen; x++ )
+			numPart[numPartLen++] = inString[x];
+		numPart[numPartLen] = '\0';
+		if( numPartLen == 0 )
+		{
+			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			return;
+		}
+		*b = strtoll( numPart, &endPtr, 10 );
+		if( endPtr != (numPart +numPartLen) )
+		{
+			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			return;
+		}
+	}
+	else
+	{
+		struct LEOArrayEntry*	convertedArray = LEOCreateArrayFromString( inString, inStringLen, inContext );
+		if( !convertedArray || LEOGetArrayKeyCount( convertedArray ) != 4 )
+		{
+			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			return;
+		}
+		
+		LEOArrayToRect( convertedArray, l, t, r, b, inContext );
+	}
+}
+
+/*!
+	Implementation of SetValueAsString for rectangle values. If the given string
+	can't be fully converted to a rectangle, this will fail with an error message
+	and abort execution of the current LEOContext.
+*/
+
+void	LEOSetRectValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
+{
+	LEOStringToRect( inString, inStringLen, &self->rect.left, &self->rect.top, &self->rect.right, &self->rect.bottom, inContext );
+}
+
+
+void	LEOInitRectValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	dest->base.isa = &kLeoValueTypeRect;
+	if( keepReferences == kLEOInvalidateReferences )
+		dest->base.refObjectID = kLEOObjectIDINVALID;
+	dest->rect.left = self->rect.left;
+	dest->rect.top = self->rect.top;
+	dest->rect.right = self->rect.right;
+	dest->rect.bottom = self->rect.bottom;
+}
+
+
+void	LEOPutRectValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+{
+	LEOSetValueAsRect( dest, self->rect.left, self->rect.top, self->rect.right, self->rect.bottom, inContext );
+}
+
+
+void	LEOCleanUpRectValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	self->base.isa = NULL;
+	self->rect.left = 0;
+	self->rect.top = 0;
+	self->rect.right = 0;
+	self->rect.bottom = 0;
+	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )
+	{
+		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+		self->base.refObjectID = 0;
+	}
+}
+
+
+LEOValuePtr		LEOGetRectValueValueForKey( LEOValuePtr self, const char* inKey, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext * inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+		return LEOCantGetValueForKey( self, inKey, tempStorage, keepReferences, inContext );
+	
+	LEOInteger		theNum = 0;
+	if( strcasecmp(inKey, "left") == 0 )
+		theNum = self->rect.left;
+	else if( strcasecmp(inKey, "top") == 0 )
+		theNum = self->rect.top;
+	else if( strcasecmp(inKey, "right") == 0 )
+		theNum = self->rect.right;
+	else if( strcasecmp(inKey, "bottom") == 0 )
+		theNum = self->rect.bottom;
+	LEOInitIntegerValue( tempStorage, theNum, kLEOUnitNone, keepReferences, inContext );
+	return tempStorage;
+}
+
+
+void		LEOSetRectValueValueForKey( LEOValuePtr self, const char* inKey, LEOValuePtr inValue, struct LEOContext * inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+	{
+		LEOCantSetValueForKey( self, inKey, inValue, inContext );
+		return;
+	}
+	LEOUnit		theUnit = kLEOUnitNone;
+	LEOInteger	theNum = LEOGetValueAsInteger( inValue, &theUnit, inContext );
+	if( !inContext->keepRunning )
+	{
+		LEOContextStopWithError( inContext, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
+		return;
+	}
+	if( strcasecmp(inKey, "left") == 0 )
+		self->rect.left = theNum;
+	else if( strcasecmp(inKey, "top") == 0 )
+		self->rect.top = theNum;
+	else if( strcasecmp(inKey, "right") == 0 )
+		self->rect.right = theNum;
+	else if( strcasecmp(inKey, "bottom") == 0 )
+		self->rect.bottom = theNum;
+}
+
+
+size_t		LEOGetRectValueKeyCount( LEOValuePtr self, struct LEOContext * inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+		return LEOCantGetKeyCount( self, inContext );
+
+	return 4;
+}
+
+
+void	LEOSetRectValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext * inContext )
+{
+	self->rect.left = l;
+	self->rect.top = t;
+	self->rect.right = r;
+	self->rect.bottom = b;
+}
+
+
+void	LEOGetRectValueAsRect( LEOValuePtr self, LEOInteger* l, LEOInteger* t, LEOInteger* r, LEOInteger* b, struct LEOContext * inContext )
+{
+	*l = self->rect.left;
+	*t = self->rect.top;
+	*r = self->rect.right;
+	*b = self->rect.bottom;
 }
 
 
@@ -2248,6 +2731,26 @@ bool	LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inConte
 	else
 		return LEOGetValueAsBoolean( theValue, inContext );
 }
+/*!
+	Implementation of GetAsBoolean for reference values.
+*/
+
+void	LEOGetReferenceValueAsRect( LEOValuePtr self, LEOInteger* l, LEOInteger* t, LEOInteger* r, LEOInteger* b, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+	}
+	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
+	{
+		char		str[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
+		LEOGetValueAsRangeOfString( theValue, self->reference.chunkType, self->reference.chunkStart, self->reference.chunkEnd, str, sizeof(str), inContext );
+		LEOStringToRect( str, strlen(str), l, t, r, b, inContext );
+	}
+	else
+		LEOGetValueAsRect( theValue, l, t, r, b, inContext );
+}
 
 
 /*!
@@ -2317,6 +2820,32 @@ void	LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEO
 	}
 	else
 		LEOSetValueAsBoolean( theValue, inBoolean, inContext );
+}
+
+
+/*!
+	Implementation of SetAsRect for reference values.
+*/
+
+void	LEOSetReferenceValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+	}
+	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
+	{
+		char	strBuf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
+		if( inContext->group->flags == kLEOContextGroupFlagHyperCardCompatibility )
+			snprintf( strBuf, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "%lld,%lld,%lld,%lld", l, t, r, b );
+		else
+			snprintf( strBuf, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "left:%lld\ntop:%lld\nright:%lld\nbottom:%lld", l, t, r, b );
+		LEOSetValueRangeAsString( theValue, self->reference.chunkType, self->reference.chunkStart, self->reference.chunkEnd,
+									strBuf, inContext );
+	}
+	else
+		LEOSetValueAsRect( theValue, l, t, r, b, inContext );
 }
 
 
@@ -2715,6 +3244,14 @@ void	LEOSetVariantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOCo
 }
 
 
+void	LEOSetVariantValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
+{
+	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+	LEOInitRectValue( self, l, t, r, b, kLEOKeepReferences, inContext );
+	self->base.isa = &kLeoValueTypeRectVariant;
+}
+
+
 void	LEOSetVariantValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
 {
 	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
@@ -2838,6 +3375,13 @@ void	LEOInitBooleanVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeep
 }
 
 
+void	LEOInitRectVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitRectValueCopy( self, dest, keepReferences, inContext );
+	dest->base.isa = &kLeoValueTypeRectVariant;
+}
+
+
 void	LEOInitNativeObjectVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	LEOInitNativeObjectValueCopy( self, dest, keepReferences, inContext );
@@ -2957,6 +3501,35 @@ void	LEOSetArrayValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, s
 {
 	LEOCleanUpArray( self->array.array, inContext );
 	self->array.array = LEOCopyArray( inArray, inContext );
+}
+
+
+void	LEOSetArrayValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+	{
+		LEOCantSetValueAsRect( self, l, t, r, b, inContext );
+		return;
+	}
+	
+	LEOCleanUpArray( self->array.array, inContext );
+	self->array.array = NULL;
+	LEOAddIntegerArrayEntryToRoot( &self->array.array, "left", l, kLEOUnitNone, inContext );
+	LEOAddIntegerArrayEntryToRoot( &self->array.array, "top", t, kLEOUnitNone, inContext );
+	LEOAddIntegerArrayEntryToRoot( &self->array.array, "right", r, kLEOUnitNone, inContext );
+	LEOAddIntegerArrayEntryToRoot( &self->array.array, "bottom", b, kLEOUnitNone, inContext );
+}
+
+
+void	LEOGetArrayValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+	{
+		LEOCantGetValueAsRect( self, l, t, r, b, inContext );
+		return;
+	}
+	
+	LEOArrayToRect( self->array.array, l, t, r, b, inContext );
 }
 
 

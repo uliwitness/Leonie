@@ -36,11 +36,18 @@ extern "C" {
 
 typedef struct LEOObject LEOObject;
 
+enum
+{
+	kLEOContextGroupFlagFromNetwork				= (1 << 0),		// This stack was loaded from the net. Don't do any file system access or native calls or similarly dangerous things.
+	kLEOContextGroupFlagHyperCardCompatibility	= (1 << 1)		// This was a HyperCard stack. Instructions that behave differently in Stacksmith should modify their behaviour to maintain compatibility.
+};
+typedef uint32_t		LEOContextGroupFlags;
 
 /*! All LEOContexts belong to a Context group that contains references and other
 	global data they share. You can insulate running scripts from each other by
 	placing them in a different context group.
 	@field	referenceCount		Reference count for this object, i.e. number of contexts still attached to this object.
+	@field	flags				Flags that influence instructions running in this context.
 	@field	globals				An associative array of LEOValues of various kinds representing global variables.
 	@field	numReferences		Number of items in the <tt>references</tt> array.
 	@field	references			An array of "master pointers" to values to which references have been created.
@@ -49,6 +56,7 @@ typedef struct LEOObject LEOObject;
 typedef struct LEOContextGroup
 {
 	size_t					referenceCount;		// Reference count for this object, i.e. number of contexts still attached to this object.
+	LEOContextGroupFlags	flags;				// Flags that influence instructions running in this context.
 	struct LEOArrayEntry	*globals;			// Associative array containing global variables.
 	LEOHandlerCount			numHandlerNames;	// Number of slots in handlerNames array.
 	char**					handlerNames;		// Array of handler names. The indexes into this array are 'handler IDs' used throughout the bytecode.
