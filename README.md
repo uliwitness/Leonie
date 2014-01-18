@@ -19,7 +19,7 @@ If you want to play around with Leonie in the context of actual bytecode, a good
 License
 -------
 
-	Copyright 2003-2012 by Uli Kusterer.
+	Copyright 2003-2014 by Uli Kusterer.
 	
 	This software is provided 'as-is', without any express or implied
 	warranty. In no event will the authors be held liable for any damages
