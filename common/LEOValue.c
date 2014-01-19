@@ -3643,6 +3643,14 @@ LEOValuePtr	LEOAddCStringArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByRefe
 }
 
 
+LEOValuePtr	LEOAddStringConstantArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, const char* inCStr, struct LEOContext* inContext )
+{
+	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, NULL, inContext );
+	LEOInitStringConstantValue( outValue, inCStr, kLEOInvalidateReferences, inContext );
+	return outValue;
+}
+
+
 LEOValuePtr	LEOAddStringArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, const char* inStr, size_t inLen, struct LEOContext* inContext )
 {
 	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, NULL, inContext );
