@@ -101,7 +101,9 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOCantSetValueAsNativeObject,
 	
 	LEOCantSetValueAsRect,
-	LEOCantGetValueAsRect
+	LEOCantGetValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -144,7 +146,9 @@ struct LEOValueType	kLeoValueTypeInteger =
 	LEOCantSetValueAsNativeObject,
 	
 	LEOCantSetValueAsRect,
-	LEOCantGetValueAsRect
+	LEOCantGetValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -187,7 +191,9 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOCantSetValueAsNativeObject,
 	
 	LEOSetStringValueAsRect,
-	LEOGetStringValueAsRect
+	LEOGetStringValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -230,7 +236,9 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOCantSetValueAsNativeObject,
 	
 	LEOSetStringConstantValueAsRect,
-	LEOGetStringValueAsRect
+	LEOGetStringValueAsRect,
+	
+	LEOGetStringConstantValueIsUnset
 };
 
 
@@ -273,7 +281,9 @@ struct LEOValueType	kLeoValueTypeRect =
 	LEOCantSetValueAsNativeObject,
 	
 	LEOSetRectValueAsRect,
-	LEOGetRectValueAsRect
+	LEOGetRectValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -316,7 +326,9 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOCantSetValueAsNativeObject,
 	
 	LEOCantSetValueAsRect,
-	LEOCantGetValueAsRect
+	LEOCantGetValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -359,7 +371,9 @@ struct LEOValueType	kLeoValueTypeNativeObject =
 	LEOSetNativeObjectValueAsNativeObject,
 	
 	LEOCantSetValueAsRect,
-	LEOCantGetValueAsRect
+	LEOCantGetValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -402,7 +416,9 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOSetReferenceValueAsNativeObject,
 	
 	LEOSetReferenceValueAsRect,
-	LEOGetReferenceValueAsRect
+	LEOGetReferenceValueAsRect,
+	
+	LEOGetReferenceValueIsUnset
 };
 
 
@@ -445,7 +461,9 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOSetVariantValueAsNativeObject,
 	
 	LEOSetVariantValueAsRect,
-	LEOCantGetValueAsRect
+	LEOCantGetValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -488,7 +506,9 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	LEOSetVariantValueAsNativeObject,
 	
 	LEOSetVariantValueAsRect,
-	LEOCantGetValueAsRect
+	LEOCantGetValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -531,7 +551,9 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOSetVariantValueAsNativeObject,
 	
 	LEOSetVariantValueAsRect,
-	LEOGetStringValueAsRect
+	LEOGetStringValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -574,7 +596,9 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOSetVariantValueAsNativeObject,
 	
 	LEOSetVariantValueAsRect,
-	LEOCantGetValueAsRect
+	LEOCantGetValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -617,7 +641,9 @@ struct LEOValueType	kLeoValueTypeRectVariant =
 	LEOSetVariantValueAsNativeObject,
 	
 	LEOSetRectValueAsRect,
-	LEOGetRectValueAsRect
+	LEOGetRectValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -660,7 +686,9 @@ struct LEOValueType	kLeoValueTypeNativeObjectVariant =
 	LEOSetVariantValueAsNativeObject,
 	
 	LEOSetVariantValueAsRect,
-	LEOCantGetValueAsRect
+	LEOCantGetValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -703,7 +731,9 @@ struct LEOValueType	kLeoValueTypeArray =
 	LEOCantSetValueAsNativeObject,
 	
 	LEOSetVariantValueAsRect,
-	LEOGetArrayValueAsRect
+	LEOGetArrayValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -746,7 +776,9 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 	LEOSetVariantValueAsNativeObject,
 	
 	LEOSetArrayValueAsRect,
-	LEOGetArrayValueAsRect
+	LEOGetArrayValueAsRect,
+	
+	LEOValueIsNotUnset
 };
 
 
@@ -1154,6 +1186,12 @@ void	LEOCantGetValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t
 void	LEOCantSetValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext )
 {
 	LEOContextStopWithError( inContext, "Ranges of a %s can't have properties", self->base.isa->displayTypeName );
+}
+
+
+bool	LEOValueIsNotUnset( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return false;
 }
 
 
@@ -1906,6 +1944,19 @@ void	LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString, LE
 }
 
 
+static char		sUnsetConstantString[1] = {0};
+
+
+void	LEOInitUnsetValue( LEOValuePtr inStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	inStorage->base.isa = &kLeoValueTypeStringConstant;
+	if( keepReferences == kLEOInvalidateReferences )
+		inStorage->base.refObjectID = kLEOObjectIDINVALID;
+	inStorage->string.string = sUnsetConstantString;
+	inStorage->string.stringLen = 0;
+}
+
+
 /*!
 	Implementation of SetAsNumber for string constant values. This turns the
 	value into a regular (dynamic) string value.
@@ -2061,6 +2112,12 @@ void	LEOSetStringConstantValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger
 		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "%lld,%lld,%lld,%lld", l, t, r, b );
 	else
 		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "left:%lld\ntop:%lld\nright:%lld\nbottom:%lld", l, t, r, b );
+}
+
+
+bool	LEOGetStringConstantValueIsUnset( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return( self->string.string == sUnsetConstantString );
 }
 
 
@@ -3170,6 +3227,20 @@ LEOValuePtr	LEOReferenceValueFollowReferencesAndReturnValueOfType( LEOValuePtr s
 		return NULL;
 	else
 		return LEOFollowReferencesAndReturnValueOfType( theValue, inType, inContext );
+}
+
+
+bool	LEOGetReferenceValueIsUnset( LEOValuePtr self, struct LEOContext * inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		
+		return 0;
+	}
+	else
+		return LEOGetValueIsUnset( theValue, inContext );
 }
 
 

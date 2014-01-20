@@ -165,6 +165,7 @@ struct LEOValueType
 	
 	void		(*SetValueAsRect)( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
 	void		(*GetValueAsRect)( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext );
+	bool		(*GetValueIsUnset)( LEOValuePtr self, struct LEOContext* inContext );
 };
 
 
@@ -412,6 +413,17 @@ void		LEOInitStringValue( LEOValuePtr inStorage, const char* inString, size_t in
 	@seealso //leo_ref/c/macro/LEOGetStringConstantValueSize LEOGetStringConstantValueSize
 */
 void		LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
+
+/*!
+	Initialize the given storage so it's a valid "unset" value. An unset value looks just
+	like an empty string (a constant string, in fact), but can be distinguished using the
+	LEOGetValueIsUnset() call. It is used e.g. for initializing the empty result of a handler
+	so you can distinguish whether someone actually returned something or not.
+
+	@seealso //leo_ref/c/macro/LEOGetValueIsUnset LEOGetValueIsUnset
+*/
+void		LEOInitUnsetValue( LEOValuePtr inStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+
 
 /*!
 	Initialize the given storage so it's a valid boolean value containing the
@@ -1064,6 +1076,16 @@ void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, L
 #define		LEOSetValueAsRect(v,l,t,r,b,c)	((LEOValuePtr)(v))->base.isa->SetValueAsRect(((LEOValuePtr)(v)),(l),(t),(r),(b),(c))
 
 
+/*!
+	@function LEOGetValueIsUnset
+	Find out if this value is or references the "unset" value (which to
+	all other calls just shows up as an empty constant string).
+	@param	v	The value you wish to query.
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+ */
+#define		LEOGetValueIsUnset(v,c)	((LEOValuePtr)(v))->base.isa->GetValueIsUnset(((LEOValuePtr)(v)),(c))
+
 
 // Failure indicators we re-use in many places:
 const char*	LEOCantGetValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
@@ -1098,6 +1120,7 @@ void		LEOSetStringLikeValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inAr
 void		LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext );
 void		LEOCantGetValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext );
 void		LEOCantSetValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext );
+bool		LEOValueIsNotUnset( LEOValuePtr self, struct LEOContext* inContext );
 
 // Other methods reusable across several types:
 void		LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
@@ -1175,6 +1198,7 @@ void		LEOSetStringConstantValuePredeterminedRangeAsString( LEOValuePtr self,
 void		LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOCleanUpStringConstantValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOSetStringConstantValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
+bool		LEOGetStringConstantValueIsUnset( LEOValuePtr self, struct LEOContext* inContext );
 
 // Boolean instance methods:
 const char*	LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
@@ -1243,6 +1267,7 @@ size_t		LEOGetReferenceValueKeyCount( LEOValuePtr self, struct LEOContext * inCo
 
 void		LEOGetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext );
 void		LEOSetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext );
+bool		LEOGetReferenceValueIsUnset( LEOValuePtr self, struct LEOContext * inContext );
 
 
 // Variant-specific replacements for certain instance methods:

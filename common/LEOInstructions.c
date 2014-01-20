@@ -31,6 +31,7 @@ void	LEOInvalidInstruction( LEOContext* inContext );
 void	LEOExitToTopInstruction( LEOContext* inContext );
 void	LEONoOpInstruction( LEOContext* inContext );
 void	LEOPushStringFromTableInstruction( LEOContext* inContext );
+void	LEOPushUnsetValueInstruction( LEOContext* inContext );
 void	LEOPushStringVariantFromTableInstruction( LEOContext* inContext );
 void	LEOPopValueInstruction( LEOContext* inContext );
 void	LEOPopSimpleValueInstruction( LEOContext* inContext );
@@ -166,6 +167,19 @@ void	LEOPushStringFromTableInstruction( LEOContext* inContext )
 		theString = script->strings[inContext->currentInstruction->param2];
 	
 	LEOInitStringValue( (LEOValuePtr) inContext->stackEndPtr, theString, strlen(theString), kLEOInvalidateReferences, inContext );
+	inContext->stackEndPtr++;
+	
+	inContext->currentInstruction++;
+}
+
+
+/*!
+	Push the "unset" value on the stack as a LEOStringValue. (PUSH_UNSET_VALUE_INSTR)
+*/
+
+void	LEOPushUnsetValueInstruction( LEOContext* inContext )
+{
+	LEOInitUnsetValue( (LEOValuePtr) inContext->stackEndPtr, kLEOInvalidateReferences, inContext );
 	inContext->stackEndPtr++;
 	
 	inContext->currentInstruction++;
@@ -2126,6 +2140,7 @@ LEOINSTR(LEOInvalidInstruction)
 LEOINSTR(LEOExitToTopInstruction)
 LEOINSTR(LEONoOpInstruction)
 LEOINSTR(LEOPushStringFromTableInstruction)
+LEOINSTR(LEOPushUnsetValueInstruction)
 LEOINSTR(LEOPopValueInstruction)
 LEOINSTR(LEOPushBooleanInstruction)
 LEOINSTR(LEOAssignStringFromTableInstruction)
