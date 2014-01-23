@@ -271,6 +271,21 @@ LEOValuePtr	LEOPushStringValueOnStack( LEOContext* theContext, const char* inStr
 }
 
 
+LEOValuePtr	LEOPushStringConstantValueOnStack( LEOContext* theContext, const char* inString )
+{
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+	
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitStringConstantValue( theValue, inString, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
 LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger, LEOUnit inUnit )
 {
 	if( !theContext->stackEndPtr )
