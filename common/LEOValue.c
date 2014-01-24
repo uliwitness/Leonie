@@ -788,7 +788,7 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 LEONumber	LEONumberWithUnitAsUnit( LEONumber inNumber, LEOUnit fromUnit, LEOUnit toUnit )
 {
 	assert( gUnitGroupsForLabels[fromUnit] == gUnitGroupsForLabels[toUnit] );
-	assert( fromUnit > toUnit );
+	assert( fromUnit >= toUnit );
 	
 	if( gUnitGroupsForLabels[fromUnit] == kLEOUnitGroupTime )
 	{
