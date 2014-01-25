@@ -531,6 +531,9 @@ void	LEOAddIntegerInstruction( LEOContext* inContext )
 void	LEOCallHandlerInstruction( LEOContext* inContext )
 {
 	LEOHandlerID	handlerName = inContext->currentInstruction->param2;
+	if( inContext->group->messageSent )
+		inContext->group->messageSent( handlerName, inContext->group );
+
 	LEOScript*		currScript = LEOContextPeekCurrentScript( inContext );
 	if( (inContext->currentInstruction->param1 & kLEOCallHandler_PassMessage) == kLEOCallHandler_PassMessage
 		&& currScript && currScript->GetParentScript )
