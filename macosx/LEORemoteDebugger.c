@@ -116,9 +116,9 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 				else
 				{
 					LEOGetValueAsString( currValue, str, sizeof(str), inContext );
-					if( !inContext->keepRunning )
+					if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 					{
-						inContext->keepRunning = true;
+						inContext->flags |= kLEOContextKeepRunning;
 						strncpy(str, inContext->errMsg, sizeof(str) -1 );
 					}
 				}
@@ -315,7 +315,7 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 				break;
 
 			case 'EXIT':
-				inContext->keepRunning = false;
+				inContext->flags &= ~kLEOContextKeepRunning;
 				stayInDebuggerPrompt = false;
 				break;
 			

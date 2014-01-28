@@ -194,6 +194,14 @@ typedef struct LEOCallStackEntry
 } LEOCallStackEntry;
 
 
+enum
+{
+	kLEOContextKeepRunning	= (1 << 0),	// Clear this bit to stop script execution. Used on errors and for ExitToTop.
+	kLEOContextPause		= (1 << 1)	// Context has been paused and will be resumed
+};
+typedef uint32_t	LEOContextFlags;
+
+
 /*! A LEOContext encapsulates all execution state needed to run bytecode. Speaking
 	in CPU terms, it encapsulates the registers, the call stack, and a few
 	thread-globals. Hence, each thread in which you want to run bytecode needs
@@ -201,11 +209,9 @@ typedef struct LEOCallStackEntry
 	@field	group				The LEOContextGroup that collects the global state
 								shared between this context and any others in
 								its group.
-	@field	keepRunning			boolean that instructions like ExitToTop can set
-								to FALSE to stop execution of the script. Also used
-								when script errors occur.
-	@field	errMsg				Error message to display when keepRunning has
-								been set to FALSE.
+	@field	flags				flags that let you pause or exit scripts.
+	@field	errMsg				Error message to display when the kLEOContextKeepRunning flag has
+								been set to FALSE. If this is an empty string, it was a benign exit.
 	@field	itemDelimiter		The delimiter to use for the "item" chunk expression. Defaults to comma (',').
 	@field	preInstructionProc	A function to call on each instruction before it
 								is executed. Useful as a hook-up-point for a debugger,
@@ -226,8 +232,8 @@ typedef struct LEOContext
 {
 	size_t							referenceCount;
 	struct LEOContextGroup	*		group;					// The group this context belongs to, containing its global state, references etc.
-	bool							keepRunning;			// ExitToShell and errors set this to FALSE to stop interpreting of code.
-	char							errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
+	LEOContextFlags					flags;					// But flags for flow control etc.
+	char							errMsg[1024];			// Error message to display when kLEOContextKeepRunning flag has been set to FALSE.
 	char							itemDelimiter;			// item delimiter to use for chunk expressions in values.
 	size_t							numCallStackEntries;	// Number of items in callStackEntries.
 	LEOCallStackEntry		*		callStackEntries;		// Array of call stack entries to allow showing a simple backtrace and picking handlers from the current script.
@@ -279,7 +285,7 @@ void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext );
 
 /*! Set the currentInstruction of the given LEOContext to the given instruction 
 	array's first instruction, and initialize the Base pointer and stack end pointer
-	and keepRunning etc.
+	and flags etc.
 	@seealso //leo_ref/c/func/LEORunInContext LEORunInContext
 	@seealso //leo_ref/c/func/LEOContinueRunningContext LEOContinueRunningContext
 */

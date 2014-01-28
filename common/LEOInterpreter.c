@@ -98,7 +98,7 @@ LEOContext*	LEOContextCreate( struct LEOContextGroup* inGroup, void* inUserData,
 	theContext->callNonexistentHandlerProc = NULL;
 	theContext->itemDelimiter = ',';
 	theContext->group = LEOContextGroupRetain( inGroup );
-	theContext->keepRunning = true;
+	theContext->flags = kLEOContextKeepRunning;
 	theContext->userData = inUserData;
 	theContext->cleanUpUserData = inCleanUpFunc;
 	return theContext;
@@ -372,7 +372,7 @@ void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext )
 
 void	LEOPrepareContextForRunning( LEOInstruction instructions[], LEOContext *inContext )
 {
-	inContext->keepRunning = true;
+	inContext->flags = kLEOContextKeepRunning;
 	inContext->currentInstruction = instructions;
 	if( !inContext->stackEndPtr )
 		inContext->stackEndPtr = inContext->stack;
@@ -388,7 +388,7 @@ bool	LEOContinueRunningContext( LEOContext *inContext )
 	inContext->errMsg[0] = 0;
 	
 	inContext->preInstructionProc(inContext);
-	if( inContext->currentInstruction == NULL || !inContext->keepRunning )	// Did pre-instruction-proc request abort?
+	if( inContext->currentInstruction == NULL || (inContext->flags & kLEOContextKeepRunning) == 0 )	// Did pre-instruction-proc request abort?
 		return false;
 	
 	LEOInstructionID	currID = inContext->currentInstruction->instructionID;
@@ -403,7 +403,7 @@ bool	LEOContinueRunningContext( LEOContext *inContext )
 	if( gInstructionIDToDebugPrintAfter == currID )
 		LEODebugPrintContext(inContext);
 	
-	return( inContext->currentInstruction != NULL && inContext->keepRunning );
+	return( inContext->currentInstruction != NULL && (inContext->flags & kLEOContextKeepRunning) );
 }
 
 
@@ -413,7 +413,7 @@ void	LEOContextStopWithError( LEOContext* inContext, const char* inErrorFmt, ...
 	va_start( varargs, inErrorFmt );
 	vsnprintf( inContext->errMsg, sizeof(inContext->errMsg), inErrorFmt, varargs );
 	va_end( varargs );
-	inContext->keepRunning = false;
+	inContext->flags &= ~kLEOContextKeepRunning;
 	
 	inContext->promptProc( inContext );
 }
@@ -467,7 +467,7 @@ void	LEOContextDebugPrintCallStack( LEOContext* inContext )
 void	LEODebugPrintContext( LEOContext* ctx )
 {
 	printf( "CONTEXT:\n" );
-	if( !ctx->keepRunning )
+	if( (ctx->flags & kLEOContextKeepRunning) == 0 )
 		printf( "    keepRunning: FALSE\n" );
 	if( ctx->errMsg[0] != 0 )
 		printf( "    errMsg: %s\n", ctx->errMsg );
@@ -485,9 +485,9 @@ void	LEODebugPrintContext( LEOContext* ctx )
 			
 			char		str[1024] = { 0 };
 			LEOGetValueAsString( currValue, str, sizeof(str), ctx );
-			if( !ctx->keepRunning && ctx->errMsg[0] != 0 )
+			if( (ctx->flags & kLEOContextKeepRunning) == 0 && ctx->errMsg[0] != 0 )
 			{
-				ctx->keepRunning = true;
+				ctx->flags |= kLEOContextKeepRunning;
 				strcpy( str, ctx->errMsg );
 				ctx->errMsg[0] = 0;
 				

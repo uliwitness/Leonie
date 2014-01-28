@@ -60,7 +60,7 @@ void LEODebuggerPrompt( struct LEOContext* inContext )
 			else if( strcasecmp(currCmd,"exit") == 0 || strcasecmp(currCmd,"quit") == 0
 					|| strcasecmp(currCmd,"q") == 0 )
 			{
-				inContext->keepRunning = false;
+				inContext->flags &= ~kLEOContextKeepRunning;
 				stayInDebuggerPrompt = false;
 			}
 			else if( strcasecmp(currCmd,"help") == 0 )

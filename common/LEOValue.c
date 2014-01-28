@@ -2276,7 +2276,7 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 	}
 	LEOUnit		theUnit = kLEOUnitNone;
 	LEOInteger	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
-	if( !inContext->keepRunning )
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
 		LEOContextStopWithError( inContext, "Expected rectangle here." );
 		return;
@@ -2291,7 +2291,7 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 		return;
 	}
 	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
-	if( !inContext->keepRunning )
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
 		LEOContextStopWithError( inContext, "Expected rectangle here." );
 		return;
@@ -2306,7 +2306,7 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 		return;
 	}
 	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
-	if( !inContext->keepRunning )
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
 		LEOContextStopWithError( inContext, "Expected rectangle here." );
 		return;
@@ -2321,7 +2321,7 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 		return;
 	}
 	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
-	if( !inContext->keepRunning )
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
 		LEOContextStopWithError( inContext, "Expected rectangle here." );
 		return;
@@ -2494,7 +2494,7 @@ void		LEOSetRectValueValueForKey( LEOValuePtr self, const char* inKey, LEOValueP
 	}
 	LEOUnit		theUnit = kLEOUnitNone;
 	LEOInteger	theNum = LEOGetValueAsInteger( inValue, &theUnit, inContext );
-	if( !inContext->keepRunning )
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
 		LEOContextStopWithError( inContext, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
 		return;
