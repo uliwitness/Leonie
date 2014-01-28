@@ -16,14 +16,14 @@
 	for the instruction IDs.
 	
 	To run Leonie bytecode, create LEOContextGroup, then create a LEOContext
-	using LEOInitContext() that references this group. You can now release the
+	using LEOContextCreate() that references this group. You can now release the
 	context group, unless you want to keep using it, the context will have
 	retained it. To execute the bytecode, call LEORunInContext(). When the call
 	returns, call LEOCleanUpContext() to free all associated data again.
 	
 	@seealso //leo_ref/c/tdef/LEOInstruction LEOInstruction
 	@seealso //leo_ref/c/tdef/LEOContext LEOContext
-	@seealso //leo_ref/c/func/LEOInitContext	LEOInitContext
+	@seealso //leo_ref/c/func/LEOContextCreate	LEOContextCreate
 	@seealso //leo_ref/c/func/LEORunInContext	LEORunInContext
 	@seealso //leo_ref/c/func/LEOCleanUpContext	LEOCleanUpContext
 	@seealso //leo_ref/c/func/LEOContextGroupCreate	LEOContextGroupCreate
@@ -224,6 +224,7 @@ typedef struct LEOCallStackEntry
 
 typedef struct LEOContext
 {
+	size_t							referenceCount;
 	struct LEOContextGroup	*		group;					// The group this context belongs to, containing its global state, references etc.
 	bool							keepRunning;			// ExitToShell and errors set this to FALSE to stop interpreting of code.
 	char							errMsg[1024];			// Error message to display when keepRunning has been set to FALSE.
@@ -252,12 +253,23 @@ typedef struct LEOContext
 	group until the context is cleaned up. So once you have added the context
 	to the context group, you can release it if you don't intend to create any
 	other contexts in that group directly.
-	@seealso //leo_ref/c/func/LEOCleanUpContext LEOCleanUpContext
+	@seealso //leo_ref/c/func/LEOContextRelease LEOContextRelease
+	@seealso //leo_ref/c/func/LEOContextRetain LEOContextRetain
 	@seealso //leo_ref/c/func/LEOContextGroupCreate	LEOContextGroupCreate
 	@seealso //leo_ref/c/func/LEOContextGroupRelease LEOContextGroupRelease
 */
-void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup,
-					    void* inUserData, LEOUserDataCleanUpFuncPtr inCleanUpFunc );
+LEOContext*	LEOContextCreate( struct LEOContextGroup* inGroup, void* inUserData,
+								LEOUserDataCleanUpFuncPtr inCleanUpFunc );
+
+/*! Release your reference to this context. If you were the last owner of this
+	context, disposes of the given context's associated data structures
+	and releases the reference to its context group that the context
+	holds.
+	@seealso //leo_ref/c/func/LEOContextCreate LEOContextCreate
+*/
+void		LEOContextRelease( LEOContext* inContext );
+
+LEOContext*	LEOContextRetain( LEOContext* inContext );	// returns inContext.
 
 /*! Shorthand for LEOPrepareContextForRunning and a loop of LEOContinueRunningContext.
 	@seealso //leo_ref/c/func/LEOPrepareContextForRunning LEOPrepareContextForRunning
@@ -332,13 +344,6 @@ LEOValuePtr	LEOPushStringConstantValueOnStack( LEOContext* theContext, const cha
 
 // Used internally to unwind the stack and ensure values get destructed correctly.
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete );
-
-/*! Dispose of the given context's associated data structures once you're
-	finished, and release the reference to its context group that the context
-	holds.
-	@seealso //leo_ref/c/func/LEOInitContext LEOInitContext
-*/
-void	LEOCleanUpContext( LEOContext* theContext );
 
 
 /*! Print the given instruction to the console for debugging purposes.

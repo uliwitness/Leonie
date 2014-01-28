@@ -89,9 +89,10 @@ void	LEODoNothingPreInstructionProc( LEOContext* inContext )
 }
 
 
-void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup, void* inUserData, LEOUserDataCleanUpFuncPtr inCleanUpFunc )
+LEOContext*	LEOContextCreate( struct LEOContextGroup* inGroup, void* inUserData, LEOUserDataCleanUpFuncPtr inCleanUpFunc )
 {
-	memset( theContext, 0, sizeof(LEOContext) );
+	LEOContext*	theContext = calloc( 1, sizeof(LEOContext) );
+	theContext->referenceCount = 1;
 	theContext->preInstructionProc = LEODoNothingPreInstructionProc;
 	theContext->promptProc = LEODoNothingPreInstructionProc;
 	theContext->callNonexistentHandlerProc = NULL;
@@ -100,33 +101,46 @@ void	LEOInitContext( LEOContext* theContext, struct LEOContextGroup* inGroup, vo
 	theContext->keepRunning = true;
 	theContext->userData = inUserData;
 	theContext->cleanUpUserData = inCleanUpFunc;
+	return theContext;
 }
 
 
-void	LEOCleanUpContext( LEOContext* theContext )
+LEOContext*	LEOContextRetain( LEOContext* inContext )
 {
-	LEOCleanUpStackToPtr( theContext, theContext->stack );
-	LEOContextGroupRelease( theContext->group );
-	theContext->group = NULL;
-	if( theContext->callStackEntries )
+	inContext->referenceCount++;
+	
+	return inContext;
+}
+
+
+void	LEOContextRelease( LEOContext* theContext )
+{
+	if( --theContext->referenceCount == 0 )
 	{
-		for( size_t x = 0; x < theContext->numCallStackEntries; x++ )
+		LEOCleanUpStackToPtr( theContext, theContext->stack );
+		LEOContextGroupRelease( theContext->group );
+		theContext->group = NULL;
+		if( theContext->callStackEntries )
 		{
-			LEOScriptRelease( theContext->callStackEntries[x].script );
-			theContext->callStackEntries[x].script = NULL;
-			theContext->callStackEntries[x].handler = NULL;	// Script owns handlers, so this is invalid now, too.
+			for( size_t x = 0; x < theContext->numCallStackEntries; x++ )
+			{
+				LEOScriptRelease( theContext->callStackEntries[x].script );
+				theContext->callStackEntries[x].script = NULL;
+				theContext->callStackEntries[x].handler = NULL;	// Script owns handlers, so this is invalid now, too.
+			}
+			
+			free( theContext->callStackEntries );
+			theContext->callStackEntries = NULL;
+			theContext->numCallStackEntries = 0;
 		}
 		
-		free( theContext->callStackEntries );
-		theContext->callStackEntries = NULL;
-		theContext->numCallStackEntries = 0;
-	}
-	
-	if( theContext->cleanUpUserData )
-	{
-		theContext->cleanUpUserData( theContext->userData );
-		theContext->cleanUpUserData = NULL;
-		theContext->userData = NULL;
+		if( theContext->cleanUpUserData )
+		{
+			theContext->cleanUpUserData( theContext->userData );
+			theContext->cleanUpUserData = NULL;
+			theContext->userData = NULL;
+		}
+		free(theContext);
 	}
 }
 

@@ -40,8 +40,8 @@
 	
 	// --- Start of code to run some raw code:
 	LEOContextGroup*	group = LEOContextGroupCreate();
-	LEOContext			context;
-	LEOInitContext( &context, group, NULL, NULL );
+	LEOContext		*	context = NULL;
+	context = LEOContextCreate( group, NULL, NULL );
 	LEOContextGroupRelease(group);	// Context retains it.
 
 	// === start of stuff that a parser/compiler would generate:
@@ -82,27 +82,27 @@
 	NSTimeInterval		startTime = [NSDate timeIntervalSinceReferenceDate];
 	
 	#if ACTIVATE_DEBUGGER
-	context.preInstructionProc = LEODebuggerPreInstructionProc;	// Activate the debugger (not needed unless you want to debug).
+	context->preInstructionProc = LEODebuggerPreInstructionProc;	// Activate the debugger (not needed unless you want to debug).
 	LEODebuggerAddBreakpoint( startUpHandler->instructions );	// Set a breakpoint on the first instruction, so we can step through everything with the debugger.
 	#endif // ACTIVATE_DEBUGGER
 	
-	LEOContextPushHandlerScriptReturnAddressAndBasePtr( &context, startUpHandler, script, NULL, NULL );	// NULL return address is same as exit to top. basePtr is set to NULL as well.
-	LEORunInContext( startUpHandler->instructions, &context );
+	LEOContextPushHandlerScriptReturnAddressAndBasePtr( context, startUpHandler, script, NULL, NULL );	// NULL return address is same as exit to top. basePtr is set to NULL as well.
+	LEORunInContext( startUpHandler->instructions, context );
 	
 	#if ACTIVATE_DEBUGGER
-	LEODebugPrintContext( &context );
+	LEODebugPrintContext( context );
 	#endif
 	
 	[busyIndicator stopAnimation: self];
 	
-	if( context.errMsg[0] != 0 )
+	if( context->errMsg[0] != 0 )
 	{
-		LEODebugPrintContext( &context );
-		NSRunAlertPanel( @"Script Aborted", @"%s", @"OK", @"", @"", context.errMsg );
+		LEODebugPrintContext( context );
+		NSRunAlertPanel( @"Script Aborted", @"%s", @"OK", @"", @"", context->errMsg );
 	}
 	
 	[busyIndicator startAnimation: self];
-	LEOCleanUpContext( &context );
+	LEOContextRelease( context );
 	LEOScriptRelease( script );
 	[busyIndicator stopAnimation: self];
 	// --- End  of code to run some raw code:
