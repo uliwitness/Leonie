@@ -26,7 +26,7 @@
 	@seealso //leo_ref/c/tdef/LEOContext LEOContext
 	@seealso //leo_ref/c/func/LEOContextCreate	LEOContextCreate
 	@seealso //leo_ref/c/func/LEORunInContext	LEORunInContext
-	@seealso //leo_ref/c/func/LEOCleanUpContext	LEOCleanUpContext
+	@seealso //leo_ref/c/func/LEOContextRelease	LEOContextRelease
 	@seealso //leo_ref/c/func/LEOContextGroupCreate	LEOContextGroupCreate
 	@seealso //leo_ref/c/func/LEOContextGroupRelease	LEOContextGroupRelease
 */
