@@ -549,7 +549,7 @@ void	DoReferenceTest( void )
 	LEOSetValueAsNumber( &theValue, 1, kLEOUnitNone, ctx );
 	ASSERT( ctx->errMsg[0] != 0 );
 	ASSERT( strcmp(ctx->errMsg, "The referenced value doesn't exist anymore." ) == 0 );
-	ASSERT( ctx->keepRunning == false );
+	ASSERT( (ctx->flags & kLEOContextKeepRunning) == 0 );
 	LEOCleanUpValue( &theValue, kLEOInvalidateReferences, ctx );
 	
 	LEOContextRelease( ctx );
@@ -798,7 +798,7 @@ void	DoChunkReferenceTests( void )
 	LEOGetValueAsString( &valueReference, str, sizeof(str), ctx );
 	ASSERT( strcmp(str,"3.14") == 0 );
 	LEOUnit	theUnit = kLEOUnitHours;
-	ASSERT( ((LEOGetValueAsNumber( &valueReference, &theUnit, ctx ) - 3.14) < 0.0001) && ctx->keepRunning == true );
+	ASSERT( ((LEOGetValueAsNumber( &valueReference, &theUnit, ctx ) - 3.14) < 0.0001) && (ctx->flags & kLEOContextKeepRunning) );
 
 	LEOSetValueAsBoolean( &valueReference, true, ctx );
 	memset( str, 'X', sizeof(str) );
@@ -807,7 +807,7 @@ void	DoChunkReferenceTests( void )
 	memset( str, 'X', sizeof(str) );
 	LEOGetValueAsString( &valueReference, str, sizeof(str), ctx );
 	ASSERT( strcasecmp(str,"true") == 0 );
-	ASSERT( LEOGetValueAsBoolean( &valueReference, ctx ) == true && ctx->keepRunning == true );
+	ASSERT( LEOGetValueAsBoolean( &valueReference, ctx ) == true && (ctx->flags & kLEOContextKeepRunning) );
 
 	LEOSetValueAsCString( &valueReference, "this,that", ctx );
 	memset( str, 'X', sizeof(str) );
