@@ -194,10 +194,12 @@ typedef struct LEOCallStackEntry
 } LEOCallStackEntry;
 
 
+/*! @enum Possible values for the 'flags' field in the LEOContext. */
 enum
 {
-	kLEOContextKeepRunning	= (1 << 0),	// Clear this bit to stop script execution. Used on errors and for ExitToTop.
-	kLEOContextPause		= (1 << 1)	// Context has been paused and will be resumed
+	kLEOContextKeepRunning	= (1 << 0),	//! Clear this bit to stop script execution. Used on errors and for ExitToTop.
+	kLEOContextPause		= (1 << 1),	//! Set by the current instruction when it wants to pause the current context (e.g. to perform some async tasks which should appear synchronous to scripts). The instruction should not advance the PC until the context is resumed, which it can detect by looking at the kLEOContextResuming flag.
+	kLEOContextResuming		= (1 << 2)	//! Context was just resumed from being paused. The current instruction can now finish its work, advance the PC and return.
 };
 typedef uint32_t	LEOContextFlags;
 
