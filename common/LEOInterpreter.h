@@ -333,6 +333,21 @@ LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber, LE
 LEOValuePtr	LEOPushBooleanOnStack( LEOContext* theContext, bool inBoolean );
 
 
+/*! Pushes a special empty string on the stack that a user can't generate,
+	and which returns TRUE from LEOGetValueIsUnset(). To the user it looks
+	just like any empty string, but if the user replaces it with any other
+	value (even an empty string), you can detect that.
+	Used e.g. by the message box to detect whether the code the user entered
+	returned a result (i.e. was an expression) or not (i.e. was a command).
+	This is a shorthand for LEOPushValueOnStack and LEOInitUnsetValue.
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ @seealso //leo_ref/c/func/LEOPushEmptyValueOnStack LEOPushEmptyValueOnStack
+ @seealso //leo_ref/c/func/LEOInitUnsetValue LEOInitUnsetValue
+ */
+LEOValuePtr	LEOPushUnsetValueOnStack( LEOContext* theContext );
+
+
 /*! Push an empty string onto the stack, returning a pointer to it.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
  @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack

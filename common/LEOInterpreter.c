@@ -255,6 +255,21 @@ LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCo
 }
 
 
+LEOValuePtr	LEOPushUnsetValueOnStack( LEOContext* theContext )
+{
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitUnsetValue( theValue, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
 LEOValuePtr	LEOPushEmptyValueOnStack( LEOContext* theContext )
 {
 	if( !theContext->stackEndPtr )
