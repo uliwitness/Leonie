@@ -45,10 +45,16 @@ extern "C" {
 #define kLEOObjectIDINVALID		0
 
 
+/*! Flag that decides whether to clear references to this object or keep them.
+	This is used e.g. by variants when re-creating a value as a different type
+	to make sure that any references to it remain valid, or for returning a result.
+	OTOH, you generally want to invalidate references when e.g. creating a stack
+	slot to make sure that references from previous iterations notice that while
+	the address is identical, the old value is gone. */
 enum eLEOKeepReferencesFlag
 {
-	kLEOInvalidateReferences,
-	kLEOKeepReferences
+	kLEOInvalidateReferences,	//! Break all references to this slot and make sure we're treated as a fresh object.
+	kLEOKeepReferences			//! Keep all references to this slot, we're really just a new value that happens to have a different type.
 	
 };
 typedef int		LEOKeepReferencesFlag;
@@ -77,12 +83,14 @@ typedef double					LEONumber;
 /*! A unit attached to a numerical value. */
 typedef uint8_t					LEOUnit;
 
+/*! A group of units. We can convert between numbers of the same group, but not
+	between members of different groups. */
 typedef uint8_t					LEOUnitGroup;
 enum
 {
-	kLEOUnitGroupNone,
-	kLEOUnitGroupTime,
-	kLEOUnitGroupBytes,
+	kLEOUnitGroupNone,	//! A number with no unit attached. This is what you'll generally want.
+	kLEOUnitGroupTime,	//! A number that indicates a time interval.
+	kLEOUnitGroupBytes,	//! A number that indicates a byte size.
 	kLEOUnitGroup_Last
 };
 
@@ -113,11 +121,12 @@ struct LEOContext;
 struct LEOArrayEntry;
 
 
-// Layout of the virtual function tables:
+/*! Layout of the virtual function tables for all the LEOValue subclasses:
+	Also doubles as the 'class name'. */
 struct LEOValueType
 {
-	const char*	displayTypeName;	// Used for error messages etc. Doesn't distinguish between dynamic and constant strings.
-	size_t		size;				// Minimal size required for a variable of this type.
+	const char*	displayTypeName;	//! Used for error messages etc. Doesn't distinguish between dynamic and constant strings.
+	size_t		size;				//! Minimal size required for a variable of this type.
 	
 	LEONumber	(*GetAsNumber)( LEOValuePtr self, LEOUnit *outUnit, struct LEOContext* inContext );
 	LEOInteger	(*GetAsInteger)( LEOValuePtr self, LEOUnit *outUnit, struct LEOContext* inContext );
@@ -138,9 +147,9 @@ struct LEOValueType
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext );
 	
-	void		(*InitCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// dest is an uninitialized value.
-	void		(*InitSimpleCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// dest is an uninitialized value.
-	void		(*PutValueIntoValue)( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );	// dest must be a VALID, initialized value!
+	void		(*InitCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	//! dest is an uninitialized value.
+	void		(*InitSimpleCopy)( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	//! dest is an uninitialized value.
+	void		(*PutValueIntoValue)( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );	//! dest must be a VALID, initialized value!
 	LEOValuePtr	(*FollowReferencesAndReturnValueOfType)( LEOValuePtr self, LEOValueTypePtr inType, struct LEOContext* inContext );	// Returns NULL if no direct reference.
 	
 	void		(*DetermineChunkRangeOfSubstring)( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
@@ -170,36 +179,34 @@ struct LEOValueType
 
 
 // -----------------------------------------------------------------------------
-//	IVar layout common to all LEOValueBase subclasses:
-// -----------------------------------------------------------------------------
-
-// Each type of subclass should begin with this struct:
-//	That way it can be typecasted to the more generic type and methods can be
-//	called on it.
+/*! IVar layout common to all LEOValueBase subclasses:
+	Each type of subclass should begin with this struct:
+	That way it can be typecasted to the more generic type and methods can be
+	called on it. */
 struct LEOValueBase
 {
-	LEOValueTypePtr		isa;			// Virtual function dispatch table.
-	LEOObjectID			refObjectID;	// If we have a reference to us, this is it, so we can clear it on destruction.
+	LEOValueTypePtr		isa;			//! Virtual function dispatch table.
+	LEOObjectID			refObjectID;	//! If we have a reference to us, this is our index in the LEOContextGroup's reference table, so we can clear it on destruction.
 };
 
 
 // Tables we store in the isa member for the various types:
-extern struct LEOValueType	kLeoValueTypeNumber;
-extern struct LEOValueType	kLeoValueTypeInteger;
-extern struct LEOValueType	kLeoValueTypeString;
-extern struct LEOValueType	kLeoValueTypeStringConstant;
-extern struct LEOValueType	kLeoValueTypeBoolean;
-extern struct LEOValueType	kLeoValueTypeReference;
-extern struct LEOValueType	kLeoValueTypeArray;
-extern struct LEOValueType	kLeoValueTypeNativeObject;
-extern struct LEOValueType	kLeoValueTypeArrayVariant;
-extern struct LEOValueType	kLeoValueTypeNumberVariant;
-extern struct LEOValueType	kLeoValueTypeIntegerVariant;
-extern struct LEOValueType	kLeoValueTypeStringVariant;
-extern struct LEOValueType	kLeoValueTypeBooleanVariant;
-extern struct LEOValueType	kLeoValueTypeNativeObjectVariant;
-extern struct LEOValueType	kLeoValueTypeRect;
-extern struct LEOValueType	kLeoValueTypeRectVariant;
+extern struct LEOValueType	kLeoValueTypeNumber;				//! isa table used for LEOValueNumber.
+extern struct LEOValueType	kLeoValueTypeInteger;				//! isa table used for LEOValueInteger.
+extern struct LEOValueType	kLeoValueTypeString;				//! isa table used for dynamic strings in a LEOValueString.
+extern struct LEOValueType	kLeoValueTypeStringConstant;		//! isa table used for constant strings and the unset value in a LEOValueString.
+extern struct LEOValueType	kLeoValueTypeBoolean;				//! isa table used for LEOValueBoolean.
+extern struct LEOValueType	kLeoValueTypeReference;				//! isa table used for LEOValueReference.
+extern struct LEOValueType	kLeoValueTypeArray;					//! isa table used for LEOValueArray.
+extern struct LEOValueType	kLeoValueTypeNativeObject;			//! isa table used for LEOValueObject.
+extern struct LEOValueType	kLeoValueTypeArrayVariant;			//! isa table used for variant values (union LEOValue) while they contain arrays.
+extern struct LEOValueType	kLeoValueTypeNumberVariant;			//! isa table used for variant values (union LEOValue) while they contain numbers.
+extern struct LEOValueType	kLeoValueTypeIntegerVariant;		//! isa table used for variant values (union LEOValue) while they contain integers.
+extern struct LEOValueType	kLeoValueTypeStringVariant;			//! isa table used for variant values (union LEOValue) while they contain strings.
+extern struct LEOValueType	kLeoValueTypeBooleanVariant;		//! isa table used for variant values (union LEOValue) while they contain booleans.
+extern struct LEOValueType	kLeoValueTypeNativeObjectVariant;	//! isa table used for variant values (union LEOValue) while they contain objects.
+extern struct LEOValueType	kLeoValueTypeRect;					//! isa table used for rectangle values (LEOValueRect) while they contain arrays.
+extern struct LEOValueType	kLeoValueTypeRectVariant;			//! isa table used for variant values (union LEOValue) while they contain rects.
 
 
 // -----------------------------------------------------------------------------

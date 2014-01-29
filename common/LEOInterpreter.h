@@ -9,13 +9,14 @@
 
 /*!
 	@header LEOInterpreter
+	@unsorted
 	This is the core interpreter logic for the Leonie bytecode interpreter.
 	
 	To compile Leonie bytecode, create a LEOScript, add LEOHandlers to it and
 	add LEOInstructions to those using the constants in LEOInstructions.h
 	for the instruction IDs.
 	
-	To run Leonie bytecode, create LEOContextGroup, then create a LEOContext
+	To run Leonie bytecode, create a LEOContextGroup, then create a LEOContext
 	using LEOContextCreate() that references this group. You can now release the
 	context group, unless you want to keep using it, the context will have
 	retained it. To execute the bytecode, call LEORunInContext(). When the call
@@ -256,11 +257,13 @@ typedef struct LEOContext
 //	Prototypes:
 // -----------------------------------------------------------------------------
 
-/*! Initialize the given LEOContext so its instance variables are valid.
+/*! Create a new LEOContext.
 	The context is added to the provided group, and will retain the context
-	group until the context is cleaned up. So once you have added the context
-	to the context group, you can release it if you don't intend to create any
-	other contexts in that group directly.
+	group until the context is released by its last client. So once you have
+	added the context to the context group, you can release it if you don't
+	intend to create any other contexts in that group directly.
+	The context starts out with a reference count of 1. When you are done with
+	it, release it using LEOContextRelease().
 	@seealso //leo_ref/c/func/LEOContextRelease LEOContextRelease
 	@seealso //leo_ref/c/func/LEOContextRetain LEOContextRetain
 	@seealso //leo_ref/c/func/LEOContextGroupCreate	LEOContextGroupCreate
@@ -274,9 +277,17 @@ LEOContext*	LEOContextCreate( struct LEOContextGroup* inGroup, void* inUserData,
 	and releases the reference to its context group that the context
 	holds.
 	@seealso //leo_ref/c/func/LEOContextCreate LEOContextCreate
+	@seealso //leo_ref/c/func/LEOContextCreate LEOContextRetain
 */
 void		LEOContextRelease( LEOContext* inContext );
 
+/*! Acquire a reference to a context. Use this if, for example, you are
+	passing LEOContext objects between functions, or otherwise sharing
+	ownership of a context between several objects. Once you are done with
+	the context, call LEOContextRelease on it to give up your reference.
+	@seealso //leo_ref/c/func/LEOContextCreate LEOContextCreate
+	@seealso //leo_ref/c/func/LEOContextRelease LEOContextRelease
+*/
 LEOContext*	LEOContextRetain( LEOContext* inContext );	// returns inContext.
 
 /*! Shorthand for LEOPrepareContextForRunning and a loop of LEOContinueRunningContext.
@@ -309,10 +320,16 @@ void	LEOContextStopWithError( LEOContext* inContext, const char* inErrorFmt, ...
 /*! Push a copy of the given value onto the stack, returning a pointer to it.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
  @seealso //leo_ref/c/func/LEOPushIntegerOnStack LEOPushIntegerOnStack
+ @seealso //leo_ref/c/func/LEOPushNumberOnStack LEOPushNumberOnStack
+ @seealso //leo_ref/c/func/LEOPushBooleanOnStack LEOPushBooleanOnStack
+ @seealso //leo_ref/c/func/LEOPushEmptyValueOnStack LEOPushEmptyValueOnStack
+ @seealso //leo_ref/c/func/LEOPushStringValueStack LEOPushStringValueStack
+ @seealso //leo_ref/c/func/LEOPushStringConstantValueOnStack LEOPushStringConstantValueOnStack
  */
 LEOValuePtr	LEOPushValueOnStack( LEOContext* theContext, LEOValuePtr inValueToCopy );
 
 /*! Push a copy of the given integer onto the stack, returning a pointer to it.
+	This is a shorthand for LEOPushValueOnStack and the corresponding LEOInitXXValue call.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
  @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
  */
@@ -320,6 +337,7 @@ LEOValuePtr	LEOPushIntegerOnStack( LEOContext* theContext, LEOInteger inInteger,
 
 
 /*! Push a copy of the given number onto the stack, returning a pointer to it.
+	This is a shorthand for LEOPushValueOnStack and the corresponding LEOInitXXValue call.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
  @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
  */
@@ -327,6 +345,7 @@ LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber, LE
 
 
 /*! Push a copy of the given boolean onto the stack, returning a pointer to it.
+	This is a shorthand for LEOPushValueOnStack and the corresponding LEOInitXXValue call.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
  @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
  */
@@ -349,23 +368,37 @@ LEOValuePtr	LEOPushUnsetValueOnStack( LEOContext* theContext );
 
 
 /*! Push an empty string onto the stack, returning a pointer to it.
+	This is a shorthand for LEOPushValueOnStack and the corresponding LEInitStringConstantValue("") call.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
  @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ @seealso //leo_ref/c/func/LEOInitStringConstantValue LEInitStringConstantValue
+ @seealso //leo_ref/c/func/LEOPushUnsetValueOnStack LEOPushUnsetValueOnStack
  */
 LEOValuePtr	LEOPushEmptyValueOnStack( LEOContext* theContext );
 
 
 /*! Push a copy of the given string onto the stack, returning a pointer to it.
+	This is a shorthand for LEOPushValueOnStack and the corresponding LEOInitXXValue call.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
  @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ @seealso //leo_ref/c/func/LEOInitStringValue LEInitStringValue
  */
 LEOValuePtr	LEOPushStringValueOnStack( LEOContext* theContext, const char* inString, size_t strLen );
 
 
+/*! Push a copy of the given string constant onto the stack, returning a pointer to it.
+	This is a shorthand for LEOPushValueOnStack and the corresponding LEOInitXXValue call.
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ @seealso //leo_ref/c/func/LEOInitStringConstantValue LEInitStringConstantValue
+ */
 LEOValuePtr	LEOPushStringConstantValueOnStack( LEOContext* theContext, const char* inString );
 
 
-// Used internally to unwind the stack and ensure values get destructed correctly.
+/*! Used by instructions to unwind the stack (e.g. when removing their parameters) and ensure
+	values get destructed correctly.
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+*/
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete );
 
 
