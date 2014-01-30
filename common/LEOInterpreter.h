@@ -97,6 +97,13 @@ typedef void (*LEONonexistentHandlerFuncPtr)( struct LEOContext* inContext, LEOH
 typedef void (*LEOUserDataCleanUpFuncPtr)( void* inUserData );
 
 
+/*! This function is called when a context finishes execution, either
+	because of an error, or because the outermost function finished
+	executing. You can now look at the return value or pass the message
+	on to the next object in the chain. */
+typedef void (*LEOContextCompletionFuncPtr)( struct LEOContext* inContext );
+
+
 /*! A LEOInstruction is how an instruction looks in bytecode. It has the
 	instruction's ID as the first item, and then one 16-bit and one 32-bit
 	argument that depends on the particular instruction. */
@@ -225,7 +232,10 @@ typedef uint32_t	LEOContextFlags;
 	@field	stackBasePtr		Base pointer into stack, used during function calls to find parameters & start of local variable section.
 	@field	stackEndPtr			Stack pointer indicating used size of our stack. Always points at element after last element.
 	@field	stack				The stack containing all our local variables, parameters etc.
-								
+	@field	userData			A pointer for use by the client, for storing additional information in.
+	@field	cleanUpUserData		A function that will be passed the userData pointer and called right before we free the context's memory, which you can provide to free any memory used by the userData.
+	@field	contextCompleted	A function that is called once execution aborts due to an error or the outermost function completes. It can retrieve result values from the context and free its memory.
+	
 	@seealso //leo_ref/c/tag/LEOValueReference LEOValueReference
 	@seealso //leo_ref/c/tdef/LEOValuePtr LEOValuePtr
 	@seealso //leo_ref/c/tdef/LEOContextGroup LEOContextGroup
@@ -250,6 +260,7 @@ typedef struct LEOContext
 	union LEOValue					stack[LEO_STACK_SIZE];	// The stack.
 	void*							userData;
 	LEOUserDataCleanUpFuncPtr		cleanUpUserData;
+	LEOContextCompletionFuncPtr		contextCompleted;
 } LEOContext;
 
 
@@ -295,6 +306,30 @@ LEOContext*	LEOContextRetain( LEOContext* inContext );	// returns inContext.
 	@seealso //leo_ref/c/func/LEOContinueRunningContext LEOContinueRunningContext
 */
 void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext );
+
+
+/*! Queues up a paused context for resumption of execution the next time
+	LEOContextResumeIfAvailable is called.
+	@seealso //leo_ref/c/func/LEORunInContext LEORunInContext
+	@seealso //leo_ref/c/func/LEOPauseContext LEOPauseContext
+	@seealso //leo_ref/c/func/LEOContextResumeIfAvailable LEOContextResumeIfAvailable
+*/
+void	LEOResumeContext( LEOContext *inContext );
+
+
+/*! An instruction can call this to cause the given context so you can do some
+	async work, then later come back to it with LEOResumeContext.
+	@seealso //leo_ref/c/func/LEOResumeContext LEOResumeContext
+*/
+void	LEOPauseContext( LEOContext *inContext );
+
+
+/*!
+	@seealso //leo_ref/c/func/LEOResumeContext LEOResumeContext
+	@seealso //leo_ref/c/func/LEOPauseContext LEOPauseContext
+*/
+void	LEOContextResumeIfAvailable();
+
 
 /*! Set the currentInstruction of the given LEOContext to the given instruction 
 	array's first instruction, and initialize the Base pointer and stack end pointer
