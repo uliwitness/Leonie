@@ -382,12 +382,51 @@ void	LEORunInContext( LEOInstruction instructions[], LEOContext *inContext )
 	
 	while( LEOContinueRunningContext( inContext ) )
 		;
+	
+	if( (inContext->flags & kLEOContextPause) == 0 && inContext->contextCompleted )
+		inContext->contextCompleted( inContext );
+}
+
+
+static LEOContext*	sContextToResume = NULL;
+
+
+void	LEOResumeContext( LEOContext *inContext )
+{
+	sContextToResume = LEOContextRetain( inContext );
+}
+
+
+void	LEOContextResumeIfAvailable()
+{
+	sContextToResume->flags |= kLEOContextResuming | kLEOContextKeepRunning;
+	sContextToResume->flags &= ~kLEOContextPause;
+	
+	bool	goOn = LEOContinueRunningContext( sContextToResume );
+	sContextToResume->flags &= ~kLEOContextResuming;
+	if( goOn )
+	{
+		while( LEOContinueRunningContext( sContextToResume ) )
+			;
+	}
+	
+	if( (sContextToResume->flags & kLEOContextPause) == 0 && sContextToResume->contextCompleted )
+		sContextToResume->contextCompleted( sContextToResume );
+	
+	sContextToResume = NULL;	// Either we're done, or we're paused.
+}
+
+
+void	LEOPauseContext( LEOContext *inContext )
+{
+	inContext->flags |= kLEOContextPause;
 }
 
 
 void	LEOPrepareContextForRunning( LEOInstruction instructions[], LEOContext *inContext )
 {
 	inContext->flags = kLEOContextKeepRunning;
+	inContext->flags &= ~(kLEOContextPause | kLEOContextResuming);
 	inContext->currentInstruction = instructions;
 	if( !inContext->stackEndPtr )
 		inContext->stackEndPtr = inContext->stack;
@@ -418,7 +457,7 @@ bool	LEOContinueRunningContext( LEOContext *inContext )
 	if( gInstructionIDToDebugPrintAfter == currID )
 		LEODebugPrintContext(inContext);
 	
-	return( inContext->currentInstruction != NULL && (inContext->flags & kLEOContextKeepRunning) );
+	return( inContext->currentInstruction != NULL && (inContext->flags & kLEOContextKeepRunning) && (inContext->flags & kLEOContextPause) == 0 );
 }
 
 
