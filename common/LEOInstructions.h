@@ -46,6 +46,8 @@ enum
 	JUMP_RELATIVE_IF_LT_SAME_ZERO_INSTR,
 	PUSH_NUMBER_INSTR,
 	PUSH_INTEGER_INSTR,
+	PUSH_INTEGER_START_INSTR,	// First 32 of 64 bit integer, pushed on stack.
+	ASSIGN_INTEGER_END_INSTR,	// Remaining 32 of 64 bit integer, merged into the last integer on the stack.
 	ADD_NUMBER_INSTR,
 	ADD_INTEGER_INSTR,
 	CALL_HANDLER_INSTR,

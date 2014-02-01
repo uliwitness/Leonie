@@ -46,6 +46,8 @@ void	LEOJumpRelativeIfGreaterSameThanZeroInstruction( LEOContext* inContext );
 void	LEOJumpRelativeIfLessSameThanZeroInstruction( LEOContext* inContext );
 void	LEOPushNumberInstruction( LEOContext* inContext );
 void	LEOPushIntegerInstruction( LEOContext* inContext );
+void	LEOPushIntegerStartInstruction( LEOContext* inContext );
+void	LEOAssignIntegerEndInstruction( LEOContext* inContext );
 void	LEOAddNumberInstruction( LEOContext* inContext );
 void	LEOAddIntegerInstruction( LEOContext* inContext );
 void	LEOCallHandlerInstruction( LEOContext* inContext );
@@ -457,7 +459,7 @@ void	LEOPushNumberInstruction( LEOContext* inContext )
 
 
 /*!
-	Push the given LEOInteger on the stack (PUSH_INTEGER_INSTR)
+	Push the given 32-bit LEOInteger on the stack (PUSH_INTEGER_INSTR)
 	
 	param1	-	The LEOUnit for this integer (kLEOUnitNone if it's really just a number).
 	param2	-	The LEOInteger (typecast to a uint32_t) to push.
@@ -469,6 +471,44 @@ void	LEOPushIntegerInstruction( LEOContext* inContext )
 							kLEOInvalidateReferences, inContext );
 	inContext->stackEndPtr++;
 
+	inContext->currentInstruction++;
+}
+
+
+/*!
+	Push half of the given 64-bit LEOInteger on the stack (PUSH_INTEGER_START_INSTR)
+	
+	param1	-	The LEOUnit for this integer (kLEOUnitNone if it's really just a number).
+	param2	-	The first 32 bits of the LEOInteger to push.
+*/
+
+void	LEOPushIntegerStartInstruction( LEOContext* inContext )
+{
+	uint64_t	topHalf = inContext->currentInstruction->param2;
+	topHalf <<= 32;
+	LEOInitIntegerValue( (LEOValuePtr) inContext->stackEndPtr, topHalf, inContext->currentInstruction->param1,
+							kLEOInvalidateReferences, inContext );
+	inContext->stackEndPtr++;
+
+	inContext->currentInstruction++;
+}
+
+
+/*!
+	Push half of the given 64-bit LEOInteger on the stack (ASSIGN_INTEGER_END_INSTR)
+	
+	param1	-	The LEOUnit for this integer (kLEOUnitNone if it's really just a number).
+	param2	-	The second 32 bits of the LEOInteger to push.
+*/
+
+void	LEOAssignIntegerEndInstruction( LEOContext* inContext )
+{
+	uint64_t	bottomHalf = inContext->currentInstruction->param2;
+	LEOValuePtr	theValue = inContext->stackEndPtr -1;
+	
+	bottomHalf |= (uint64_t)theValue->integer.integer;
+	theValue->integer.integer = bottomHalf;
+	
 	inContext->currentInstruction++;
 }
 
@@ -2156,6 +2196,8 @@ LEOINSTR(LEOJumpRelativeIfGreaterSameThanZeroInstruction)
 LEOINSTR(LEOJumpRelativeIfLessSameThanZeroInstruction)
 LEOINSTR(LEOPushNumberInstruction)
 LEOINSTR(LEOPushIntegerInstruction)
+LEOINSTR(LEOPushIntegerStartInstruction)
+LEOINSTR(LEOAssignIntegerEndInstruction)
 LEOINSTR(LEOAddNumberInstruction)
 LEOINSTR(LEOAddIntegerInstruction)
 LEOINSTR(LEOCallHandlerInstruction)
