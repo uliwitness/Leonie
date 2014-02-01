@@ -397,7 +397,7 @@ void	LEOResumeContext( LEOContext *inContext )
 }
 
 
-void	LEOContextResumeIfAvailable()
+void	LEOContextResumeIfAvailable( void )
 {
 	sContextToResume->flags |= kLEOContextResuming | kLEOContextKeepRunning;
 	sContextToResume->flags &= ~kLEOContextPause;

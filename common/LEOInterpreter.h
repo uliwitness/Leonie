@@ -328,7 +328,7 @@ void	LEOPauseContext( LEOContext *inContext );
 	@seealso //leo_ref/c/func/LEOResumeContext LEOResumeContext
 	@seealso //leo_ref/c/func/LEOPauseContext LEOPauseContext
 */
-void	LEOContextResumeIfAvailable();
+void	LEOContextResumeIfAvailable( void );
 
 
 /*! Set the currentInstruction of the given LEOContext to the given instruction 
