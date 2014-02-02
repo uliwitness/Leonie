@@ -156,6 +156,8 @@ struct LEOInstructionEntry
 #define LEOINSTR_START(n,c)	struct LEOInstructionEntry	g ## n ##Instructions[c] = {
 #define LEOINSTR(n)				{ n, #n }, 
 #define LEOINSTR_LAST(n)		{ n, #n } };
+#define LEOINSTR_DUMMY(n)		{ LEOInvalidInstruction, #n },
+#define LEOINSTR_DUMMY_LAST(n)	{ LEOInvalidInstruction, #n } };
 
 
 /*! @functiongroup Static typecasting functions */

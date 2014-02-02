@@ -27,7 +27,6 @@
 #include <string.h>
 
 
-void	LEOInvalidInstruction( LEOContext* inContext );
 void	LEOExitToTopInstruction( LEOContext* inContext );
 void	LEONoOpInstruction( LEOContext* inContext );
 void	LEOPushStringFromTableInstruction( LEOContext* inContext );

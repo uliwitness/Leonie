@@ -130,6 +130,8 @@ enum eLEOCallHandlerFlags // at most uint16_t
 void		LEOCleanUpHandlerParametersFromEndOfStack( LEOContext* inContext );
 LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInteger paramIndex );
 
+void		LEOInvalidInstruction( LEOContext* inContext );	// Gets called when an instruction is called that wasn't registered.
+
 
 // -----------------------------------------------------------------------------
 //	Globals:
