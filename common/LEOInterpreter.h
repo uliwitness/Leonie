@@ -249,6 +249,9 @@ typedef struct LEOContext
 	struct LEOContextGroup	*		group;					// The group this context belongs to, containing its global state, references etc.
 	LEOContextFlags					flags;					// But flags for flow control etc.
 	char							errMsg[1024];			// Error message to display when kLEOContextKeepRunning flag has been set to FALSE.
+	size_t							errLine;				// Line on which the error occurred. Or SIZE_T_MAX if we don't know.
+	size_t							errOffset;				// Byte offset in script at which the error occurred, or SIZE_T_MAX if we don't know. If this isn't present, errLine might still be set.
+	uint16_t						errFileID;				// ID of the file in which the error occurred.
 	char							itemDelimiter;			// item delimiter to use for chunk expressions in values.
 	size_t							numCallStackEntries;	// Number of items in callStackEntries.
 	LEOCallStackEntry		*		callStackEntries;		// Array of call stack entries to allow showing a simple backtrace and picking handlers from the current script.
@@ -352,7 +355,7 @@ bool	LEOContinueRunningContext( LEOContext *inContext );
 	Currently sets the errMsg field of the context to the given string and set
 	keepRunningto FALSE.
  */
-void	LEOContextStopWithError( LEOContext* inContext, const char* inErrorFmt, ... );
+void	LEOContextStopWithError( LEOContext* inContext, size_t errLine, size_t errOffset, uint16_t fileID, const char* inErrorFmt, ... );
 
 /*! Push a copy of the given value onto the stack, returning a pointer to it.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr

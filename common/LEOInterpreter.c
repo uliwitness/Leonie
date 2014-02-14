@@ -177,7 +177,7 @@ LEOHandler*	LEOContextPeekCurrentHandler( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		LEOContextStopWithError( inContext, "Error: No current handler found." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Error: No current handler found." );
 		return NULL;
 	}
 	else
@@ -189,7 +189,7 @@ LEOScript*	LEOContextPeekCurrentScript( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		LEOContextStopWithError( inContext, "Error: No current script found." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Error: No current script found." );
 		return NULL;
 	}
 	else
@@ -201,7 +201,7 @@ LEOInstruction*	LEOContextPeekReturnAddress( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		LEOContextStopWithError( inContext, "Error: No return address found." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Error: No return address found." );
 		return NULL;
 	}
 	else
@@ -213,7 +213,7 @@ LEOValuePtr	LEOContextPeekBasePtr( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		LEOContextStopWithError( inContext, "Error: No base pointer found." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Error: No base pointer found." );
 		return NULL;
 	}
 	else
@@ -225,7 +225,7 @@ void	LEOContextPopHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		LEOContextStopWithError( inContext, "Error: Script attempted to return from handler that has never been called." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Error: Script attempted to return from handler that has never been called." );
 		return;
 	}
 	
@@ -461,12 +461,16 @@ bool	LEOContinueRunningContext( LEOContext *inContext )
 }
 
 
-void	LEOContextStopWithError( LEOContext* inContext, const char* inErrorFmt, ... )
+void	LEOContextStopWithError( LEOContext* inContext, size_t errLine, size_t errOffset, uint16_t fileID, const char* inErrorFmt, ... )
 {
 	va_list		varargs;
 	va_start( varargs, inErrorFmt );
-	vsnprintf( inContext->errMsg, sizeof(inContext->errMsg), inErrorFmt, varargs );
+	inContext->errMsg[sizeof(inContext->errMsg) -1] = 0;
+	vsnprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, inErrorFmt, varargs );
 	va_end( varargs );
+	inContext->errLine = errLine;
+	inContext->errOffset = errOffset;
+	inContext->errFileID = fileID;
 	inContext->flags &= ~kLEOContextKeepRunning;
 	
 	inContext->promptProc( inContext );

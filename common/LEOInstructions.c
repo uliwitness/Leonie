@@ -114,7 +114,7 @@ void	LEOParseErrorInstruction( LEOContext* inContext );
 
 void	LEOInvalidInstruction( LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Unknown instruction %u", inContext->currentInstruction->instructionID );	// Causes interpreter loop to exit.
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Unknown instruction %u", inContext->currentInstruction->instructionID );	// Causes interpreter loop to exit.
 }
 
 
@@ -136,7 +136,7 @@ void	LEOParseErrorInstruction( LEOContext* inContext )
 {
 	size_t		errorIndex = inContext->currentInstruction->param2;
 	LEOScript*	script = LEOContextPeekCurrentScript( inContext );
-	LEOContextStopWithError( inContext, "%s", script->parseErrors[errorIndex].errMsg );
+	LEOContextStopWithError( inContext, script->parseErrors[errorIndex].errorLine, script->parseErrors[errorIndex].errorOffset, script->parseErrors[errorIndex].fileID, "%s", script->parseErrors[errorIndex].errMsg );
 }
 
 
@@ -611,7 +611,7 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 		if( inContext->callNonexistentHandlerProc )
 			inContext->callNonexistentHandlerProc( inContext, handlerName );
 		else
-			LEOContextStopWithError( inContext, "Couldn't find handler \"%s\".", LEOContextGroupHandlerNameForHandlerID( inContext->group, handlerName ) );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Couldn't find handler \"%s\".", LEOContextGroupHandlerNameForHandlerID( inContext->group, handlerName ) );
 		inContext->currentInstruction++;
 	}
 }
@@ -1275,7 +1275,7 @@ void	LEOSubtractCommandInstruction( LEOContext* inContext )
 	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 	if( commonUnit == kLEOUnit_Last )
 	{
-		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 		return;
 	}
 	
@@ -1303,7 +1303,7 @@ void	LEOAddCommandInstruction( LEOContext* inContext )
 	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 	if( commonUnit == kLEOUnit_Last )
 	{
-		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 		return;
 	}
 
@@ -1331,7 +1331,7 @@ void	LEOMultiplyCommandInstruction( LEOContext* inContext )
 	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 	if( commonUnit == kLEOUnit_Last )
 	{
-		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 		return;
 	}
 
@@ -1358,14 +1358,14 @@ void	LEODivideCommandInstruction( LEOContext* inContext )
 	
 	if( secondArgument == 0.0 )
 	{
-		LEOContextStopWithError( inContext, "Can't divide %g by 0.", firstArgument );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't divide %g by 0.", firstArgument );
 		return;
 	}
 	
 	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 	if( commonUnit == kLEOUnit_Last )
 	{
-		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 		return;
 	}
 	
@@ -1395,7 +1395,7 @@ void	LEOSubtractOperatorInstruction( LEOContext* inContext )
 	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 	if( commonUnit == kLEOUnit_Last )
 	{
-		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 		return;
 	}
 	
@@ -1424,7 +1424,7 @@ void	LEOAddOperatorInstruction( LEOContext* inContext )
 	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 	if( commonUnit == kLEOUnit_Last )
 	{
-		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 		return;
 	}
 	
@@ -1453,7 +1453,7 @@ void	LEOMultiplyOperatorInstruction( LEOContext* inContext )
 	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 	if( commonUnit == kLEOUnit_Last )
 	{
-		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 		return;
 	}
 	
@@ -1479,7 +1479,7 @@ void	LEODivideOperatorInstruction( LEOContext* inContext )
 
 	if( secondArgument == 0.0 )
 	{
-		LEOContextStopWithError( inContext, "Can't divide %g by 0.", firstArgument );	// Causes interpreter loop to exit.
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't divide %g by 0.", firstArgument );	// Causes interpreter loop to exit.
 		return;
 	}
 
@@ -1488,7 +1488,7 @@ void	LEODivideOperatorInstruction( LEOContext* inContext )
 	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 	if( commonUnit == kLEOUnit_Last )
 	{
-		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 		return;
 	}
 	
@@ -1515,7 +1515,7 @@ void	LEOGreaterThanOperatorInstruction( LEOContext* inContext )
 		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 		if( commonUnit == kLEOUnit_Last )
 		{
-			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 			return;
 		}
 		
@@ -1556,7 +1556,7 @@ void	LEOLessThanOperatorInstruction( LEOContext* inContext )
 		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 		if( commonUnit == kLEOUnit_Last )
 		{
-			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 			return;
 		}
 		
@@ -1597,7 +1597,7 @@ void	LEOGreaterThanEqualOperatorInstruction( LEOContext* inContext )
 		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 		if( commonUnit == kLEOUnit_Last )
 		{
-			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 			return;
 		}
 		
@@ -1638,7 +1638,7 @@ void	LEOLessThanEqualOperatorInstruction( LEOContext* inContext )
 		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 		if( commonUnit == kLEOUnit_Last )
 		{
-			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 			return;
 		}
 		
@@ -1692,7 +1692,7 @@ void	LEOModuloOperatorInstruction( LEOContext* inContext )
 	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 	if( commonUnit == kLEOUnit_Last )
 	{
-		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 		return;
 	}
 	
@@ -1717,7 +1717,7 @@ void	LEOPowerOperatorInstruction( LEOContext* inContext )
 	LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 	if( commonUnit == kLEOUnit_Last )
 	{
-		LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 		return;
 	}
 	
@@ -1744,7 +1744,7 @@ void	LEOEqualOperatorInstruction( LEOContext* inContext )
 		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 		if( commonUnit == kLEOUnit_Last )
 		{
-			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 			return;
 		}
 		
@@ -1785,7 +1785,7 @@ void	LEONotEqualOperatorInstruction( LEOContext* inContext )
 		LEOUnit	commonUnit = LEOConvertNumbersToCommonUnit( &firstArgument, firstUnit, &secondArgument, secondUnit );
 		if( commonUnit == kLEOUnit_Last )
 		{
-			LEOContextStopWithError( inContext, "Can't subtract apples from oranges, that'd give fruit punch." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't subtract apples from oranges, that'd give fruit punch." );
 			return;
 		}
 		

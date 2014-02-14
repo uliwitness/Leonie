@@ -852,7 +852,7 @@ LEOUnit	LEOConvertNumbersToCommonUnit( LEONumber* firstArgument, LEOUnit firstUn
 
 const char*	LEOCantGetValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext,"Can't make %s into a string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0,"Can't make %s into a string", self->base.isa->displayTypeName );
 	return "";
 }
 
@@ -862,7 +862,7 @@ void	LEOCantDetermineChunkRangeOfSubstringOfValue( LEOValuePtr self, size_t *ioB
 													 LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
 													 struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Can't make %s into a string.", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't make %s into a string.", self->base.isa->displayTypeName );
 }
 
 
@@ -873,7 +873,7 @@ void	LEOCantDetermineChunkRangeOfSubstringOfValue( LEOValuePtr self, size_t *ioB
 
 LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext,"Can't make %s into a number", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0,"Can't make %s into a number", self->base.isa->displayTypeName );
 	
 	return 0.0;
 }
@@ -881,7 +881,7 @@ LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, struct LE
 
 void	LEOCantGetValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext,"Can't make %s into a rect", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0,"Can't make %s into a rect", self->base.isa->displayTypeName );
 }
 
 
@@ -892,7 +892,7 @@ void	LEOCantGetValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOI
 
 LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Can't make %s into an integer", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't make %s into an integer", self->base.isa->displayTypeName );
 	
 	return 0LL;
 }
@@ -905,7 +905,7 @@ LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, struct 
 
 bool	LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Can't make %s into a boolean", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't make %s into a boolean", self->base.isa->displayTypeName );
 	
 	return false;
 }
@@ -923,7 +923,7 @@ void	LEOCantGetValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 										size_t inRangeStart, size_t inRangeEnd,
 										char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Can't make %s into a string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't make %s into a string", self->base.isa->displayTypeName );
 }
 
 
@@ -934,7 +934,7 @@ void	LEOCantGetValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 
 LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Can't make %s into an array", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't make %s into an array", self->base.isa->displayTypeName );
 	
 	return NULL;
 }
@@ -947,7 +947,7 @@ LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, union 
 
 void	LEOCantSetValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected array, found %s", self->base.isa->displayTypeName );
 }
 
 
@@ -955,7 +955,7 @@ LEOValuePtr	LEOGetStringValueForKey( LEOValuePtr self, const char* keyName, unio
 {
 	if( !tempStorage )
 	{
-		LEOContextStopWithError( inContext, "Internal error converting %s to array.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Internal error converting %s to array.", self->base.isa->displayTypeName );
 		return NULL;
 	}
 	
@@ -965,13 +965,13 @@ LEOValuePtr	LEOGetStringValueForKey( LEOValuePtr self, const char* keyName, unio
 		convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
-			LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected array, found %s", self->base.isa->displayTypeName );
 			return NULL;
 		}
 	}
 	else
 	{
-		LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected array, found %s", self->base.isa->displayTypeName );
 		return NULL;
 	}
 	
@@ -993,7 +993,7 @@ void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValu
 		convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
-			LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected array, found %s", self->base.isa->displayTypeName );
 			return;
 		}
 	}
@@ -1014,7 +1014,7 @@ void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValu
 
 void	LEOCantSetValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit inUnit, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Expected %s, found number", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found number", self->base.isa->displayTypeName );
 }
 
 
@@ -1025,7 +1025,7 @@ void	LEOCantSetValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit inUn
 
 void	LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, LEOUnit inUnit, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Expected %s, found integer", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found integer", self->base.isa->displayTypeName );
 }
 
 
@@ -1036,7 +1036,7 @@ void	LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, LEOUnit i
 
 void	LEOCantSetValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Expected %s, found string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found string", self->base.isa->displayTypeName );
 }
 
 
@@ -1047,7 +1047,7 @@ void	LEOCantSetValueAsString( LEOValuePtr self, const char* inString, size_t inS
 
 void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Expected %s, found boolean", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found boolean", self->base.isa->displayTypeName );
 }
 
 
@@ -1058,13 +1058,13 @@ void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext
 
 void	LEOCantSetValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Expected %s, found rect", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found rect", self->base.isa->displayTypeName );
 }
 
 
 void	LEOCantSetValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Expected %s, found native object", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found native object", self->base.isa->displayTypeName );
 }
 
 /*!
@@ -1076,14 +1076,14 @@ void	LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Expected %s, found string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found string", self->base.isa->displayTypeName );
 }
 
 
 void	LEOCantSetValuePredeterminedRangeAsString( LEOValuePtr self, size_t inRangeStart, size_t inRangeEnd,
 													const char* inBuf, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Expected %s, found string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found string", self->base.isa->displayTypeName );
 }
 
 
@@ -1165,7 +1165,7 @@ LEOValuePtr	LEOCantFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOVa
 
 void	LEOCantSetValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Expected %s, found array", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found array", self->base.isa->displayTypeName );
 }
 
 
@@ -1179,13 +1179,13 @@ void	LEOSetStringLikeValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArr
 
 void	LEOCantGetValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Can't get properties of ranges of a %s", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't get properties of ranges of a %s", self->base.isa->displayTypeName );
 }
 
 
 void	LEOCantSetValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Ranges of a %s can't have properties", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Ranges of a %s can't have properties", self->base.isa->displayTypeName );
 }
 
 
@@ -1233,7 +1233,7 @@ LEOInteger LEOGetNumberValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, struc
 {
 	if( trunc(self->number.number) != self->number.number )
 	{
-		LEOContextStopWithError( inContext, "Expected integer, not fractional number." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected integer, not fractional number." );
 	}
 	
 	if( outUnit )
@@ -1285,13 +1285,13 @@ void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, size_t i
 {
 	if( inNumber == NULL || inNumberLen == 0 )
 	{
-		LEOContextStopWithError( inContext, "Expected %s, found empty.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found empty.", self->base.isa->displayTypeName );
 		return;
 	}
 	char		buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH +1] = {0};
 	if( inNumberLen > OTHER_VALUE_SHORT_STRING_MAX_LENGTH )
 	{
-		LEOContextStopWithError( inContext, "Expected %s, found string or number that is too large.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found string or number that is too large.", self->base.isa->displayTypeName );
 		return;
 	}
 	strncpy( buf, inNumber, inNumberLen );
@@ -1423,7 +1423,7 @@ void LEOSetIntegerValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit i
 {
 	if( trunc(inNumber) != inNumber )
 	{
-		LEOContextStopWithError( inContext, "Can't make fractional number into integer." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't make fractional number into integer." );
 	}
 	else
 	{
@@ -1454,13 +1454,13 @@ void LEOSetIntegerValueAsString( LEOValuePtr self, const char* inInteger, size_t
 {
 	if( inInteger == NULL || inIntegerLen == 0 )
 	{
-		LEOContextStopWithError( inContext, "Expected %s, found empty.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected %s, found empty.", self->base.isa->displayTypeName );
 		return;
 	}
 	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH +1] = { 0 };
 	if( inIntegerLen > OTHER_VALUE_SHORT_STRING_MAX_LENGTH )
 	{
-		LEOContextStopWithError( inContext, "Expected a %s here, found a string, or a number that is too large.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected a %s here, found a string, or a number that is too large.", self->base.isa->displayTypeName );
 		return;
 	}
 	strncpy( buf, inInteger, inIntegerLen );
@@ -2263,7 +2263,7 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 {
 	if( LEOGetArrayKeyCount(convertedArray) != 4 )
 	{
-		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle here." );
 		return;
 	}
 	
@@ -2271,14 +2271,14 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 	LEOValuePtr	theNumObj = LEOGetArrayValueForKey( convertedArray, "left" );
 	if( !theNumObj )
 	{
-		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle here." );
 		return;
 	}
 	LEOUnit		theUnit = kLEOUnitNone;
 	LEOInteger	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle here." );
 		return;
 	}
 	*l = theNum;
@@ -2287,13 +2287,13 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 	theNumObj = LEOGetArrayValueForKey( convertedArray, "top" );
 	if( !theNumObj )
 	{
-		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle here." );
 		return;
 	}
 	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle here." );
 		return;
 	}
 	*t = theNum;
@@ -2302,13 +2302,13 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 	theNumObj = LEOGetArrayValueForKey( convertedArray, "right" );
 	if( !theNumObj )
 	{
-		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle here." );
 		return;
 	}
 	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle here." );
 		return;
 	}
 	*r = theNum;
@@ -2317,13 +2317,13 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 	theNumObj = LEOGetArrayValueForKey( convertedArray, "bottom" );
 	if( !theNumObj )
 	{
-		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle here." );
 		return;
 	}
 	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		LEOContextStopWithError( inContext, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle here." );
 		return;
 	}
 	*b = theNum;
@@ -2344,13 +2344,13 @@ void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, L
 		numPart[numPartLen] = '\0';
 		if( numPartLen == 0 )
 		{
-			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle, found string." );
 			return;
 		}
 		*l = strtoll( numPart, &endPtr, 10 );
 		if( endPtr != (numPart +numPartLen) )
 		{
-			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle, found string." );
 			return;
 		}
 		
@@ -2362,13 +2362,13 @@ void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, L
 		numPart[numPartLen] = '\0';
 		if( numPartLen == 0 )
 		{
-			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle, found string." );
 			return;
 		}
 		*t = strtoll( numPart, &endPtr, 10 );
 		if( endPtr != (numPart +numPartLen) )
 		{
-			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle, found string." );
 			return;
 		}
 		
@@ -2380,13 +2380,13 @@ void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, L
 		numPart[numPartLen] = '\0';
 		if( numPartLen == 0 )
 		{
-			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle, found string." );
 			return;
 		}
 		*r = strtoll( numPart, &endPtr, 10 );
 		if( endPtr != (numPart +numPartLen) )
 		{
-			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle, found string." );
 			return;
 		}
 		
@@ -2398,13 +2398,13 @@ void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, L
 		numPart[numPartLen] = '\0';
 		if( numPartLen == 0 )
 		{
-			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle, found string." );
 			return;
 		}
 		*b = strtoll( numPart, &endPtr, 10 );
 		if( endPtr != (numPart +numPartLen) )
 		{
-			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle, found string." );
 			return;
 		}
 	}
@@ -2413,7 +2413,7 @@ void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, L
 		struct LEOArrayEntry*	convertedArray = LEOCreateArrayFromString( inString, inStringLen, inContext );
 		if( !convertedArray || LEOGetArrayKeyCount( convertedArray ) != 4 )
 		{
-			LEOContextStopWithError( inContext, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected rectangle, found string." );
 			return;
 		}
 		
@@ -2496,7 +2496,7 @@ void		LEOSetRectValueValueForKey( LEOValuePtr self, const char* inKey, LEOValueP
 	LEOInteger	theNum = LEOGetValueAsInteger( inValue, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		LEOContextStopWithError( inContext, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
 		return;
 	}
 	if( strcasecmp(inKey, "left") == 0 )
@@ -2647,7 +2647,7 @@ const char*	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -2669,7 +2669,7 @@ LEONumber	LEOGetReferenceValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, stru
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 		return 0.0;
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
@@ -2720,7 +2720,7 @@ LEOInteger	LEOGetReferenceValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, st
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 		return 0LL;
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
@@ -2771,7 +2771,7 @@ bool	LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inConte
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 		return false;
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
@@ -2797,7 +2797,7 @@ void	LEOGetReferenceValueAsRect( LEOValuePtr self, LEOInteger* l, LEOInteger* t,
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -2821,7 +2821,7 @@ void	LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -2844,7 +2844,7 @@ void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, size_
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -2868,7 +2868,7 @@ void	LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEO
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -2889,7 +2889,7 @@ void	LEOSetReferenceValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, L
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -2915,11 +2915,11 @@ void	LEOSetReferenceValueAsNativeObject( LEOValuePtr self, void* inNativeObject,
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
-		LEOContextStopWithError( inContext, "Can't combine chunk expressions and native strings." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't combine chunk expressions and native strings." );
 	}
 	else
 		LEOSetValueAsNativeObject( theValue, inNativeObject, inContext );
@@ -2935,7 +2935,7 @@ void	LEOSetReferenceValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -2958,7 +2958,7 @@ void	LEOSetReferenceValueAsInteger( LEOValuePtr self, LEOInteger inInteger, LEOU
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -2981,7 +2981,7 @@ void		LEOSetReferenceValueAsArray( LEOValuePtr self, struct LEOArrayEntry * inAr
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -3005,7 +3005,7 @@ void	LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -3029,7 +3029,7 @@ void	LEOSetReferenceValuePredeterminedRangeAsString( LEOValuePtr self, size_t in
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOSetValuePredeterminedRangeAsString( theValue, inRangeStart, inRangeEnd, inBuf, inContext );
@@ -3065,7 +3065,7 @@ void	LEOInitReferenceValueSimpleCopy( LEOValuePtr self, LEOValuePtr dest, LEOKee
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOInitSimpleCopy(theValue, dest, keepReferences, inContext);
@@ -3077,7 +3077,7 @@ void	LEOPutReferenceValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct L
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOPutValueIntoValue(theValue, dest, inContext);
@@ -3092,7 +3092,7 @@ void	LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -3151,7 +3151,7 @@ LEOValuePtr		LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKe
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 		
 		return NULL;
 	}
@@ -3165,7 +3165,7 @@ void		LEOSetReferenceValueValueForKey( LEOValuePtr self, const char* inKey, LEOV
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOSetValueForKey( theValue, inKey, inValue, inContext );
@@ -3177,7 +3177,7 @@ size_t		LEOGetReferenceValueKeyCount( LEOValuePtr self, struct LEOContext * inCo
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 		
 		return 0;
 	}
@@ -3191,7 +3191,7 @@ void		LEOGetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, 
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOGetValueForKeyOfRange( theValue, keyName, startOffset, endOffset, outValue, inContext );
@@ -3203,7 +3203,7 @@ void		LEOSetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, 
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOSetValueForKeyOfRange( theValue, keyName, inValue, startOffset, endOffset, inContext );
@@ -3217,7 +3217,7 @@ LEOValuePtr	LEOReferenceValueFollowReferencesAndReturnValueOfType( LEOValuePtr s
 		return self;
 	else if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 		
 		return NULL;
 	}
@@ -3235,7 +3235,7 @@ bool	LEOGetReferenceValueIsUnset( LEOValuePtr self, struct LEOContext * inContex
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		LEOContextStopWithError( inContext, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "The referenced value doesn't exist anymore." );
 		
 		return 0;
 	}
@@ -3374,13 +3374,13 @@ LEOValuePtr	LEOGetStringVariantValueForKey( LEOValuePtr self, const char* keyNam
 		convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
-			LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected array, found %s", self->base.isa->displayTypeName );
 			return NULL;
 		}
 	}
 	else
 	{
-		LEOContextStopWithError( inContext, "Expected array, found %s", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected array, found %s", self->base.isa->displayTypeName );
 		return NULL;
 	}
 	
@@ -3408,7 +3408,7 @@ void	LEOSetStringVariantValueValueForKey( LEOValuePtr self, const char* inKey, L
 		struct LEOArrayEntry	*	convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
-			LEOContextStopWithError( inContext, "Expected array here, found \"%s\".", self->string.string );
+			LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Expected array here, found \"%s\".", self->string.string );
 			return;
 		}
 		
@@ -3502,7 +3502,7 @@ void	LEOGetArrayValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Can't make %s into a string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't make %s into a string", self->base.isa->displayTypeName );
 }
 
 
@@ -3511,7 +3511,7 @@ void	LEODetermineChunkRangeOfSubstringOfArrayValue( LEOValuePtr self, size_t *io
 														LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
 														struct LEOContext* inContext )
 {
-	LEOContextStopWithError( inContext, "Can't make %s into a string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, SIZE_T_MAX, SIZE_T_MAX, 0, "Can't make %s into a string", self->base.isa->displayTypeName );
 }
 
 
