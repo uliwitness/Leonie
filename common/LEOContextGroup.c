@@ -99,7 +99,10 @@ LEOObjectID	LEOContextGroupCreateNewObjectIDForPointer( LEOContextGroup* inConte
 		for( size_t x = 1; x < inContext->numReferences; x++ )
 		{
 			if( inContext->references[x].value == NULL )	// Unused slot!
+			{
 				newObjectID = x;
+				break;
+			}
 		}
 		
 		if( newObjectID == kLEOObjectIDINVALID )
