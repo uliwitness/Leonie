@@ -211,3 +211,45 @@ uint32_t	UTF32CharacterToLower( uint32_t inUTF32Char )
 
 	return inUTF32Char;
 }
+
+
+size_t	UTF16LengthForUTF32Char( uint32_t inChar )
+{
+	const uint16_t	HI_SURROGATE_START = 0xD800;
+	uint16_t		X = (uint16_t) inChar;
+	uint32_t		U = (inChar >> 16) & ((1 << 5) - 1);
+	uint16_t		W = (uint16_t) U - 1;
+	uint16_t		HiSurrogate = HI_SURROGATE_START | (W << 6) | X >> 10;
+	size_t			utf16len = ((HiSurrogate == 0xffc0) ? 0 : 1) +1;
+
+	return utf16len;
+}
+
+
+size_t	UTF16CharsForUTF32Char( uint32_t inChar, uint16_t outChars[2] )
+{
+	const uint16_t	HI_SURROGATE_START = 0xD800;
+	uint16_t	X = (uint16_t) inChar;
+	uint32_t	U = (inChar >> 16) & ((1 << 5) - 1);
+	uint16_t	W = (uint16_t) U - 1;
+	uint16_t	HiSurrogate = HI_SURROGATE_START | (W << 6) | X >> 10;
+	size_t		utf16len = ((HiSurrogate == 0xffc0) ? 0 : 1) +1;
+
+	const uint16_t	LO_SURROGATE_START = (HiSurrogate == 0xffc0) ? 0 : 0xDC00;
+	uint16_t	X2 = (uint16_t) inChar;
+	uint16_t	LoSurrogate = (uint16_t) (LO_SURROGATE_START | (X2 & ((1 << 10) - 1)));
+	
+	if( utf16len == 1 )
+	{
+		outChars[0] = (LoSurrogate & 0xff) | (LoSurrogate >> 8);
+		outChars[1] = 0;
+	}
+	else
+	{
+		outChars[0] = (HiSurrogate & 0xff) | HiSurrogate >> 8;
+		outChars[1] = (LoSurrogate & 0xff) | (LoSurrogate >> 8);
+	}
+	
+	return utf16len;
+}
+

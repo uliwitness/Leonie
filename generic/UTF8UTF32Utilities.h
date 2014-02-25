@@ -18,6 +18,9 @@ extern "C" {
 	void		UTF8BytesForUTF32Character( uint32_t utf32Char, char* utf8, size_t *outLength );
 	uint32_t	UTF32CharacterToLower( uint32_t inUTF32Char );
 
+	size_t		UTF16LengthForUTF32Char( uint32_t inChar );
+	size_t		UTF16CharsForUTF32Char( uint32_t inChar, uint16_t outChars[2] );
+
 #if __cplusplus
 }
 #endif
