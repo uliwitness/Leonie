@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include "UTF8UTF32Utilities.h"
 
 
 bool		gAnyTestFailed = false;
@@ -1019,6 +1020,26 @@ void	DoAllChunksTest()
 }
 
 
+void	DoUnicodeTests( void )
+{
+#if 0
+	uint16_t	utf16[] = { 0xD83C, 0xDF13 };	// FIRST QUARTER MOON SYMBOL.
+
+	size_t		currOffs = 0;
+	uint32_t	utf16CharAsUTF32 = UTF16StringParseUTF32CharacterAtOffset( utf16, sizeof(utf16), &currOffs );
+	printf( "note: %04X, %04X --> %08X\n", utf16[0], utf16[1], utf16CharAsUTF32 );
+	ASSERT( 0x1F313 == utf16CharAsUTF32 );
+	ASSERT( currOffs == 2 );
+	
+	uint16_t		utf16FromUTF32Char[2] = {0};
+	ASSERT( 2 == UTF16CharsForUTF32Char( 0x1F313, utf16FromUTF32Char ) );
+	printf( "note: %08X --> %04X, %04X\n", 0x1F313, utf16FromUTF32Char[0], utf16FromUTF32Char[1] );
+	ASSERT( utf16FromUTF32Char[0] == utf16[0] );
+	ASSERT( utf16FromUTF32Char[1] == utf16[1] );
+#endif
+}
+
+
 int main( int argc, char** argv )
 {
 	LEOInitInstructionArray();
@@ -1031,6 +1052,7 @@ int main( int argc, char** argv )
 	DoWordsTestLeadingWhiteSingleSpaced();
 	DoWordsTestLeadingWhiteDoubleSpaced();
 	DoAllChunksTest();
+	DoUnicodeTests();
 	
 	DoScriptTest();
 	

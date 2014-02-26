@@ -8,8 +8,7 @@
 
 #include "UTF32CaseTables.h"
 #include <stdio.h>
-#include <stdint.h>
-
+#include "UTF8UTF32Utilities.h"
 
 size_t		GetLengthOfUTF8SequenceStartingWith( unsigned char inChar );
 uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset );
@@ -129,6 +128,29 @@ void	UTF8BytesForUTF32Character( uint32_t utf32Char, char* utf8, size_t *outLeng
 }
 
 
+size_t	UTF8LengthForUTF32Char( uint32_t utf32Char )
+{
+	if( utf32Char < 0x000080U )
+	{
+		return 1;
+	}
+	else if( utf32Char < 0x000800U )
+	{
+		return 2;
+	}
+	else if( utf32Char < 0x010000U )
+	{
+		return 3;
+	}
+	else if( utf32Char <= 0x0010FFFFU )
+	{
+		return 4;
+	}
+	
+	return 0;
+}
+
+
 uint32_t	UTF32CharacterToLower( uint32_t inUTF32Char )
 {
 	uint32_t	resultUTF32Char;
@@ -212,6 +234,35 @@ uint32_t	UTF32CharacterToLower( uint32_t inUTF32Char )
 	return inUTF32Char;
 }
 
+
+uint32_t	UTF16StringParseUTF32CharacterAtOffset( const uint16_t *utf16, size_t byteLen, size_t *ioCharOffset )
+{
+	uint32_t	U = 0;
+	uint16_t	W1 = *(utf16 +(*ioCharOffset));
+	if( W1 < 0xd800 || W1 > 0xDFFF )	// Single-char representation in UTF16, too.
+	{
+		*ioCharOffset += 1;
+		return W1;
+	}
+	uint16_t	W2 = 0;
+	if( (((*ioCharOffset) +1) * sizeof(uint16_t)) < byteLen )
+		W2 = *(utf16 +((*ioCharOffset) +1));
+	if( W1 < 0xD800 || W1 > 0xDBFF )	// Invalid char.
+	{
+		*ioCharOffset += 1;	// We skip it.
+		return W1;
+	}
+	if( W2 < 0xDC00 || W2 > 0xDFFF )	// Invalid surrogate pair.
+	{
+		*ioCharOffset += 1;	// We skip the first one and try again.
+		return W1;
+	}
+	uint32_t	HiTenBits = W1 & 49407U;
+	uint32_t	LoTenBits = W2 & 49407U;
+	U = 0x10000 + ((HiTenBits << 10) | LoTenBits);
+	
+	return U;
+}
 
 size_t	UTF16LengthForUTF32Char( uint32_t inChar )
 {
