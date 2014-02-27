@@ -21,8 +21,8 @@
 		5572AD8F126A0390004B782C /* LEOScript.c in Sources */ = {isa = PBXBuildFile; fileRef = 5572AD8E126A0390004B782C /* LEOScript.c */; };
 		5572AD90126A0390004B782C /* LEOScript.c in Sources */ = {isa = PBXBuildFile; fileRef = 5572AD8E126A0390004B782C /* LEOScript.c */; };
 		55792F4C12357A0A00A84BD2 /* LEOValue.c in Sources */ = {isa = PBXBuildFile; fileRef = 55792F4B12357A0A00A84BD2 /* LEOValue.c */; };
-		55AAC04B1710996B008441AF /* UTF8UTF32Utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = 55AAC0491710996B008441AF /* UTF8UTF32Utilities.c */; };
-		55AAC04D17109A0E008441AF /* UTF8UTF32Utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = 55AAC0491710996B008441AF /* UTF8UTF32Utilities.c */; };
+		55AAC04B1710996B008441AF /* UTF8UTF32Utilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55AAC0491710996B008441AF /* UTF8UTF32Utilities.cpp */; };
+		55AAC04D17109A0E008441AF /* UTF8UTF32Utilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55AAC0491710996B008441AF /* UTF8UTF32Utilities.cpp */; };
 		55AAC05017109C9C008441AF /* LEOMsgInstructionsMac.m in Sources */ = {isa = PBXBuildFile; fileRef = 55AAC04F17109C9C008441AF /* LEOMsgInstructionsMac.m */; };
 		55AAC05417109CCA008441AF /* LEOMsgInstructionsGeneric.c in Sources */ = {isa = PBXBuildFile; fileRef = 55AAC05117109CCA008441AF /* LEOMsgInstructionsGeneric.c */; };
 		55BB77921278CD5B006A7F62 /* LEOContextGroup.c in Sources */ = {isa = PBXBuildFile; fileRef = 55BB77911278CD5B006A7F62 /* LEOContextGroup.c */; };
@@ -61,13 +61,17 @@
 		55303C321243EC7100062EB5 /* LEOInterpreter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOInterpreter.c; path = ../common/LEOInterpreter.c; sourceTree = "<group>"; };
 		55303C561243F69000062EB5 /* LEOInstructions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOInstructions.h; path = ../common/LEOInstructions.h; sourceTree = "<group>"; };
 		55303C571243F69000062EB5 /* LEOInstructions.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOInstructions.c; path = ../common/LEOInstructions.c; sourceTree = "<group>"; };
+		554895C918BF372C00A7D342 /* checked.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = checked.h; path = ../utfcpp/source/utf8/checked.h; sourceTree = "<group>"; };
+		554895CA18BF372C00A7D342 /* core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = core.h; path = ../utfcpp/source/utf8/core.h; sourceTree = "<group>"; };
+		554895CB18BF372C00A7D342 /* unchecked.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = unchecked.h; path = ../utfcpp/source/utf8/unchecked.h; sourceTree = "<group>"; };
+		554895CC18BF372C00A7D342 /* utf8.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = utf8.h; path = ../utfcpp/source/utf8.h; sourceTree = "<group>"; };
 		55648AED1247E0C5000BE20A /* LEODebugger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEODebugger.h; path = ../common/LEODebugger.h; sourceTree = "<group>"; };
 		55648AEE1247E0C5000BE20A /* LEODebugger.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEODebugger.c; path = ../common/LEODebugger.c; sourceTree = "<group>"; };
 		5572AD8D126A0390004B782C /* LEOScript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOScript.h; path = ../common/LEOScript.h; sourceTree = SOURCE_ROOT; };
 		5572AD8E126A0390004B782C /* LEOScript.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOScript.c; path = ../common/LEOScript.c; sourceTree = SOURCE_ROOT; };
 		55792F4A12357A0A00A84BD2 /* LEOValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LEOValue.h; path = ../common/LEOValue.h; sourceTree = "<group>"; };
 		55792F4B12357A0A00A84BD2 /* LEOValue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = LEOValue.c; path = ../common/LEOValue.c; sourceTree = "<group>"; };
-		55AAC0491710996B008441AF /* UTF8UTF32Utilities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = UTF8UTF32Utilities.c; path = ../generic/UTF8UTF32Utilities.c; sourceTree = "<group>"; };
+		55AAC0491710996B008441AF /* UTF8UTF32Utilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UTF8UTF32Utilities.cpp; path = ../generic/UTF8UTF32Utilities.cpp; sourceTree = "<group>"; };
 		55AAC04A1710996B008441AF /* UTF8UTF32Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UTF8UTF32Utilities.h; path = ../generic/UTF8UTF32Utilities.h; sourceTree = "<group>"; };
 		55AAC04C171099C5008441AF /* UTF32CaseTables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UTF32CaseTables.h; path = ../generic/UTF32CaseTables.h; sourceTree = "<group>"; };
 		55AAC04E17109C9C008441AF /* LEOMsgInstructionsMac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LEOMsgInstructionsMac.h; sourceTree = "<group>"; };
@@ -202,7 +206,8 @@
 				552565C11279F889000D8325 /* LEOHandlerID.h */,
 				55AAC04C171099C5008441AF /* UTF32CaseTables.h */,
 				55AAC04A1710996B008441AF /* UTF8UTF32Utilities.h */,
-				55AAC0491710996B008441AF /* UTF8UTF32Utilities.c */,
+				55AAC0491710996B008441AF /* UTF8UTF32Utilities.cpp */,
+				554895CD18BF373900A7D342 /* utfcpp */,
 				550A2A6F12607EAC00C6DB9D /* TestsMain.c */,
 			);
 			name = common;
@@ -215,6 +220,17 @@
 				256AC3D90F4B6AC300CF3369 /* LeonieAppDelegate.m */,
 			);
 			name = Classes;
+			sourceTree = "<group>";
+		};
+		554895CD18BF373900A7D342 /* utfcpp */ = {
+			isa = PBXGroup;
+			children = (
+				554895C918BF372C00A7D342 /* checked.h */,
+				554895CA18BF372C00A7D342 /* core.h */,
+				554895CB18BF372C00A7D342 /* unchecked.h */,
+				554895CC18BF372C00A7D342 /* utf8.h */,
+			);
+			name = utfcpp;
 			sourceTree = "<group>";
 		};
 		55AAC05517109CD5008441AF /* generic */ = {
@@ -336,7 +352,7 @@
 				550A2A8412607FD000C6DB9D /* TestsMain.c in Sources */,
 				5572AD90126A0390004B782C /* LEOScript.c in Sources */,
 				55BB77B41278DAC9006A7F62 /* LEOContextGroup.c in Sources */,
-				55AAC04D17109A0E008441AF /* UTF8UTF32Utilities.c in Sources */,
+				55AAC04D17109A0E008441AF /* UTF8UTF32Utilities.cpp in Sources */,
 				55AAC05417109CCA008441AF /* LEOMsgInstructionsGeneric.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -354,7 +370,7 @@
 				55E140DC124805E8008EDC7C /* LEOChunks.c in Sources */,
 				5572AD8F126A0390004B782C /* LEOScript.c in Sources */,
 				55BB77921278CD5B006A7F62 /* LEOContextGroup.c in Sources */,
-				55AAC04B1710996B008441AF /* UTF8UTF32Utilities.c in Sources */,
+				55AAC04B1710996B008441AF /* UTF8UTF32Utilities.cpp in Sources */,
 				55AAC05017109C9C008441AF /* LEOMsgInstructionsMac.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -450,24 +466,28 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
 		};
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
 			};
 			name = Release;
 		};

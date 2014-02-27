@@ -6,9 +6,19 @@
 //  Copyright 2011 Uli Kusterer. All rights reserved.
 //
 
+extern "C" {
 #include "UTF32CaseTables.h"
 #include <stdio.h>
 #include "UTF8UTF32Utilities.h"
+}
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <locale>
+#include <iomanip>
+#include <string>
+#include <codecvt>
+
 
 size_t		GetLengthOfUTF8SequenceStartingWith( unsigned char inChar );
 uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset );
@@ -43,7 +53,7 @@ size_t	GetLengthOfUTF8SequenceStartingWith( unsigned char inChar )
 }
 
 
-uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset )
+extern "C" uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset )
 {
 	const uint8_t		*currUTF8Byte = (const uint8_t*) utf8 + (*ioOffset);
 	uint32_t			utf32Char = 0L;
@@ -87,7 +97,7 @@ uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, si
 }
 
 
-void	UTF8BytesForUTF32Character( uint32_t utf32Char, char* utf8, size_t *outLength )
+extern "C" void	UTF8BytesForUTF32Character( uint32_t utf32Char, char* utf8, size_t *outLength )
 {
 	char*	currUTF8Byte = utf8;
 	
@@ -128,7 +138,7 @@ void	UTF8BytesForUTF32Character( uint32_t utf32Char, char* utf8, size_t *outLeng
 }
 
 
-size_t	UTF8LengthForUTF32Char( uint32_t utf32Char )
+extern "C" size_t	UTF8LengthForUTF32Char( uint32_t utf32Char )
 {
 	if( utf32Char < 0x000080U )
 	{
@@ -234,9 +244,22 @@ uint32_t	UTF32CharacterToLower( uint32_t inUTF32Char )
 	return inUTF32Char;
 }
 
-
-uint32_t	UTF16StringParseUTF32CharacterAtOffset( const uint16_t *utf16, size_t byteLen, size_t *ioCharOffset )
+template<class Facet>
+struct deletable_facet : Facet
 {
+    template<class ...Args>
+    deletable_facet(Args&& ...args) : Facet(std::forward<Args>(args)...) {}
+    ~deletable_facet() {}
+};
+
+
+extern "C" uint32_t	UTF16StringParseUTF32CharacterAtOffset( const uint16_t *utf16, size_t byteLen, size_t *ioCharOffset )
+{
+	std::wstring_convert<
+        deletable_facet<std::codecvt<char32_t, char16_t, std::mbstate_t>>, char32_t> conv16;
+	std::u16string	str16((char16_t*)utf16 +*ioCharOffset, byteLen -((*ioCharOffset) *sizeof(char16_t)));
+    std::string str32 = conv16.to_bytes(str16);
+	
 	uint32_t	U = 0;
 	uint16_t	W1 = *(utf16 +(*ioCharOffset));
 	if( W1 < 0xd800 || W1 > 0xDFFF )	// Single-char representation in UTF16, too.
@@ -264,7 +287,7 @@ uint32_t	UTF16StringParseUTF32CharacterAtOffset( const uint16_t *utf16, size_t b
 	return U;
 }
 
-size_t	UTF16LengthForUTF32Char( uint32_t inChar )
+extern "C" size_t	UTF16LengthForUTF32Char( uint32_t inChar )
 {
 	const uint16_t	HI_SURROGATE_START = 0xD800;
 	uint16_t		X = (uint16_t) inChar;
@@ -277,7 +300,7 @@ size_t	UTF16LengthForUTF32Char( uint32_t inChar )
 }
 
 
-size_t	UTF16CharsForUTF32Char( uint32_t inChar, uint16_t outChars[2] )
+extern "C" size_t	UTF16CharsForUTF32Char( uint32_t inChar, uint16_t outChars[2] )
 {
 	const uint16_t	HI_SURROGATE_START = 0xD800;
 	uint16_t	X = (uint16_t) inChar;
