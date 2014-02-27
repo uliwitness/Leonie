@@ -10,6 +10,8 @@
 #define Stacksmith_UTF8UTF32Utilities_h
 
 #include <stdint.h>
+#include <stdio.h>
+
 
 #if __cplusplus
 extern "C" {

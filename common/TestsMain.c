@@ -1022,7 +1022,6 @@ void	DoAllChunksTest()
 
 void	DoUnicodeTests( void )
 {
-#if 0
 	uint16_t	utf16[] = { 0xD83C, 0xDF13 };	// FIRST QUARTER MOON SYMBOL.
 
 	size_t		currOffs = 0;
@@ -1036,7 +1035,13 @@ void	DoUnicodeTests( void )
 	printf( "note: %08X --> %04X, %04X\n", 0x1F313, utf16FromUTF32Char[0], utf16FromUTF32Char[1] );
 	ASSERT( utf16FromUTF32Char[0] == utf16[0] );
 	ASSERT( utf16FromUTF32Char[1] == utf16[1] );
-#endif
+
+	uint16_t	utf16b[] = { 'a' };
+	currOffs = 0;
+	utf16CharAsUTF32 = UTF16StringParseUTF32CharacterAtOffset( utf16b, sizeof(utf16b), &currOffs );
+	printf( "note: %04X --> %08X\n", utf16[0], utf16CharAsUTF32 );
+	ASSERT( 'a' == utf16CharAsUTF32 );
+	ASSERT( currOffs == 1 );
 }
 
 

@@ -6,18 +6,8 @@
 //  Copyright 2011 Uli Kusterer. All rights reserved.
 //
 
-extern "C" {
-#include "UTF32CaseTables.h"
-#include <stdio.h>
 #include "UTF8UTF32Utilities.h"
-}
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <locale>
-#include <iomanip>
-#include <string>
-#include <codecvt>
+#include "UTF32CaseTables.h"
 
 
 size_t		GetLengthOfUTF8SequenceStartingWith( unsigned char inChar );
@@ -53,7 +43,7 @@ size_t	GetLengthOfUTF8SequenceStartingWith( unsigned char inChar )
 }
 
 
-extern "C" uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset )
+uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset )
 {
 	const uint8_t		*currUTF8Byte = (const uint8_t*) utf8 + (*ioOffset);
 	uint32_t			utf32Char = 0L;
@@ -97,7 +87,7 @@ extern "C" uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, siz
 }
 
 
-extern "C" void	UTF8BytesForUTF32Character( uint32_t utf32Char, char* utf8, size_t *outLength )
+void	UTF8BytesForUTF32Character( uint32_t utf32Char, char* utf8, size_t *outLength )
 {
 	char*	currUTF8Byte = utf8;
 	
@@ -138,7 +128,7 @@ extern "C" void	UTF8BytesForUTF32Character( uint32_t utf32Char, char* utf8, size
 }
 
 
-extern "C" size_t	UTF8LengthForUTF32Char( uint32_t utf32Char )
+size_t	UTF8LengthForUTF32Char( uint32_t utf32Char )
 {
 	if( utf32Char < 0x000080U )
 	{
@@ -244,50 +234,25 @@ uint32_t	UTF32CharacterToLower( uint32_t inUTF32Char )
 	return inUTF32Char;
 }
 
-template<class Facet>
-struct deletable_facet : Facet
-{
-    template<class ...Args>
-    deletable_facet(Args&& ...args) : Facet(std::forward<Args>(args)...) {}
-    ~deletable_facet() {}
-};
 
-
-extern "C" uint32_t	UTF16StringParseUTF32CharacterAtOffset( const uint16_t *utf16, size_t byteLen, size_t *ioCharOffset )
+uint32_t	UTF16StringParseUTF32CharacterAtOffset( const uint16_t *utf16, size_t byteLen, size_t *ioCharOffset )
 {
-	std::wstring_convert<
-        deletable_facet<std::codecvt<char32_t, char16_t, std::mbstate_t>>, char32_t> conv16;
-	std::u16string	str16((char16_t*)utf16 +*ioCharOffset, byteLen -((*ioCharOffset) *sizeof(char16_t)));
-    std::string str32 = conv16.to_bytes(str16);
+	size_t	remainingLen = byteLen -((*ioCharOffset) * sizeof(uint16_t));
 	
-	uint32_t	U = 0;
-	uint16_t	W1 = *(utf16 +(*ioCharOffset));
-	if( W1 < 0xd800 || W1 > 0xDFFF )	// Single-char representation in UTF16, too.
+	if( remainingLen < 1 )
+		return 0;
+	else if( remainingLen < 2 || *utf16 < 0xD800 || *utf16 > 0xDBFF )
 	{
 		*ioCharOffset += 1;
-		return W1;
+		return *utf16;
 	}
-	uint16_t	W2 = 0;
-	if( (((*ioCharOffset) +1) * sizeof(uint16_t)) < byteLen )
-		W2 = *(utf16 +((*ioCharOffset) +1));
-	if( W1 < 0xD800 || W1 > 0xDBFF )	// Invalid char.
-	{
-		*ioCharOffset += 1;	// We skip it.
-		return W1;
-	}
-	if( W2 < 0xDC00 || W2 > 0xDFFF )	// Invalid surrogate pair.
-	{
-		*ioCharOffset += 1;	// We skip the first one and try again.
-		return W1;
-	}
-	uint32_t	HiTenBits = W1 & 49407U;
-	uint32_t	LoTenBits = W2 & 49407U;
-	U = 0x10000 + ((HiTenBits << 10) | LoTenBits);
-	
-	return U;
+	uint32_t	codepoint = (utf16[*ioCharOffset] -0xD800) * 0x400 +(utf16[(*ioCharOffset) +1] -0xDC00) + 0x10000;
+	*ioCharOffset += 2;
+	return codepoint;
 }
 
-extern "C" size_t	UTF16LengthForUTF32Char( uint32_t inChar )
+
+size_t	UTF16LengthForUTF32Char( uint32_t inChar )
 {
 	const uint16_t	HI_SURROGATE_START = 0xD800;
 	uint16_t		X = (uint16_t) inChar;
@@ -300,30 +265,18 @@ extern "C" size_t	UTF16LengthForUTF32Char( uint32_t inChar )
 }
 
 
-extern "C" size_t	UTF16CharsForUTF32Char( uint32_t inChar, uint16_t outChars[2] )
+size_t	UTF16CharsForUTF32Char( uint32_t inChar, uint16_t outChars[2] )
 {
-	const uint16_t	HI_SURROGATE_START = 0xD800;
-	uint16_t	X = (uint16_t) inChar;
-	uint32_t	U = (inChar >> 16) & ((1 << 5) - 1);
-	uint16_t	W = (uint16_t) U - 1;
-	uint16_t	HiSurrogate = HI_SURROGATE_START | (W << 6) | X >> 10;
-	size_t		utf16len = ((HiSurrogate == 0xffc0) ? 0 : 1) +1;
-
-	const uint16_t	LO_SURROGATE_START = (HiSurrogate == 0xffc0) ? 0 : 0xDC00;
-	uint16_t	X2 = (uint16_t) inChar;
-	uint16_t	LoSurrogate = (uint16_t) (LO_SURROGATE_START | (X2 & ((1 << 10) - 1)));
-	
-	if( utf16len == 1 )
+	if( inChar > 0xffff )
 	{
-		outChars[0] = (LoSurrogate & 0xff) | (LoSurrogate >> 8);
-		outChars[1] = 0;
-	}
-	else
-	{
-		outChars[0] = (HiSurrogate & 0xff) | HiSurrogate >> 8;
-		outChars[1] = (LoSurrogate & 0xff) | (LoSurrogate >> 8);
+		outChars[0] = (uint16_t)((inChar >> 10)   + (0xd800u - (0x10000 >> 10)));
+		outChars[1] = (uint16_t)((inChar & 0x3ff) + 0xdc00u);
+		
+		return 2;
 	}
 	
-	return utf16len;
+	outChars[0] = (uint16_t)inChar;
+	
+	return 1;
 }
 
