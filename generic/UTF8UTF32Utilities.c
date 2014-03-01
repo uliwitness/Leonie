@@ -254,14 +254,10 @@ uint32_t	UTF16StringParseUTF32CharacterAtOffset( const uint16_t *utf16, size_t b
 
 size_t	UTF16LengthForUTF32Char( uint32_t inChar )
 {
-	const uint16_t	HI_SURROGATE_START = 0xD800;
-	uint16_t		X = (uint16_t) inChar;
-	uint32_t		U = (inChar >> 16) & ((1 << 5) - 1);
-	uint16_t		W = (uint16_t) U - 1;
-	uint16_t		HiSurrogate = HI_SURROGATE_START | (W << 6) | X >> 10;
-	size_t			utf16len = ((HiSurrogate == 0xffc0) ? 0 : 1) +1;
+	if( inChar > 0xffff )
+		return 2;
 
-	return utf16len;
+	return 1;
 }
 
 
