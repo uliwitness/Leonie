@@ -58,8 +58,14 @@ typedef enum
 	kLEOChunkTypeCharacter,
 	kLEOChunkTypeItem,
 	kLEOChunkTypeLine,
-	kLEOChunkTypeWord
+	kLEOChunkTypeWord,
+	kLEOChunkType_Last
 } LEOChunkType;
+
+/*!
+	String names for each chunk type.
+*/
+extern const char*	gLEOChunkTypeNames[kLEOChunkType_Last +1];	// Last entry is NULL.
 
 
 /*!

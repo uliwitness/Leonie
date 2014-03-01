@@ -12,6 +12,18 @@
 #include <stdbool.h>
 
 
+const char*	gLEOChunkTypeNames[kLEOChunkType_Last +1] =
+{
+	"*INVALID*",
+	"byte",
+	"character",
+	"item",
+	"line",
+	"word",
+	NULL
+};
+
+
 size_t		LEOGetLengthOfUTF8SequenceStartingWith( unsigned char inChar );
 uint32_t	LEOUTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset );
 
