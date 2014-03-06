@@ -559,6 +559,20 @@ void	LEOSetInstructionIDToDebugPrintBefore( LEOInstructionID inID );
 void	LEOSetInstructionIDToDebugPrintAfter( LEOInstructionID inID );
 
 
+/*!
+	A script can be paused mid-instruction and later resumed. This is handy e.g.
+	when an instruction actually involves an asynchronous operation. Once the
+	async operation has finished, it can call to request for the script to be
+	resumed. Since we don't want scripts piling up in async callbacks, scripts
+	are resumed by calling LEOContextResumeIfAvailable() from somewhere farther
+	up the main thread (e.g. where regular event handlers would be triggered).
+	When a resume request is made, this callback is invoked to give you the
+	opportunity to ensure a call to LEOContextResumeIfAvailable() will be triggered
+	by whatever mechanism you choose (queue up an event, signal a semaphore, whatever).
+*/
+void	LEOSetCheckForResumeProc( void (*checkForResumeProc)() );
+
+
 #if __cplusplus
 }
 #endif

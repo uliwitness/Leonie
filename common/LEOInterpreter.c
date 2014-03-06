@@ -39,6 +39,13 @@ char*	*			gFileNamesTable = NULL;
 size_t				gFileNamesTableSize = 0;
 LEOInstructionID	gInstructionIDToDebugPrintBefore = INVALID_INSTR;
 LEOInstructionID	gInstructionIDToDebugPrintAfter = INVALID_INSTR;
+void				(*gCheckForResumeProc)() = NULL;
+
+
+void	LEOSetCheckForResumeProc( void (*checkForResumeProc)() )
+{
+	gCheckForResumeProc = checkForResumeProc;
+}
 
 
 void	LEOSetInstructionIDToDebugPrintBefore( LEOInstructionID inID )
@@ -394,26 +401,29 @@ static LEOContext*	sContextToResume = NULL;
 void	LEOResumeContext( LEOContext *inContext )
 {
 	sContextToResume = LEOContextRetain( inContext );
+	if( gCheckForResumeProc )
+		gCheckForResumeProc();
 }
 
 
 void	LEOContextResumeIfAvailable( void )
 {
-	sContextToResume->flags |= kLEOContextResuming | kLEOContextKeepRunning;
-	sContextToResume->flags &= ~kLEOContextPause;
+	LEOContext*	contextToResume = sContextToResume;
+	contextToResume->flags |= kLEOContextResuming | kLEOContextKeepRunning;
+	contextToResume->flags &= ~kLEOContextPause;
 	
-	bool	goOn = LEOContinueRunningContext( sContextToResume );
-	sContextToResume->flags &= ~kLEOContextResuming;
+	bool	goOn = LEOContinueRunningContext( contextToResume );
+	contextToResume->flags &= ~kLEOContextResuming;
 	if( goOn )
 	{
-		while( LEOContinueRunningContext( sContextToResume ) )
+		while( LEOContinueRunningContext( contextToResume ) )
 			;
 	}
 	
-	if( (sContextToResume->flags & kLEOContextPause) == 0 && sContextToResume->contextCompleted )
-		sContextToResume->contextCompleted( sContextToResume );
+	if( (contextToResume->flags & kLEOContextPause) == 0 && contextToResume->contextCompleted )
+		contextToResume->contextCompleted( contextToResume );
 	
-	sContextToResume = NULL;	// Either we're done, or we're paused.
+	contextToResume = NULL;	// Either we're done, or we're paused.
 }
 
 
