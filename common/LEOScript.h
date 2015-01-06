@@ -143,11 +143,11 @@ typedef struct LEOParseErrorEntry
 	@field referenceCount		The number of owners this script currently has.
 								Owners are e.g. either contexts running the
 								script or the object the script belongs to.
-	@field ownerObject			The object that this script belongs to, i.e. the
-								'me' or 'self'.
-	@field ownerObjectSeed		The 'seed' for the ownerObject slot, for the
-								case where the owner has been released and the
-								slot re-used.
+	@field ownerObject			reference to the object that this script belongs
+								to, i.e. the 'me' or 'self'.
+	@field ownerObjectSeed		The 'seed' for the ownerObject slot, to detect
+								the case where the owner has been released and
+								the slot re-used.
 	@field numFunctions			The number of function handler entries in the
 								functions array.
 	@field functions			An array of handlers implementing the functions
@@ -156,12 +156,20 @@ typedef struct LEOParseErrorEntry
 								commands array.
 	@field commands				An array of handlers implementing the commands
 								this script implements.
-	@field	numStrings			Number of items in <tt>strings</tt>.
-	@field	strings				List of string constants in this script, which we can load.
-	@field	GetParentScript		A pointer to a function provided by the host that
+	@field numStrings			Number of items in <tt>strings</tt>.
+	@field strings				List of string constants in this script, which we
+								can load using <tt>ASSIGN_STRING_FROM_TABLE_INSTR</tt>.
+	@field GetParentScript		A pointer to a function provided by the host that
 								returns a script to which unhandled or passed
 								messages will be forwarded, or NULL if there is
 								no script behind this one to handle those messages.
+	@field numParseErrors		Number of elements in <tt>parseErrors</tt> array.
+	@field parseErrors			List of errors for the <tt>PARSE_ERROR_INSTR</tt>
+								instruction to refer to.
+	@field numBreakpointLines	Number of elements in <tt>breakpointLines</tt> array.
+	@field breakpointLines		List of line numbers where the user set a breakpoint,
+								for use by the debugger from a <tt>LINE_MARKER_INSTR</tt>
+								instruction.
 	
 	@seealso //leo_ref/c/func/LEOScriptCreateForOwner LEOScriptCreateForOwner
 	@seealso //leo_ref/c/func/LEOScriptAddCommandHandlerWithID LEOScriptAddCommandHandlerWithID
@@ -170,6 +178,10 @@ typedef struct LEOParseErrorEntry
 	@seealso //leo_ref/c/func/LEOScriptFindFunctionHandlerWithID LEOScriptFindFunctionHandlerWithID
 	@seealso //leo_ref/c/func/LEOScriptAddString LEOScriptAddString
 	@seealso //leo_ref/c/tdef/LEOGetParentScriptFuncPtr LEOGetParentScriptFuncPtr
+	@seealso //leo_ref/c/tdef/LEOScriptAddSyntaxError LEOScriptAddSyntaxError
+	@seealso //leo_ref/c/tdef/LEOScriptAddBreakpointAtLine LEOScriptAddBreakpointAtLine
+	@seealso //leo_ref/c/tdef/LEOScriptRemoveBreakpointAtLine LEOScriptRemoveBreakpointAtLine
+	@seealso //leo_ref/c/tdef/LEOScriptHasBreakpointAtLine LEOScriptHasBreakpointAtLine
 	@seealso //leo_ref/c/tdef/LEODebugPrintScript LEODebugPrintScript */
 // -----------------------------------------------------------------------------
 
@@ -185,8 +197,10 @@ typedef struct LEOScript
 	size_t				numStrings;			// Number of items in stringsTable.
 	char**				strings;			// List of string constants in this script, which we can load.
 	LEOGetParentScriptFuncPtr	GetParentScript;
-	size_t						numParseErrors;
+	size_t						numParseErrors;		// Number of elements in parseErrors array.
 	LEOParseErrorEntry*			parseErrors;		// List of errors for the PARSE_ERROR_INSTR instruction to refer to.
+	size_t						numBreakpointLines;	// Number of elements in breakpointLines array.
+	size_t					*	breakpointLines;	// List of line numbers where the user set a breakpoint.
 } LEOScript;
 
 
@@ -343,6 +357,50 @@ size_t	LEOScriptAddString( LEOScript* inScript, const char* inString );
 	@seealso //leo_ref/c/func/LEOFileIDForFileName LEOFileIDForFileName
 */
 size_t	LEOScriptAddSyntaxError( LEOScript* inScript, const char* inErrMsg, uint16_t inFileID, size_t inErrorLine, size_t inErrorOffset );
+
+/*!
+	Add a line number to our list of breakpoints. It is the responsibility of the debugger
+	that you use (e.g. LEODebugger.h or LEORemoteDebugger.h) to look at each LINE_MARKER_INSTR
+	instruction and verify whether it matches one of these lines, and to trigger accordingly.
+	
+	This can be used to e.g. implement clicking in the gutter of a script editor window to set
+	a breakpoint.
+	
+	@seealso //leo_ref/c/func/LEOScriptRemoveBreakpointAtLine LEOScriptRemoveBreakpointAtLine
+	@seealso //leo_ref/c/func/LEOScriptHasBreakpointAtLine LEOScriptHasBreakpointAtLine
+	@seealso //leo_ref/c/func/LEOScriptRemoveAllBreakpoints LEOScriptRemoveAllBreakpoints
+*/
+size_t	LEOScriptAddBreakpointAtLine( LEOScript* inScript, size_t inLineNumber );
+
+/*!
+	Remove a breakpoint from a given line, to undo what LEOScriptAddBreakpointAtLine did.
+	
+	@seealso //leo_ref/c/func/LEOScriptAddBreakpointAtLine LEOScriptAddBreakpointAtLine
+	@seealso //leo_ref/c/func/LEOScriptHasBreakpointAtLine LEOScriptHasBreakpointAtLine
+	@seealso //leo_ref/c/func/LEOScriptRemoveAllBreakpoints LEOScriptRemoveAllBreakpoints
+*/
+void	LEOScriptRemoveBreakpointAtLine( LEOScript* inScript, size_t inLineNumber );
+
+
+/*!
+	Remove all breakpoint for lines in this script to undo what any calls to
+	LEOScriptAddBreakpointAtLine did.
+	
+	@seealso //leo_ref/c/func/LEOScriptAddBreakpointAtLine LEOScriptAddBreakpointAtLine
+	@seealso //leo_ref/c/func/LEOScriptRemoveBreakpointAtLine LEOScriptRemoveBreakpointAtLine
+	@seealso //leo_ref/c/func/LEOScriptHasBreakpointAtLine LEOScriptHasBreakpointAtLine
+*/
+void	LEOScriptRemoveAllBreakpoints( LEOScript* inScript );
+
+/*!
+	Returns TRUE if a script has been told a breakpoint exists at the given 1-based line number,
+	FALSE otherwise.
+	
+	@seealso //leo_ref/c/func/LEOScriptAddBreakpointAtLine LEOScriptAddBreakpointAtLine
+	@seealso //leo_ref/c/func/LEOScriptRemoveBreakpointAtLine LEOScriptRemoveBreakpointAtLine
+	@seealso //leo_ref/c/func/LEOScriptRemoveAllBreakpoints LEOScriptRemoveAllBreakpoints
+*/
+bool	LEOScriptHasBreakpointAtLine( LEOScript* inScript, size_t inLineNumber );
 
 
 void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript );

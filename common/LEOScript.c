@@ -185,6 +185,7 @@ LEOScript*	LEOScriptCreateForOwner( LEOObjectID ownerObject, LEOObjectSeed owner
 		theStorage->GetParentScript = inGetParentScriptFunc;
 		theStorage->numParseErrors = 0;
 		theStorage->parseErrors = NULL;
+		theStorage->breakpointLines = NULL;
 	}
 	
 	return theStorage;
@@ -346,7 +347,6 @@ size_t	LEOScriptAddString( LEOScript* inScript, const char* inString )
 
 size_t	LEOScriptAddSyntaxError( LEOScript* inScript, const char* inErrMsg, uint16_t inFileID, size_t inErrorLine, size_t inErrorOffset )
 {
-	// Otherwise, add new entry for this string:
 	inScript->numParseErrors ++;
 
 	if( inScript->parseErrors == NULL )
@@ -383,6 +383,97 @@ size_t	LEOScriptAddSyntaxError( LEOScript* inScript, const char* inErrMsg, uint1
 }
 
 
+size_t	LEOScriptAddBreakpointAtLine( LEOScript* inScript, size_t inLineNumber )
+{
+	inScript->numBreakpointLines ++;
+
+	if( inScript->breakpointLines == NULL )
+	{
+		inScript->breakpointLines = calloc( 1, sizeof(size_t) );
+	}
+	else
+	{
+		size_t*	errorsArray = realloc( inScript->breakpointLines, inScript->numBreakpointLines * sizeof(size_t) );
+		if( errorsArray )
+			inScript->breakpointLines = errorsArray;
+		else
+		{
+			printf( "*** Failed to allocate breakpoint line entry! ***\n" );
+			return SIZE_MAX;
+		}
+	}
+	
+	if( inScript->breakpointLines == NULL )
+	{
+		printf( "*** Failed to allocate breakpoint line entry! ***\n" );
+		return SIZE_MAX;
+	}
+	
+	inScript->breakpointLines[inScript->numBreakpointLines -1] = inLineNumber;
+	
+	return inScript->numBreakpointLines -1;
+}
+
+
+void	LEOScriptRemoveBreakpointAtLine( LEOScript* inScript, size_t inLineNumber )
+{
+	if( !inScript->breakpointLines )
+		return;	// Nothing to do.
+	
+	for( size_t x = 0; x < inScript->numBreakpointLines; x++ )
+	{
+		if( inScript->breakpointLines[x] == inLineNumber )
+		{
+			inScript->numBreakpointLines--;
+			if( inScript->numBreakpointLines == 0 )
+			{
+				free( inScript->breakpointLines );
+				inScript->breakpointLines = NULL;
+			}
+			else
+			{
+				size_t	remainingLines = inScript->numBreakpointLines -x;
+				memmove( inScript->breakpointLines +x, inScript->breakpointLines +x +1, remainingLines * sizeof(size_t) );
+				size_t*	newBreakpointsArray = realloc( inScript->breakpointLines, inScript->numBreakpointLines * sizeof(size_t) );
+				if( newBreakpointsArray )
+					inScript->breakpointLines = newBreakpointsArray;
+				else
+				{
+					printf( "warning: Failed to reduce breakpoint line list in size! ***\n" );
+				}
+			}
+			break;
+		}
+	}
+}
+
+
+void	LEOScriptRemoveAllBreakpoints( LEOScript* inScript )
+{
+	if( inScript->breakpointLines )
+	{
+		free( inScript->breakpointLines );
+		inScript->breakpointLines = NULL;
+		inScript->numBreakpointLines = 0;
+	}
+}
+
+
+bool	LEOScriptHasBreakpointAtLine( LEOScript* inScript, size_t inLineNumber )
+{
+	if( !inScript->breakpointLines )
+		return false;
+	
+	for( size_t x = 0; x < inScript->numBreakpointLines; x++ )
+	{
+		if( inScript->breakpointLines[x] == inLineNumber )
+			return true;
+	}
+	
+	return false;
+}
+
+
 void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler )
 {
 	printf( "%s:\n", LEOContextGroupHandlerNameForHandlerID( inGroup, inHandler->handlerName ) );
@@ -400,15 +491,32 @@ void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript )
 	printf( "----------\n" );
 	printf("FUNCTIONS:\n");
 	for( size_t x = 0; x < inScript->numFunctions; x++ )
+	{
 		LEODebugPrintHandler( inGroup, inScript->functions +x );
+	}
 	printf("COMMANDS:\n");
 	for( size_t x = 0; x < inScript->numCommands; x++ )
+	{
 		LEODebugPrintHandler( inGroup, inScript->commands +x );
+	}
 	printf("STRINGS:\n");
 	for( size_t x = 0; x < inScript->numStrings; x++ )
+	{
 		printf( "\t\"%s\"\n", inScript->strings[x] );
+	}
 	printf("ERRORS:\n");
 	for( size_t x = 0; x < inScript->numParseErrors; x++ )
+	{
 		printf( "\t\"%s\" on line %zu (offset %zu) of file %s\n", inScript->parseErrors[x].errMsg, inScript->parseErrors[x].errorLine, inScript->parseErrors[x].errorOffset, LEOFileNameForFileID( inScript->parseErrors[x].fileID ) );
+	}
+	if( inScript->numBreakpointLines > 0 )
+	{
+		printf("BREAKPOINT LINES:");
+		for( size_t x = 0; x < inScript->numBreakpointLines; x++ )
+		{
+			printf( " %zu", inScript->breakpointLines[x] );
+		}
+		printf("\n");
+	}
 	printf( "----------\n" );
 }

@@ -351,6 +351,16 @@ void LEORemoteDebuggerPreInstructionProc( struct LEOContext* inContext )
 			}
 		}
 	}
+	
+	if( inContext->currentInstruction && inContext->currentInstruction->instructionID == LINE_MARKER_INSTR )
+	{
+		LEOScript	*	theScript = LEOContextPeekCurrentScript( inContext );
+		if( theScript )
+		{
+			if( LEOScriptHasBreakpointAtLine( theScript, inContext->currentInstruction->param2 ) )
+				LEORemoteDebuggerPrompt( inContext );
+		}
+	}
 }
 
 

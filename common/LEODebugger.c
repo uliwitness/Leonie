@@ -8,6 +8,8 @@
  */
 
 #include "LEODebugger.h"
+#include "LEOScript.h"
+#include "LEOInstructions.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -107,7 +109,18 @@ void LEODebuggerPreInstructionProc( struct LEOContext* inContext )
 			}
 		}
 	}
+	
+	if( inContext->currentInstruction && inContext->currentInstruction->instructionID == LINE_MARKER_INSTR )
+	{
+		LEOScript	*	theScript = LEOContextPeekCurrentScript( inContext );
+		if( theScript )
+		{
+			if( LEOScriptHasBreakpointAtLine( theScript, inContext->currentInstruction->param2 ) )
+				LEODebuggerPrompt( inContext );
+		}
+	}
 }
+
 
 void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction )
 {
