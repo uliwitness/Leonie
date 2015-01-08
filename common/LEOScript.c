@@ -257,7 +257,7 @@ LEOHandler*	LEOScriptAddFunctionHandlerWithID( LEOScript* inScript, LEOHandlerID
 {
 	inScript->numFunctions++;
 	LEOHandler*		commandsArray = NULL;
-	if( inScript->commands )
+	if( inScript->functions )
 		commandsArray = realloc( inScript->functions, sizeof(LEOHandler) * inScript->numFunctions );
 	else
 		commandsArray = calloc( sizeof(LEOHandler) * inScript->numFunctions, 1 );
