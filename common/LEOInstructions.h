@@ -133,6 +133,8 @@ LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInte
 void		LEOInvalidInstruction( LEOContext* inContext );	// Gets called when an instruction is called that wasn't registered.
 
 
+void		LEOInstructionsFindLineForInstruction( LEOInstruction* instr, size_t *lineNo, uint16_t *fileID );
+
 // -----------------------------------------------------------------------------
 //	Globals:
 // -----------------------------------------------------------------------------
