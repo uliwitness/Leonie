@@ -101,11 +101,15 @@ void	LEONumToHexInstruction( LEOContext* inContext );
 void	LEOHexToNumInstruction( LEOContext* inContext );
 void	LEONumToBinaryInstruction( LEOContext* inContext );
 void	LEOBinaryToNumInstruction( LEOContext* inContext );
+void	LEOPushArrayConstantInstruction( LEOContext* inContext );
 void	LEOParseErrorInstruction( LEOContext* inContext );
 
 
 void		LEOInstructionsFindLineForInstruction( LEOInstruction* instr, size_t *lineNo, uint16_t *fileID )
 {
+	if( instr == NULL )
+		return;
+	
 	// +++ ASSUMPTION: We know that we always generate a line marker at the start of a handler
 	//	and line, so we should never walk off the start of the handler and off into invalid
 	//	memory. If we ever offer removing debug info and saving raw bytecode, this assumption
@@ -148,7 +152,7 @@ void	LEOExitToTopInstruction( LEOContext* inContext )
 
 
 /*!
-	Abort execution of the current script without an error.	(PARSE_ERROR_INSTR)
+	Abort execution of the current script with an error message.	(PARSE_ERROR_INSTR)
 */
 
 void	LEOParseErrorInstruction( LEOContext* inContext )
@@ -156,6 +160,34 @@ void	LEOParseErrorInstruction( LEOContext* inContext )
 	size_t		errorIndex = inContext->currentInstruction->param2;
 	LEOScript*	script = LEOContextPeekCurrentScript( inContext );
 	LEOContextStopWithError( inContext, script->parseErrors[errorIndex].errorLine, script->parseErrors[errorIndex].errorOffset, script->parseErrors[errorIndex].fileID, "%s", script->parseErrors[errorIndex].errMsg );
+}
+
+
+/*!
+	Push an array containing the given key/value pairs on the stack.	(PUSH_ARRAY_CONSTANT_INSTR)
+*/
+
+void	LEOPushArrayConstantInstruction( LEOContext* inContext )
+{
+	struct LEOArrayEntry *theArray = NULL;
+	
+	size_t	numPairs = inContext->currentInstruction->param1;
+	for( size_t x = 0; x < numPairs; x++ )
+	{
+		size_t	currKeyIdx = x * 2;
+		union LEOValue*	keyValue = inContext->stackEndPtr -(numPairs *2) +currKeyIdx;
+		union LEOValue*	valueValue = inContext->stackEndPtr -(numPairs *2) +currKeyIdx +1;
+		char	keyBuf[1024] = {0};
+		const char*	keyStr = LEOGetValueAsString( keyValue, keyBuf, sizeof(keyBuf), inContext );
+		LEOAddArrayEntryToRoot( &theArray, keyStr, valueValue, inContext );
+	}
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -(numPairs * 2) );	// Remove array elements from stack.
+
+	LEOInitArrayValue( (LEOValueArray*) inContext->stackEndPtr, theArray, kLEOInvalidateReferences, inContext );
+	inContext->stackEndPtr++;
+	
+	inContext->currentInstruction++;
 }
 
 
@@ -2335,6 +2367,7 @@ LEOINSTR(LEONumToBinaryInstruction)
 LEOINSTR(LEOBinaryToNumInstruction)
 LEOINSTR(LEOSetChunkPropertyInstruction)
 LEOINSTR(LEOPushChunkPropertyInstruction)
+LEOINSTR(LEOPushArrayConstantInstruction)
 LEOINSTR_LAST(LEOParseErrorInstruction)
 
 
