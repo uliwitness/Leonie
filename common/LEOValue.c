@@ -191,7 +191,7 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOGetStringValueForKey,
 	LEOSetStringLikeValueForKey,
 	LEOSetStringLikeValueAsArray,
-	LEOCantGetKeyCount,
+	LEOGetStringLikeValueKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
@@ -239,7 +239,7 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOCantGetValueForKey,
 	LEOCantSetValueForKey,
 	LEOSetStringLikeValueAsArray,
-	LEOCantGetKeyCount,
+	LEOGetStringLikeValueKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
@@ -623,7 +623,7 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOGetStringVariantValueForKey,
 	LEOSetStringVariantValueValueForKey,
 	LEOSetVariantValueAsArray,
-	LEOCantGetKeyCount,
+	LEOGetStringLikeValueKeyCount,
 	
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
@@ -1399,6 +1399,29 @@ bool	LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext 
 size_t	LEOCantGetKeyCount( LEOValuePtr self, struct LEOContext* inContext )
 {
 	return 0;
+}
+
+
+size_t	LEOGetStringLikeValueKeyCount( LEOValuePtr self, struct LEOContext* inContext )
+{
+	size_t		numKeys = 0;
+	char		strBuf[1024] = { 0 };	// TODO: Make work with arbitrary string sizes.
+	const char* str = LEOGetValueAsString( self, strBuf, sizeof(strBuf), inContext );
+
+	struct LEOArrayEntry*	theArray = LEOCreateArrayFromString( str, strlen(str), inContext );
+	if( theArray )
+	{
+		numKeys = LEOGetArrayKeyCount( theArray );
+		LEOCleanUpArray( theArray, inContext );
+	}
+	else
+	{
+		size_t		lineNo = 0;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected an array, found %s.", self->base.isa->displayTypeName );
+	}
+	return numKeys;
 }
 
 
