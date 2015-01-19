@@ -4659,6 +4659,8 @@ void	LEOPrintArray( struct LEOArrayEntry* arrayPtr, char* strBuf, size_t bufSize
 	char valBuf[1024];
 	
 	const char* valStr = LEOGetValueAsString( &arrayPtr->value, valBuf, sizeof(valBuf), inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+		return;
 	
 	size_t	offs = snprintf( strBuf, bufSize, "%s:", arrayPtr->key );
 	for( int x = 0; true; x++ )
