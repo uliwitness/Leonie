@@ -77,7 +77,7 @@ typedef unsigned long			LEOObjectSeed;
 typedef long long				LEOInteger;
 
 /*! The type of fractional numbers in the language. */
-typedef double					LEONumber;
+typedef float					LEONumber;
 
 
 /*! A unit attached to a numerical value. */
