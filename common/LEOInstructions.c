@@ -759,7 +759,7 @@ LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInte
 	{
 		union LEOValue*	paramCountValue = inContext->stackEndPtr -1;
 		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
-		if( paramCount <= paramIndex )
+		if( paramCount < paramIndex )
 			return NULL;
 		return( inContext->stackEndPtr -1 -paramIndex );
 	}
