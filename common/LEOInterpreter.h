@@ -353,7 +353,7 @@ bool	LEOContinueRunningContext( LEOContext *inContext );
 
 /*! Stop execution in the given context with an error message.
 	Currently sets the errMsg field of the context to the given string and set
-	keepRunningto FALSE.
+	keepRunning to FALSE.
  */
 void	LEOContextStopWithError( LEOContext* inContext, size_t errLine, size_t errOffset, uint16_t fileID, const char* inErrorFmt, ... );
 

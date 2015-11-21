@@ -1002,7 +1002,9 @@ void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, L
 				keep the storage valid. Usually, you pass <tt>kLEOInvalidateReferences</tt>.
 	@param	c	The context in which your script is currently running and in
 				which errors will be stored.
-	@result		A LEOValuePtr pointing to the actual value in the array.
+	@result		A LEOValuePtr pointing to the actual value in the array. If this is equal to
+				t, you need to call LEOCleanUpValue on it.
+
 */
 #define 	LEOGetValueForKey(v,ak,t,k,c)			((LEOValuePtr)(v))->base.isa->GetValueForKey(((LEOValuePtr)(v)),(ak),(t),(k),(c))
 
