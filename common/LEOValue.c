@@ -104,6 +104,8 @@ struct LEOValueType	kLeoValueTypeNumber =
 	
 	LEOCantSetValueAsRect,
 	LEOCantGetValueAsRect,
+	LEOCantSetValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -152,6 +154,8 @@ struct LEOValueType	kLeoValueTypeInteger =
 	
 	LEOCantSetValueAsRect,
 	LEOCantGetValueAsRect,
+	LEOCantSetValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -200,6 +204,8 @@ struct LEOValueType	kLeoValueTypeString =
 	
 	LEOSetStringValueAsRect,
 	LEOGetStringValueAsRect,
+	LEOSetStringValueAsPoint,
+	LEOGetStringValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -248,6 +254,8 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	
 	LEOSetStringConstantValueAsRect,
 	LEOGetStringValueAsRect,
+	LEOSetStringConstantValueAsPoint,
+	LEOGetStringValueAsPoint,
 	
 	LEOGetStringConstantValueIsUnset,
 	
@@ -296,6 +304,58 @@ struct LEOValueType	kLeoValueTypeRect =
 	
 	LEOSetRectValueAsRect,
 	LEOGetRectValueAsRect,
+	LEOCantSetValueAsPoint,
+	LEOCantGetValueAsPoint,
+	
+	LEOValueIsNotUnset,
+	
+	LEOCantSetValueAsRange,
+	LEOCantGetValueAsRange
+};
+
+
+struct LEOValueType	kLeoValueTypePoint =
+{
+	"point",
+	sizeof(struct LEOValuePoint),
+	
+	LEOCantGetValueAsNumber,
+	LEOCantGetValueAsInteger,
+	LEOGetPointValueAsString,
+	LEOCantGetValueAsBoolean,
+	LEOGetAnyValueAsRangeOfString,	// Only works as long as points can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
+	
+	LEOCantSetValueAsNumber,
+	LEOCantSetValueAsInteger,
+	LEOSetPointValueAsString,
+	LEOCantSetValueAsBoolean,
+	LEOCantSetValueRangeAsString,
+	LEOCantSetValuePredeterminedRangeAsString,
+	
+	LEOInitPointValueCopy,
+	LEOInitPointValueCopy,
+	LEOPutPointValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
+	LEODetermineChunkRangeOfSubstringOfAnyValue,
+	
+	LEOCleanUpPointValue,
+	
+	LEOCantCanGetValueAsNumber,
+	
+	LEOGetPointValueValueForKey,
+	LEOSetPointValueValueForKey,
+	LEOSetStringLikeValueAsArray,
+	LEOGetPointValueKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOCantSetValueAsNativeObject,
+	
+	LEOCantSetValueAsRect,
+	LEOCantGetValueAsRect,
+	LEOSetPointValueAsPoint,
+	LEOGetPointValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -344,6 +404,8 @@ struct LEOValueType	kLeoValueTypeRange =
 	
 	LEOCantSetValueAsRect,
 	LEOCantGetValueAsRect,
+	LEOCantSetValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -392,6 +454,8 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	
 	LEOCantSetValueAsRect,
 	LEOCantGetValueAsRect,
+	LEOCantSetValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -440,6 +504,8 @@ struct LEOValueType	kLeoValueTypeNativeObject =
 	
 	LEOCantSetValueAsRect,
 	LEOCantGetValueAsRect,
+	LEOCantSetValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -488,6 +554,8 @@ struct LEOValueType	kLeoValueTypeReference =
 	
 	LEOSetReferenceValueAsRect,
 	LEOGetReferenceValueAsRect,
+	LEOSetReferenceValueAsPoint,
+	LEOGetReferenceValueAsPoint,
 	
 	LEOGetReferenceValueIsUnset,
 	
@@ -536,6 +604,8 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	
 	LEOSetVariantValueAsRect,
 	LEOCantGetValueAsRect,
+	LEOSetVariantValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -584,6 +654,8 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	
 	LEOSetVariantValueAsRect,
 	LEOCantGetValueAsRect,
+	LEOSetVariantValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -632,6 +704,8 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	
 	LEOSetVariantValueAsRect,
 	LEOGetStringValueAsRect,
+	LEOSetVariantValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -680,6 +754,8 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	
 	LEOSetVariantValueAsRect,
 	LEOCantGetValueAsRect,
+	LEOSetVariantValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -728,6 +804,58 @@ struct LEOValueType	kLeoValueTypeRectVariant =
 	
 	LEOSetRectValueAsRect,
 	LEOGetRectValueAsRect,
+	LEOSetVariantValueAsPoint,
+	LEOCantGetValueAsPoint,
+	
+	LEOValueIsNotUnset,
+	
+	LEOSetVariantValueAsRange,
+	LEOCantGetValueAsRange
+};
+
+
+struct LEOValueType	kLeoValueTypePointVariant =
+{
+	VARIANT_NAME("point"),
+	sizeof(union LEOValue),
+	
+	LEOCantGetValueAsNumber,
+	LEOCantGetValueAsInteger,
+	LEOGetPointValueAsString,
+	LEOCantGetValueAsBoolean,
+	LEOGetAnyValueAsRangeOfString,	// Only works as long as rects can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
+	
+	LEOSetVariantValueAsNumber,
+	LEOSetVariantValueAsInteger,
+	LEOSetVariantValueAsString,
+	LEOSetVariantValueAsBoolean,
+	LEOSetVariantValueRangeAsString,
+	LEOSetVariantValuePredeterminedRangeAsString,
+	
+	LEOInitPointVariantValueCopy,
+	LEOInitPointValueCopy,
+	LEOPutPointValueIntoValue,
+	LEOCantFollowReferencesAndReturnValueOfType,
+	LEODetermineChunkRangeOfSubstringOfAnyValue,
+	
+	LEOCleanUpPointValue,
+	
+	LEOCantCanGetValueAsNumber,
+	
+	LEOGetPointValueValueForKey,
+	LEOSetPointValueValueForKey,
+	LEOSetVariantValueAsArray,
+	LEOGetPointValueKeyCount,
+	
+	LEOCantGetValueForKeyOfRange,
+	LEOCantSetValueForKeyOfRange,
+	
+	LEOSetVariantValueAsNativeObject,
+	
+	LEOCantSetValueAsRect,
+	LEOCantGetValueAsRect,
+	LEOSetVariantValueAsPoint,
+	LEOGetPointValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -776,6 +904,8 @@ struct LEOValueType	kLeoValueTypeRangeVariant =
 	
 	LEOCantSetValueAsRect,
 	LEOCantGetValueAsRect,
+	LEOSetVariantValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -824,6 +954,8 @@ struct LEOValueType	kLeoValueTypeNativeObjectVariant =
 	
 	LEOSetVariantValueAsRect,
 	LEOCantGetValueAsRect,
+	LEOCantSetValueAsPoint,
+	LEOCantGetValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -872,6 +1004,8 @@ struct LEOValueType	kLeoValueTypeArray =
 	
 	LEOSetVariantValueAsRect,
 	LEOGetArrayValueAsRect,
+	LEOSetVariantValueAsPoint,
+	LEOGetArrayValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -920,6 +1054,8 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 	
 	LEOSetArrayValueAsRect,
 	LEOGetArrayValueAsRect,
+	LEOSetArrayValueAsPoint,
+	LEOGetArrayValueAsPoint,
 	
 	LEOValueIsNotUnset,
 	
@@ -1045,6 +1181,20 @@ void	LEOCantGetValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOI
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
 	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a rect", self->base.isa->displayTypeName );
+}
+
+
+/*!
+	Generic method implementation used for values to return a "can't get as point"
+	error message and abort execution of the current LEOContext.
+*/
+
+void	LEOCantGetValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext )
+{
+	size_t		lineNo = SIZE_T_MAX;
+	uint16_t	fileID = 0;
+	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a point", self->base.isa->displayTypeName );
 }
 
 
@@ -1278,6 +1428,20 @@ void	LEOCantSetValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInt
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
 	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found rect", self->base.isa->displayTypeName );
+}
+
+
+/*!
+	Generic method implementation used for values to return a "can't set as point"
+	error message and abort execution of the current LEOContext.
+*/
+
+void	LEOCantSetValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
+{
+	size_t		lineNo = SIZE_T_MAX;
+	uint16_t	fileID = 0;
+	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found point", self->base.isa->displayTypeName );
 }
 
 
@@ -2219,9 +2383,27 @@ void	LEOSetStringValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOI
 }
 
 
+void	LEOSetStringValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
+{
+	if( self->string.string )
+		free( self->string.string );
+	self->string.string = calloc(sizeof(char), OTHER_VALUE_SHORT_STRING_MAX_LENGTH);	// +++ realloc when we know the size?
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "%lld,%lld", l, t );
+	else
+		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "horizontal:%lld\nvertical:%lld", l, t );
+}
+
+
 void	LEOGetStringValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
 {
 	LEOStringToRect( self->string.string, self->string.stringLen, l, t, r, b, inContext );
+}
+
+
+void	LEOGetStringValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext )
+{
+	LEOStringToPoint( self->string.string, self->string.stringLen, l, t, inContext );
 }
 
 
@@ -2428,6 +2610,17 @@ void	LEOSetStringConstantValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger
 		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "%lld,%lld,%lld,%lld", l, t, r, b );
 	else
 		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "left:%lld\ntop:%lld\nright:%lld\nbottom:%lld", l, t, r, b );
+}
+
+
+void	LEOSetStringConstantValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
+{
+	self->base.isa = &kLeoValueTypeString;
+	self->string.string = calloc(sizeof(char),OTHER_VALUE_SHORT_STRING_MAX_LENGTH);	// +++ realloc when we know the size?
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "%lld,%lld", l, t );
+	else
+		self->string.stringLen = snprintf( self->string.string, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "horizontal:%lld\nvertical:%lld", l, t );
 }
 
 
@@ -2918,6 +3111,266 @@ void	LEOGetRectValueAsRect( LEOValuePtr self, LEOInteger* l, LEOInteger* t, LEOI
 	*t = self->rect.top;
 	*r = self->rect.right;
 	*b = self->rect.bottom;
+}
+
+
+#pragma mark -
+#pragma mark Point
+
+
+void	LEOInitPointValue( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	self->base.isa = &kLeoValueTypePoint;
+	if( keepReferences == kLEOInvalidateReferences )
+		self->base.refObjectID = kLEOObjectIDINVALID;
+	self->point.horizontal = l;
+	self->point.vertical = t;
+}
+
+
+/*!
+	Implementation of GetAsString for point values.
+*/
+
+const char*	LEOGetPointValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+{
+	if( outBuf )	// Can never return as string without buffer.
+	{
+		if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+			snprintf( outBuf, bufSize -1, "%lld,%lld", self->point.horizontal, self->point.vertical );
+		else
+			snprintf( outBuf, bufSize -1, "horizontal:%lld\nvertical:%lld", self->point.horizontal, self->point.vertical );
+	}
+	return outBuf;
+}
+
+
+void	LEOArrayToPoint( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext )
+{
+	if( LEOGetArrayKeyCount(convertedArray) != 2 )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point here." );
+		return;
+	}
+	
+	// horizontal:
+	LEOValuePtr	theNumObj = LEOGetArrayValueForKey( convertedArray, "horizontal" );
+	if( !theNumObj )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point here." );
+		return;
+	}
+	LEOUnit		theUnit = kLEOUnitNone;
+	LEOInteger	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point here." );
+		return;
+	}
+	*l = theNum;
+	
+	// vertical:
+	theNumObj = LEOGetArrayValueForKey( convertedArray, "vertical" );
+	if( !theNumObj )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point here." );
+		return;
+	}
+	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point here." );
+		return;
+	}
+	*t = theNum;
+}
+
+
+void	LEOStringToPoint( const char* inString, size_t inStringLen, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+	{
+		// horizontal:
+		char	numPart[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
+		char*	endPtr = NULL;
+		size_t	numPartLen = 0,
+				x = 0;
+		for( ; x < inStringLen && inString[x] != ',' && numPartLen < (OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1); x++ )
+			numPart[numPartLen++] = inString[x];
+		numPart[numPartLen] = '\0';
+		if( numPartLen == 0 )
+		{
+			size_t		lineNo = SIZE_T_MAX;
+			uint16_t	fileID = 0;
+			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point, found string." );
+			return;
+		}
+		*l = strtoll( numPart, &endPtr, 10 );
+		if( endPtr != (numPart +numPartLen) )
+		{
+			size_t		lineNo = SIZE_T_MAX;
+			uint16_t	fileID = 0;
+			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point, found string." );
+			return;
+		}
+		
+		// vertical:
+		x++;
+		numPartLen = 0;
+		for( ; x < inStringLen && inString[x] != ',' && numPartLen < (OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1); x++ )
+			numPart[numPartLen++] = inString[x];
+		numPart[numPartLen] = '\0';
+		if( numPartLen == 0 )
+		{
+			size_t		lineNo = SIZE_T_MAX;
+			uint16_t	fileID = 0;
+			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point, found string." );
+			return;
+		}
+		*t = strtoll( numPart, &endPtr, 10 );
+		if( endPtr != (numPart +numPartLen) )
+		{
+			size_t		lineNo = SIZE_T_MAX;
+			uint16_t	fileID = 0;
+			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point, found string." );
+			return;
+		}
+	}
+	else
+	{
+		struct LEOArrayEntry*	convertedArray = LEOCreateArrayFromString( inString, inStringLen, inContext );
+		if( !convertedArray || LEOGetArrayKeyCount( convertedArray ) != 4 )
+		{
+			size_t		lineNo = SIZE_T_MAX;
+			uint16_t	fileID = 0;
+			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point, found string." );
+			return;
+		}
+		
+		LEOArrayToPoint( convertedArray, l, t, inContext );
+	}
+}
+
+/*!
+	Implementation of SetValueAsString for rectangle values. If the given string
+	can't be fully converted to a rectangle, this will fail with an error message
+	and abort execution of the current LEOContext.
+*/
+
+void	LEOSetPointValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
+{
+	LEOStringToPoint( inString, inStringLen, &self->point.horizontal, &self->point.vertical, inContext );
+}
+
+
+void	LEOInitPointValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	dest->base.isa = &kLeoValueTypeRect;
+	if( keepReferences == kLEOInvalidateReferences )
+		dest->base.refObjectID = kLEOObjectIDINVALID;
+	dest->point.horizontal = self->point.horizontal;
+	dest->point.vertical = self->point.vertical;
+}
+
+
+void	LEOPutPointValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
+{
+	LEOSetValueAsPoint( dest, self->point.horizontal, self->point.vertical, inContext );
+}
+
+
+void	LEOCleanUpPointValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	self->base.isa = NULL;
+	self->point.vertical = 0;
+	self->point.horizontal = 0;
+	if( keepReferences == kLEOInvalidateReferences && self->base.refObjectID != kLEOObjectIDINVALID )
+	{
+		LEOContextGroupRecycleObjectID( inContext->group, self->base.refObjectID );
+		self->base.refObjectID = 0;
+	}
+}
+
+
+LEOValuePtr		LEOGetPointValueValueForKey( LEOValuePtr self, const char* inKey, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext * inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+		return LEOCantGetValueForKey( self, inKey, tempStorage, keepReferences, inContext );
+	
+	LEOInteger		theNum = 0;
+	if( strcasecmp(inKey, "horizontal") == 0 )
+		theNum = self->point.horizontal;
+	else if( strcasecmp(inKey, "vertical") == 0 )
+		theNum = self->point.vertical;
+	LEOInitIntegerValue( tempStorage, theNum, kLEOUnitNone, keepReferences, inContext );
+	return tempStorage;
+}
+
+
+void		LEOSetPointValueValueForKey( LEOValuePtr self, const char* inKey, LEOValuePtr inValue, struct LEOContext * inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+	{
+		LEOCantSetValueForKey( self, inKey, inValue, inContext );
+		return;
+	}
+	LEOUnit		theUnit = kLEOUnitNone;
+	LEOInteger	theNum = LEOGetValueAsInteger( inValue, &theUnit, inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
+		return;
+	}
+	if( strcasecmp(inKey, "horizontal") == 0 )
+		self->point.horizontal = theNum;
+	else if( strcasecmp(inKey, "vertical") == 0 )
+		self->point.vertical = theNum;
+}
+
+
+size_t		LEOGetPointValueKeyCount( LEOValuePtr self, struct LEOContext * inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+		return LEOCantGetKeyCount( self, inContext );
+
+	return 2;
+}
+
+
+void	LEOSetPointValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext * inContext )
+{
+	self->point.horizontal = l;
+	self->point.vertical = t;
+}
+
+
+void	LEOGetPointValueAsPoint( LEOValuePtr self, LEOInteger* l, LEOInteger* t, struct LEOContext * inContext )
+{
+	*l = self->point.horizontal;
+	*t = self->point.vertical;
 }
 
 
@@ -3426,6 +3879,31 @@ void	LEOGetReferenceValueAsRect( LEOValuePtr self, LEOInteger* l, LEOInteger* t,
 
 
 /*!
+	Implementation of GetAsPoint for reference values.
+*/
+
+void	LEOGetReferenceValueAsPoint( LEOValuePtr self, LEOInteger* l, LEOInteger* t, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+	}
+	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
+	{
+		char		str[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};	// Can get away with this as long as they're only numbers, booleans etc.
+		LEOGetValueAsRangeOfString( theValue, self->reference.chunkType, self->reference.chunkStart, self->reference.chunkEnd, str, sizeof(str), inContext );
+		LEOStringToPoint( str, strlen(str), l, t, inContext );
+	}
+	else
+		LEOGetValueAsPoint( theValue, l, t, inContext );
+}
+
+
+/*!
 	Implementation of GetAsRange for reference values.
 */
 
@@ -3555,6 +4033,35 @@ void	LEOSetReferenceValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, L
 	}
 	else
 		LEOSetValueAsRect( theValue, l, t, r, b, inContext );
+}
+
+
+/*!
+	Implementation of SetAsRect for reference values.
+*/
+
+void	LEOSetReferenceValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == NULL )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+	}
+	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
+	{
+		char	strBuf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
+		if( inContext->group->flags == kLEOContextGroupFlagHyperCardCompatibility )
+			snprintf( strBuf, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "%lld,%lld", l, t );
+		else
+			snprintf( strBuf, OTHER_VALUE_SHORT_STRING_MAX_LENGTH -1, "horizontal:%lld\nvertical:%lld", l, t );
+		LEOSetValueRangeAsString( theValue, self->reference.chunkType, self->reference.chunkStart, self->reference.chunkEnd,
+									strBuf, inContext );
+	}
+	else
+		LEOSetValueAsPoint( theValue, l, t, inContext );
 }
 
 
@@ -4055,6 +4562,14 @@ void	LEOSetVariantValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEO
 }
 
 
+void	LEOSetVariantValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
+{
+	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+	LEOInitPointValue( self, l, t, kLEOKeepReferences, inContext );
+	self->base.isa = &kLeoValueTypePointVariant;
+}
+
+
 void	LEOSetVariantValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext )
 {
 	LEOCleanUpValue( self, kLEOKeepReferences, inContext );
@@ -4199,6 +4714,13 @@ void	LEOInitRectVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepRef
 {
 	LEOInitRectValueCopy( self, dest, keepReferences, inContext );
 	dest->base.isa = &kLeoValueTypeRectVariant;
+}
+
+
+void	LEOInitPointVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitPointValueCopy( self, dest, keepReferences, inContext );
+	dest->base.isa = &kLeoValueTypePointVariant;
 }
 
 
@@ -4366,6 +4888,33 @@ void	LEOGetArrayValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEO
 }
 
 
+void	LEOSetArrayValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+	{
+		LEOCantSetValueAsPoint( self, l, t, inContext );
+		return;
+	}
+	
+	LEOCleanUpArray( self->array.array, inContext );
+	self->array.array = NULL;
+	LEOAddIntegerArrayEntryToRoot( &self->array.array, "horizontal", l, kLEOUnitNone, inContext );
+	LEOAddIntegerArrayEntryToRoot( &self->array.array, "vertical", t, kLEOUnitNone, inContext );
+}
+
+
+void	LEOGetArrayValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext )
+{
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+	{
+		LEOCantGetValueAsPoint( self, l, t, inContext );
+		return;
+	}
+	
+	LEOArrayToPoint( self->array.array, l, t, inContext );
+}
+
+
 #pragma mark -
 
 
@@ -4488,6 +5037,22 @@ LEOValuePtr	LEOAddStringArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByRefer
 {
 	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, NULL, inContext );
 	LEOInitStringValue( outValue, inStr, inLen, kLEOInvalidateReferences, inContext );
+	return outValue;
+}
+
+
+LEOValuePtr	LEOAddRectArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
+{
+	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, NULL, inContext );
+	LEOInitRectValue( outValue, l, t, r, b, kLEOInvalidateReferences, inContext );
+	return outValue;
+}
+
+
+LEOValuePtr	LEOAddPointArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
+{
+	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, NULL, inContext );
+	LEOInitPointValue( outValue, l, t, kLEOInvalidateReferences, inContext );
 	return outValue;
 }
 

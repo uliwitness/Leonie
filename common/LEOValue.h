@@ -174,6 +174,8 @@ struct LEOValueType
 	
 	void		(*SetValueAsRect)( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
 	void		(*GetValueAsRect)( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext );
+	void		(*SetValueAsPoint)( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext );
+	void		(*GetValueAsPoint)( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext );
 	bool		(*GetValueIsUnset)( LEOValuePtr self, struct LEOContext* inContext );
 	void		(*SetValueAsRange)( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext );
 	void		(*GetValueAsRange)( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext );
@@ -208,7 +210,9 @@ extern struct LEOValueType	kLeoValueTypeStringVariant;			//! isa table used for 
 extern struct LEOValueType	kLeoValueTypeBooleanVariant;		//! isa table used for variant values (union LEOValue) while they contain booleans.
 extern struct LEOValueType	kLeoValueTypeNativeObjectVariant;	//! isa table used for variant values (union LEOValue) while they contain objects.
 extern struct LEOValueType	kLeoValueTypeRect;					//! isa table used for rectangle values (LEOValueRect).
+extern struct LEOValueType	kLeoValueTypePoint;					//! isa table used for point values (LEOValueRect).
 extern struct LEOValueType	kLeoValueTypeRectVariant;			//! isa table used for variant values (union LEOValue) while they contain rects.
+extern struct LEOValueType	kLeoValueTypePointVariant;			//! isa table used for variant values (union LEOValue) while they contain points.
 extern struct LEOValueType	kLeoValueTypeRange;					//! isa table used for range values (LEOValueRange).
 extern struct LEOValueType	kLeoValueTypeRangeVariant;			//! isa table used for variant values (union LEOValue) while they contain ranges.
 
@@ -298,6 +302,23 @@ struct LEOValueRect
 	LEOInteger			bottom;
 };
 typedef struct LEOValueRect	LEOValueRect;
+
+
+/*!
+	This is a point. In our language, points are dictionaries that
+	contain the keys left, top, right and bottom. In HyperCard compatibility
+	mode, they are a comma-separated list of numbers, in the order l,t,r,b.
+	@field	base		The instance variables inherited from the base class.
+	@field	horizontal	The distance of the point, measured to the left of the card/screen/whatever.
+	@field	vertical	The distance of the point, measured to the top of the card/screen/whatever.
+*/
+struct LEOValuePoint
+{
+	struct LEOValueBase	base;
+	LEOInteger			horizontal;
+	LEOInteger			vertical;
+};
+typedef struct LEOValuePoint	LEOValuePoint;
 
 
 /*!
@@ -403,6 +424,7 @@ union LEOValue
 	struct LEOValueArray		array;
 	struct LEOValueObject		object;
 	struct LEOValueRect			rect;
+	struct LEOValuePoint		point;
 	struct LEOValueRange		range;
 };
 
@@ -474,6 +496,14 @@ void		LEOInitBooleanValue( LEOValuePtr inStorage, bool inBoolean, LEOKeepReferen
 	@seealso //leo_ref/c/macro/LEOGetRectValueSize LEOGetRectValueSize
 */
 void		LEOInitRectValue( LEOValuePtr inStorage, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
+
+/*!
+	Initialize the given storage so it's a valid point value containing the
+	given four coordinates.
+
+	@seealso //leo_ref/c/macro/LEOGetPointValueSize LEOGetPointValueSize
+*/
+void		LEOInitPointValue( LEOValuePtr inStorage, LEOInteger l, LEOInteger t, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
 
 /*!
 	Initialize the given storage so it's a valid range value containing the
@@ -641,6 +671,30 @@ void		LEOInitBooleanVariantValue( LEOValuePtr self, bool inBoolean, LEOKeepRefer
 
 void		LEOInitRectVariantValue( LEOValuePtr inStorage, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
 
+
+/*!
+	Initialize the given storage so it's a valid point value containing the
+	given four coordinates.
+	
+	A variant is a value whose type changes depending on what type of data you
+	put in it. So while this value is initially a rect, if you call
+	LEOSetValueAsString() on it, it will turn itself into a string variant
+	value, or if you call LEOSetValueAsNumber() a number variant value.
+	
+	As such, assignments to variants can never fail due to a type mismatch,
+	but retrieving a variant as a certain type still can.
+	
+	@seealso //leo_ref/c/func/LEOInitStringVariantValue LEOInitStringVariantValue
+	@seealso //leo_ref/c/func/LEOInitNumberVariantValue LEOInitNumberVariantValue
+	@seealso //leo_ref/c/func/LEOInitIntegerVariantValue LEOInitIntegerVariantValue
+	@seealso //leo_ref/c/func/LEOInitBooleanVariantValue LEOInitBooleanVariantValue
+	@seealso //leo_ref/c/func/LEOInitNativeObjectVariantValue LEOInitNativeObjectVariantValue
+	@seealso //leo_ref/c/func/LEOInitRangeVariantValue LEOInitRangeVariantValue
+	@seealso //leo_ref/c/macro/LEOGetVariantValueSize LEOGetVariantValueSize
+*/
+
+void		LEOInitPointVariantValue( LEOValuePtr inStorage, LEOInteger l, LEOInteger t, LEOKeepReferencesFlag keepReferences, struct LEOContext *inContext );
+
 /*!
 	Initialize the given storage so it's a valid range value containing the
 	given range in the given unit.
@@ -738,6 +792,13 @@ void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, L
 	a new rectangle value.
 */
 #define		LEOGetRectValueSize()			(kLeoValueTypeRect.size)
+
+/*!
+	@function LEOGetPointValueSize
+	Returns the size (in bytes) of storage you need to provide to LEOInitCopy for
+	a new point value.
+*/
+#define		LEOGetPointValueSize()			(kLeoValueTypePoint.size)
 
 /*!
 	@function LEOGetRangeValueSize
@@ -1144,6 +1205,20 @@ void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, L
 
 
 /*!
+	@function LEOGetValueAsPoint
+	Returns the given value as a point, converting it, if necessary.
+	If conversion isn't possible, it will fail with an error message and stop
+	execution in the current LEOContext.
+	@param	v	The value you wish to read.
+	@param	l	A pointer to a variable to hold the horizontal coordinate for the point (top-left relative)
+	@param	t	A pointer to a variable to hold the vertical coordinate for the rectangle (top-left relative)
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+*/
+#define 	LEOGetValueAsPoint(v,l,t,c)		((LEOValuePtr)(v))->base.isa->GetValueAsPoint(((LEOValuePtr)(v)),(l),(t),(c))
+
+
+/*!
 	@function LEOGetValueAsRange
 	Returns the given value as a range, converting it, if necessary.
 	If conversion isn't possible, it will fail with an error message and stop
@@ -1170,6 +1245,18 @@ void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, L
 				which errors will be stored.
  */
 #define		LEOSetValueAsRect(v,l,t,r,b,c)	((LEOValuePtr)(v))->base.isa->SetValueAsRect(((LEOValuePtr)(v)),(l),(t),(r),(b),(c))
+
+
+/*!
+	@function LEOSetValueAsPoint
+	Replace the value of another value with the given point.
+	@param	v	The value you wish to change.
+	@param	l	The horizontal coordinate for the rectangle (top-left relative)
+	@param	t	The vertical coordinate for the rectangle (top-left relative)
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+ */
+#define		LEOSetValueAsPoint(v,l,t,c)	((LEOValuePtr)(v))->base.isa->SetValueAsPoint(((LEOValuePtr)(v)),(l),(t),(c))
 
 
 /*!
@@ -1204,6 +1291,7 @@ LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, struct LE
 LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, struct LEOContext* inContext );
 bool		LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOCantGetValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext );
+void		LEOCantGetValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext );
 void		LEOCantGetValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext );
 void		LEOCantGetValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
 										   char* outBuf, size_t bufSize, struct LEOContext* inContext );
@@ -1213,6 +1301,7 @@ void		LEOCantSetValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit inU
 void		LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, LEOUnit inUnit, struct LEOContext* inContext );
 void		LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext* inContext );
 void		LEOCantSetValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
+void		LEOCantSetValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext );
 void		LEOCantSetValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext );
 void		LEOCantSetValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
 void		LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
@@ -1294,8 +1383,10 @@ void		LEODetermineChunkRangeOfSubstringOfStringValue( LEOValuePtr self, size_t *
 LEOValuePtr	LEOGetStringValueForKey( LEOValuePtr self, const char* keyName, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOCleanUpStringValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOSetStringValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
+void		LEOSetStringValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext );
 void		LEOSetStringValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext );
 void		LEOGetStringValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext );
+void		LEOGetStringValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext );
 void		LEOGetStringValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext );
 
 // Replacement assignment methods and destructors for constant-referencing strings:
@@ -1312,6 +1403,7 @@ void		LEOSetStringConstantValuePredeterminedRangeAsString( LEOValuePtr self,
 void		LEOInitStringConstantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOCleanUpStringConstantValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOSetStringConstantValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
+void		LEOSetStringConstantValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext );
 void		LEOSetStringConstantValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext );
 bool		LEOGetStringConstantValueIsUnset( LEOValuePtr self, struct LEOContext* inContext );
 
@@ -1344,6 +1436,19 @@ void		LEOSetRectValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOIn
  );
 void		LEOGetRectValueAsRect( LEOValuePtr self, LEOInteger* l, LEOInteger* t, LEOInteger* r, LEOInteger* b, struct LEOContext * inContext );
 
+// Point instance methods:
+const char*	LEOGetPointValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
+void		LEOSetPointValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext );
+void		LEOInitPointValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+void		LEOPutPointValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
+void		LEOCleanUpPointValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+LEOValuePtr	LEOGetPointValueValueForKey( LEOValuePtr self, const char* inKey, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext * inContext );
+void		LEOSetPointValueValueForKey( LEOValuePtr self, const char* inKey, LEOValuePtr inValue, struct LEOContext * inContext );
+size_t		LEOGetPointValueKeyCount( LEOValuePtr self, struct LEOContext * inContext );
+void		LEOSetPointValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext * inContext
+ );
+void		LEOGetPointValueAsPoint( LEOValuePtr self, LEOInteger* l, LEOInteger* t, struct LEOContext * inContext );
+
 // Range instance methods:
 const char*	LEOGetRangeValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
 void		LEOSetRangeValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext );
@@ -1363,6 +1468,7 @@ LEONumber	LEOGetReferenceValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, stru
 LEOInteger	LEOGetReferenceValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, struct LEOContext* inContext );
 bool		LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOGetReferenceValueAsRect( LEOValuePtr self, LEOInteger* l, LEOInteger* t, LEOInteger* r, LEOInteger* b, struct LEOContext* inContext );
+void		LEOGetReferenceValueAsPoint( LEOValuePtr self, LEOInteger* l, LEOInteger* t, struct LEOContext* inContext );
 void		LEOGetReferenceValueAsRange( LEOValuePtr self, LEOInteger* s, LEOInteger* e, LEOChunkType *t, struct LEOContext* inContext );
 void		LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
@@ -1370,6 +1476,7 @@ void		LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType
 void		LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, size_t inLength, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
+void		LEOSetReferenceValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
 void		LEOSetReferenceValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit inUnit, struct LEOContext* inContext );
@@ -1406,6 +1513,7 @@ void		LEOSetVariantValueAsInteger( LEOValuePtr self, LEOInteger inNumber, LEOUni
 void		LEOSetVariantValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext );
 void		LEOSetVariantValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEOContext* inContext );
 void		LEOSetVariantValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
+void		LEOSetVariantValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext );
 void		LEOSetVariantValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext );
 void		LEOSetVariantValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
 void		LEOSetVariantValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
@@ -1420,6 +1528,7 @@ void		LEOInitNumberVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeep
 void		LEOInitIntegerVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitBooleanVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitRectVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+void		LEOInitPointVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitRangeVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitNativeObjectVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOInitStringVariantValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
@@ -1446,6 +1555,8 @@ size_t		LEOGetArrayValueKeyCount( LEOValuePtr self, struct LEOContext* inContext
 void		LEOSetArrayValueAsArray( LEOValuePtr self, struct LEOArrayEntry* inArray, struct LEOContext* inContext );
 void		LEOGetArrayValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext );
 void		LEOSetArrayValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
+void		LEOGetArrayValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext );
+void		LEOSetArrayValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext );
 
 // Associative arrays:
 struct LEOArrayEntry	*	LEOAllocNewEntry( const char* inKey, LEOValuePtr inValue /* may be NULL */, struct LEOContext* inContext );
@@ -1464,6 +1575,8 @@ LEOValuePtr	LEOAddNumberArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByRefer
 LEOValuePtr	LEOAddCStringArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, const char* inCStr, struct LEOContext* inContext );
 LEOValuePtr	LEOAddStringConstantArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, const char* inCStr, struct LEOContext* inContext );
 LEOValuePtr	LEOAddStringArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, const char* inStr, size_t inLen, struct LEOContext* inContext );
+LEOValuePtr	LEOAddRectArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
+LEOValuePtr	LEOAddPointArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOInteger l, LEOInteger t, struct LEOContext* inContext );
 
 // One array entry:
 struct LEOArrayEntry
@@ -1478,8 +1591,10 @@ struct LEOArrayEntry
 LEONumber	LEONumberWithUnitAsUnit( LEONumber inNumber, LEOUnit fromUnit, LEOUnit toUnit );
 LEOUnit		LEOConvertNumbersToCommonUnit( LEONumber* firstArgument, LEOUnit firstUnit, LEONumber* secondArgument, LEOUnit secondUnit );
 void		LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext );
+void		LEOStringToPoint( const char* inString, size_t inStringLen, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext );
 void		LEOStringToRange( const char* inString, size_t inStringLen, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext );
 void		LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext );
+void		LEOArrayToPoint( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext );
 
 #if __cplusplus
 }
