@@ -3066,24 +3066,54 @@ void		LEOSetRectValueValueForKey( LEOValuePtr self, const char* inKey, LEOValueP
 		LEOCantSetValueForKey( self, inKey, inValue, inContext );
 		return;
 	}
+	bool		mustConvertToArray = false;
 	LEOUnit		theUnit = kLEOUnitNone;
 	LEOInteger	theNum = LEOGetValueAsInteger( inValue, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
+		if( self->base.isa == &kLeoValueTypeRectVariant )	// Variant? Convert to an array.
+		{
+			inContext->flags |= kLEOContextKeepRunning;
+			mustConvertToArray = true;
+			theNum = 0;
+		}
+		else
+		{
+			size_t		lineNo = SIZE_T_MAX;
+			uint16_t	fileID = 0;
+			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
+			return;
+		}
+	}
+	if( strcasecmp(inKey, "left") == 0 && !mustConvertToArray )
+		self->rect.left = theNum;
+	else if( strcasecmp(inKey, "top") == 0 && !mustConvertToArray )
+		self->rect.top = theNum;
+	else if( strcasecmp(inKey, "right") == 0 && !mustConvertToArray )
+		self->rect.right = theNum;
+	else if( strcasecmp(inKey, "bottom") == 0 && !mustConvertToArray )
+		self->rect.bottom = theNum;
+	else if( self->base.isa == &kLeoValueTypeRectVariant )
+	{
+		struct LEOArrayEntry	*	array = NULL;
+		LEOAddIntegerArrayEntryToRoot( &array, "left", self->rect.left, kLEOUnitNone, inContext );
+		LEOAddIntegerArrayEntryToRoot( &array, "top", self->rect.top, kLEOUnitNone, inContext );
+		LEOAddIntegerArrayEntryToRoot( &array, "right", self->rect.right, kLEOUnitNone, inContext );
+		LEOAddIntegerArrayEntryToRoot( &array, "bottom", self->rect.bottom, kLEOUnitNone, inContext );
+		LEOAddArrayEntryToRoot( &array, inKey, inValue, inContext );
+		
+		LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+		LEOInitArrayVariantValue( self, array, kLEOKeepReferences, inContext );
+	}
+	else
+	{
 		size_t		lineNo = SIZE_T_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't set key %s on a rectangle, must be \"left\", \"top\", \"right\" or \"bottom\".", inKey );
 		return;
 	}
-	if( strcasecmp(inKey, "left") == 0 )
-		self->rect.left = theNum;
-	else if( strcasecmp(inKey, "top") == 0 )
-		self->rect.top = theNum;
-	else if( strcasecmp(inKey, "right") == 0 )
-		self->rect.right = theNum;
-	else if( strcasecmp(inKey, "bottom") == 0 )
-		self->rect.bottom = theNum;
 }
 
 
@@ -3334,20 +3364,48 @@ void		LEOSetPointValueValueForKey( LEOValuePtr self, const char* inKey, LEOValue
 		LEOCantSetValueForKey( self, inKey, inValue, inContext );
 		return;
 	}
+	bool		mustConvertToArray = false;
 	LEOUnit		theUnit = kLEOUnitNone;
 	LEOInteger	theNum = LEOGetValueAsInteger( inValue, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
+		if( self->base.isa == &kLeoValueTypeRectVariant )	// Variant? Convert to an array.
+		{
+			inContext->flags |= kLEOContextKeepRunning;;
+			mustConvertToArray = true;
+			theNum = 0;
+		}
+		else
+		{
+			size_t		lineNo = SIZE_T_MAX;
+			uint16_t	fileID = 0;
+			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
+			return;
+		}
+	}
+	if( strcasecmp(inKey, "horizontal") == 0 && !mustConvertToArray )
+		self->point.horizontal = theNum;
+	else if( strcasecmp(inKey, "vertical") == 0 && !mustConvertToArray )
+		self->point.vertical = theNum;
+	else if( self->base.isa == &kLeoValueTypeRectVariant )
+	{
+		struct LEOArrayEntry	*	array = NULL;
+		LEOAddIntegerArrayEntryToRoot( &array, "horizontal", self->point.horizontal, kLEOUnitNone, inContext );
+		LEOAddIntegerArrayEntryToRoot( &array, "vertical", self->point.vertical, kLEOUnitNone, inContext );
+		LEOAddArrayEntryToRoot( &array, inKey, inValue, inContext );
+		
+		LEOCleanUpValue( self, kLEOKeepReferences, inContext );
+		LEOInitArrayVariantValue( self, array, kLEOKeepReferences, inContext );
+	}
+	else
+	{
 		size_t		lineNo = SIZE_T_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't set key %s on a point, must be \"horizontal\" or \"vertical\".", inKey );
 		return;
 	}
-	if( strcasecmp(inKey, "horizontal") == 0 )
-		self->point.horizontal = theNum;
-	else if( strcasecmp(inKey, "vertical") == 0 )
-		self->point.vertical = theNum;
 }
 
 
@@ -4519,6 +4577,13 @@ void	LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, LE
 {
 	LEOInitNativeObjectValue( self, inNativeObject, keepReferences, inContext );
 	self->base.isa = &kLeoValueTypeNativeObjectVariant;
+}
+
+
+void	LEOInitArrayVariantValue( LEOValuePtr self, struct LEOArrayEntry* array, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+{
+	LEOInitArrayValue( &self->array, array, keepReferences, inContext );
+	self->base.isa = &kLeoValueTypeArrayVariant;
 }
 
 

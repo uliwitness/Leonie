@@ -742,6 +742,29 @@ void		LEOInitRangeVariantValue( LEOValuePtr inStorage, LEOInteger s, LEOInteger 
 void		LEOInitNativeObjectVariantValue( LEOValuePtr self, void* inNativeObject, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
 
+/*!
+	Initialize the given storage so it's a valid array variant value
+ 	containing the given array items.
+	
+	A variant is a value whose type changes depending on what type of data you
+	put in it. So while this value is initially an array, if you call
+	LEOSetValueAsString() on it, it will turn itself into a string variant
+	value, or if you call LEOSetValueAsNumber() a number variant value.
+	
+	As such, assignments to variants can never fail due to a type mismatch,
+	but retrieving a variant as a certain type still can.
+	
+	@seealso //leo_ref/c/func/LEOInitStringVariantValue LEOInitStringVariantValue
+	@seealso //leo_ref/c/func/LEOInitNumberVariantValue LEOInitNumberVariantValue
+	@seealso //leo_ref/c/func/LEOInitIntegerVariantValue LEOInitIntegerVariantValue
+	@seealso //leo_ref/c/func/LEOInitBooleanVariantValue LEOInitBooleanVariantValue
+	@seealso //leo_ref/c/func/LEOInitRectVariantValue LEOInitRectVariantValue
+	@seealso //leo_ref/c/func/LEOInitRangeVariantValue LEOInitRangeVariantValue
+	@seealso //leo_ref/c/macro/LEOGetVariantValueSize LEOGetVariantValueSize
+*/
+void		LEOInitArrayVariantValue( LEOValuePtr self, struct LEOArrayEntry* array, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );	// Takes over ownership of the array.
+
+
 /*! @functiongroup LEOValue storage measuring */
 /*!
 	@function LEOGetValueSize
