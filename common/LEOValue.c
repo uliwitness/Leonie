@@ -3371,7 +3371,7 @@ void		LEOSetPointValueValueForKey( LEOValuePtr self, const char* inKey, LEOValue
 	{
 		if( self->base.isa == &kLeoValueTypeRectVariant )	// Variant? Convert to an array.
 		{
-			inContext->flags |= kLEOContextKeepRunning;;
+			inContext->flags |= kLEOContextKeepRunning;
 			mustConvertToArray = true;
 			theNum = 0;
 		}
