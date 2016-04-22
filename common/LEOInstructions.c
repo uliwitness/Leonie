@@ -2059,7 +2059,7 @@ void	LEOGetArrayItemInstruction( LEOContext* inContext )
 	LEOGetValueAsString( keyValue, keyStr, sizeof(keyStr), inContext );	
 	LEOValuePtr		foundItem = LEOGetValueForKey( srcValue, keyStr, dstValue, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	if( foundItem == NULL )
-		LEOInitStringValue( dstValue, "", 0, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
+		LEOInitUnsetValue( dstValue, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	else if( foundItem != dstValue )
 		LEOInitSimpleCopy( foundItem, dstValue, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	
