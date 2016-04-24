@@ -493,12 +493,14 @@ void	LEOContextStopWithError( LEOContext* inContext, size_t errLine, size_t errO
 	inContext->errMsg[sizeof(inContext->errMsg) -1] = 0;
 	vsnprintf( inContext->errMsg, sizeof(inContext->errMsg) -1, inErrorFmt, varargs );
 	va_end( varargs );
+    
 	inContext->errLine = errLine;
 	inContext->errOffset = errOffset;
 	inContext->errFileID = fileID;
 	inContext->flags &= ~kLEOContextKeepRunning;
 	
-	inContext->promptProc( inContext );
+    if( inContext->promptProc )
+        inContext->promptProc( inContext );
 }
 
 
@@ -583,15 +585,24 @@ void	LEODebugPrintContext( LEOContext* ctx )
 			else
 				printf("    ");
 			
-			char		str[1024] = { 0 };
+            LEOInstructionFuncPtr   oldPromptProc = ctx->promptProc;
+            ctx->promptProc = NULL;
+			char            str[1024] = { 0 };
+            LEOContextFlags oldFlags = ctx->flags;
+            char			oldErrMsg[1024];
+            size_t          oldErrLine = ctx->errLine;
+            size_t          oldErrOffset = ctx->errOffset;
+            strcpy( oldErrMsg, ctx->errMsg );
 			LEOGetValueAsString( currValue, str, sizeof(str), ctx );
 			if( (ctx->flags & kLEOContextKeepRunning) == 0 && ctx->errMsg[0] != 0 )
 			{
-				ctx->flags |= kLEOContextKeepRunning;
+				ctx->flags = oldFlags;
 				strcpy( str, ctx->errMsg );
-				ctx->errMsg[0] = 0;
-				
+                strcpy( ctx->errMsg, oldErrMsg );
+                ctx->errLine = oldErrLine;
+                ctx->errOffset = oldErrOffset;
 			}
+            ctx->promptProc = oldPromptProc;
 			printf( "\"%s\" (%s)", str, currValue->base.isa->displayTypeName );
 			
 			long		bpRelativeAddress = currValue -ctx->stackBasePtr;
