@@ -38,9 +38,9 @@ typedef struct LEOObject LEOObject;
 
 enum
 {
-	kLEOContextGroupFlagFromNetwork				= (1 << 0),		// This stack was loaded from the net. Don't do any file system access or native calls or similarly dangerous things.
-	kLEOContextGroupFlagHyperCardCompatibility	= (1 << 1),		// This was a HyperCard stack. Instructions that behave differently in Stacksmith should modify their behaviour to maintain compatibility.
-	kLEOContextGroupFlagNoNetwork				= (1 << 2)		// Useful for kids' stacks or sandboxing tests.
+	kLEOContextGroupFlagFromNetwork				= (1 << 0),		//!< This stack was loaded from the net. Don't do any file system access or native calls or similarly dangerous things.
+	kLEOContextGroupFlagHyperCardCompatibility	= (1 << 1),		//!< This was a HyperCard stack. Instructions that behave differently in Stacksmith should modify their behaviour to maintain compatibility.
+	kLEOContextGroupFlagNoNetwork				= (1 << 2)		//!< Useful for kids' stacks or sandboxing tests.
 };
 typedef uint32_t		LEOContextGroupFlags;
 
