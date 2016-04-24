@@ -353,9 +353,17 @@ bool	LEOContinueRunningContext( LEOContext *inContext );
 
 /*! Stop execution in the given context with an error message.
 	Currently sets the errMsg field of the context to the given string and set
-	keepRunning to FALSE.
+	keepRunning to FALSE. inErrorFmt is a format string like you pass it to
+    printf().
  */
 void	LEOContextStopWithError( LEOContext* inContext, size_t errLine, size_t errOffset, uint16_t fileID, const char* inErrorFmt, ... );
+
+    
+/*! Look up the local variable with name varName in the current script, if present, and set
+    its value to the given string. inMessageFmt is a format string like you pass it to
+    printf().
+*/
+void	LEOContextSetLocalVariable( LEOContext* inContext, const char* varName, const char* inMessageFmt, ... );
 
 /*! Push a copy of the given value onto the stack, returning a pointer to it.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr

@@ -502,6 +502,23 @@ void	LEOContextStopWithError( LEOContext* inContext, size_t errLine, size_t errO
 }
 
 
+void	LEOContextSetLocalVariable( LEOContext* inContext, const char* varName, const char* inMessageFmt, ... )
+{
+    char        str[1024] = {};
+	va_list		varargs;
+	va_start( varargs, inMessageFmt );
+	vsnprintf( str, sizeof(str) -1, inMessageFmt, varargs );
+	va_end( varargs );
+    
+    LEOHandler	*	theHandler = LEOContextPeekCurrentHandler( inContext );
+    long			bpRelativeOffset = LEOHandlerFindVariableByName( theHandler, varName );
+    if( bpRelativeOffset >= 0 )
+    {
+        LEOSetValueAsString( inContext->stackBasePtr +bpRelativeOffset, str, strlen(str), inContext );
+    }
+}
+
+
 void	LEODebugPrintInstr( LEOInstruction* instruction )
 {
 	if( !instruction )
