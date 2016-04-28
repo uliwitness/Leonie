@@ -783,23 +783,23 @@ void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 {
 //    printf("Cleaning up handler:");
 //    LEODebugPrintContext( inContext );
-//    
-//    if( inContext->stackBasePtr != inContext->stackEndPtr )
-//    {
-//        union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
-//        LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
-//        LEOCleanUpStackToPtr( inContext, inContext->stackBasePtr -1 -paramCount );
-//    }
-    
-    printf("About to return:");
-    LEODebugPrintContext( inContext );
-    
+	
+    if( (inContext->stackBasePtr -1) >= inContext->stack )
+    {
+        union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
+        LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
+        LEOCleanUpStackToPtr( inContext, inContext->stackBasePtr -1 -paramCount );
+    }
+	
+//    printf("About to return:");
+//    LEODebugPrintContext( inContext );
+	
     inContext->currentInstruction = LEOContextPeekReturnAddress( inContext );
 	inContext->stackBasePtr = LEOContextPeekBasePtr( inContext );
 	LEOContextPopHandlerScriptReturnAddressAndBasePtr( inContext );
     
-    printf("Have just returned:");
-    LEODebugPrintContext( inContext );
+//    printf("Have just returned:");
+//    LEODebugPrintContext( inContext );
 }
 
 
