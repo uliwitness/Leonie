@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "LEOContextGroup.h"
+#include "LEOStringUtilities.h"
 
 
 #define		NUM_INSTRUCTIONS_PER_CHUNK		16
@@ -502,12 +503,12 @@ void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript )
 	printf("STRINGS:\n");
 	for( size_t x = 0; x < inScript->numStrings; x++ )
 	{
-		printf( "\t\"%s\"\n", inScript->strings[x] );
+		printf( "\t\"%s\"\n", LEOStringEscapedForPrintingInQuotes(inScript->strings[x]) );
 	}
 	printf("ERRORS:\n");
 	for( size_t x = 0; x < inScript->numParseErrors; x++ )
 	{
-		printf( "\t\"%s\" on line %zu (offset %zu) of file %s\n", inScript->parseErrors[x].errMsg, inScript->parseErrors[x].errorLine, inScript->parseErrors[x].errorOffset, LEOFileNameForFileID( inScript->parseErrors[x].fileID ) );
+		printf( "\t\"%s\" on line %zu (offset %zu) of file %s\n", LEOStringEscapedForPrintingInQuotes(inScript->parseErrors[x].errMsg), inScript->parseErrors[x].errorLine, inScript->parseErrors[x].errorOffset, LEOFileNameForFileID( inScript->parseErrors[x].fileID ) );
 	}
 	if( inScript->numBreakpointLines > 0 )
 	{

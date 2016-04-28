@@ -15,6 +15,7 @@
 #include "LEOInstructions.h"
 #include "LEOContextGroup.h"
 #include "LEOScript.h"
+#include "LEOStringUtilities.h"
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
@@ -572,7 +573,7 @@ void	LEODebugPrintContext( LEOContext* ctx )
 	if( (ctx->flags & kLEOContextKeepRunning) == 0 )
 		printf( "    keepRunning: FALSE\n" );
 	if( ctx->errMsg[0] != 0 )
-		printf( "    errMsg: %s\n", ctx->errMsg );
+		printf( "    errMsg: \"%s\"\n", LEOStringEscapedForPrintingInQuotes(ctx->errMsg) );
 	printf( "    currentInstruction: " ); LEODebugPrintInstr( ctx->currentInstruction );
 	
 	if( ctx->stackEndPtr != NULL )
@@ -603,7 +604,7 @@ void	LEODebugPrintContext( LEOContext* ctx )
                 ctx->errOffset = oldErrOffset;
 			}
             ctx->promptProc = oldPromptProc;
-			printf( "\"%s\" (%s)", str, currValue->base.isa->displayTypeName );
+			printf( "\"%s\" (%s)", LEOStringEscapedForPrintingInQuotes(str), currValue->base.isa->displayTypeName );
 			
 			long		bpRelativeAddress = currValue -ctx->stackBasePtr;
 			if( bpRelativeAddress >= 0 && ctx->numCallStackEntries > 0 )

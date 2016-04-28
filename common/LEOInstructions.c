@@ -817,8 +817,8 @@ void	LEOSetReturnValueInstruction( LEOContext* inContext )
 	LEOInitSimpleCopy( inContext->stackEndPtr -1, destValue, kLEOKeepReferences, inContext );
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
 	
-    LEODebugPrintContext( inContext );
-    
+//    LEODebugPrintContext( inContext );
+	
 	inContext->currentInstruction++;
 }
 
