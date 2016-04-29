@@ -530,6 +530,7 @@ void	LEODebugPrintInstr( LEOInstruction* instruction )
 		return;
 	}
 	
+	printf( "%p: ", instruction );
 	LEOInstructionID	currID = instruction->instructionID;
 	if( currID >= gNumInstructions )
 		printf("UNKNOWN_%d",currID);
@@ -562,7 +563,7 @@ void	LEOContextDebugPrintCallStack( LEOContext* inContext )
 		x--;
 		
 		LEOHandlerID theID = inContext->callStackEntries[x].handler->handlerName;
-		printf( "%s\n", LEOContextGroupHandlerNameForHandlerID( inContext->group, theID ) );
+		printf( "%s %p (%p)\n", LEOContextGroupHandlerNameForHandlerID( inContext->group, theID ), inContext->callStackEntries[x].returnAddress, inContext->callStackEntries[x].script );
 	} while( x > 0 );
 }
 
@@ -617,6 +618,7 @@ void	LEODebugPrintContext( LEOContext* ctx )
 					printf("\t%s",theRealName);
 				if( strlen(theName) > 0 )
 					printf(" [%s]",theName);
+				printf(" %p", ctx->callStackEntries[ ctx->numCallStackEntries -1 ].returnAddress);
 			}
 			printf( "\n" );
 			

@@ -612,6 +612,15 @@ void	LEOAddIntegerInstruction( LEOContext* inContext )
 	instruction so returning from the handler can restore the previous state,
 	and retains the current script in case the script deletes its owner.
 	
+	This can be used to send a totally new message, or to pass a message
+	up the message path.
+	
+	Push a value to hold the result of this call on the stack first, followed
+	by the parameters in reverse order, and finally the parameter count.
+	After this instruction returns, it is your responsibility to remove the
+	pushed parameters, count and result from the stack again, e.g. by generating
+	the requisite POP_VALUE_INSTR instructions.
+	
 	param1	-	Flags from eLEOCallHandlerFlags enum.
 	param2	-	The LEOHandlerID of the handler to call.
 	
@@ -781,25 +790,26 @@ LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInte
 
 void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 {
-//    printf("Cleaning up handler:");
-//    LEODebugPrintContext( inContext );
+	// No need to remove the parameters here, the caller is supposed to do this
+	//	as they also know how many they pushed in the first place.
 	
-    if( (inContext->stackBasePtr -1) >= inContext->stack )
-    {
-        union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
-        LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
-        LEOCleanUpStackToPtr( inContext, inContext->stackBasePtr -1 -paramCount );
-    }
-	
-//    printf("About to return:");
-//    LEODebugPrintContext( inContext );
+//    printf("About to return:\n");
+//	LEOScript*	scr = LEOContextPeekCurrentScript( inContext );
+//	LEODebugPrintScript( inContext->group, scr );
+//	LEODebugPrintContext( inContext );
 	
     inContext->currentInstruction = LEOContextPeekReturnAddress( inContext );
 	inContext->stackBasePtr = LEOContextPeekBasePtr( inContext );
 	LEOContextPopHandlerScriptReturnAddressAndBasePtr( inContext );
-    
-//    printf("Have just returned:");
-//    LEODebugPrintContext( inContext );
+	
+//	printf("Have just returned:\n");
+//	if( inContext->currentInstruction != NULL )	// We didn't just exit the topmost handler?
+//	{
+//		scr = LEOContextPeekCurrentScript( inContext );
+//		if( scr )
+//			LEODebugPrintScript( inContext->group, scr );
+//	}
+//	LEODebugPrintContext( inContext );
 }
 
 
