@@ -1155,7 +1155,7 @@ void		LEOInitArrayVariantValue( LEOValuePtr self, struct LEOArrayEntry* array, L
 	@param	v	The value you wish to dispose of.
 	@param	k	A <tt>LEOKeepReferencesFlag</tt> indicating whether to clear references
 				or whether you just want to change the type of this value and will
-				keep teh storage valid. Usually, you pass <tt>kLEOInvalidateReferences</tt>.
+				keep the storage valid. Usually, you pass <tt>kLEOInvalidateReferences</tt>.
 	@param	c	The context in which your script is currently running and in
 				which errors will be stored.
 */

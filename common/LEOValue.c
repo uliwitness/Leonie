@@ -4999,7 +4999,7 @@ struct LEOArrayEntry	*	LEOCreateArrayFromString( const char* inString, size_t in
 			valueStartOffs = valueEndOffs = x+1;
 			isInKey = false;
 		}
-		else if( !isInKey && inString[x] == '\n' )
+		else if( !isInKey && (inString[x] == '\n' || inString[x] == '\r') )
 		{
 			if( x <= 1 || inString[x-2] != ((char)0xc2) || inString[x-1] != ((char)0xac) )	// Is a real return end-of-entry, not an escaped return in data?
 			{
@@ -5300,7 +5300,7 @@ void	LEOPrintArray( struct LEOArrayEntry* arrayPtr, char* strBuf, size_t bufSize
 			strBuf[offs] = 0;
 			break;
 		}
-		if( valStr[x] == '\n' )	// Replace with "¬\n" (2-byte char + line feed).
+		if( valStr[x] == '\n' || valStr[x] == '\r' )	// Replace with "¬\n" resp. "¬\r" (2-byte char + line feed).
 		{
 			strBuf[offs++] = 0xc2;
 			if( (bufSize -offs) == 0 )
@@ -5314,7 +5314,7 @@ void	LEOPrintArray( struct LEOArrayEntry* arrayPtr, char* strBuf, size_t bufSize
 				strBuf[offs -2] = 0;
 				break;
 			}
-			strBuf[offs++] = '\n';
+			strBuf[offs++] = valStr[x];
 		}
 		else if( valStr[x] == (char)0xc2 )
 		{
