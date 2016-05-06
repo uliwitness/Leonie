@@ -31,3 +31,10 @@ struct THostCommandEntry	gPropertyHostFunctions[] =
 		}
 	}
 };
+
+
+struct TOperatorEntry	gPropertyOperators[] =
+{
+	{ EHasIdentifier, EPropertyIdentifier, 2500, HAS_PROPERTY_INSTR, EHasPropertyOperator },
+	{ ELastIdentifier_Sentinel, ELastIdentifier_Sentinel, 0, INVALID_INSTR2, ELastIdentifier_Sentinel }
+};

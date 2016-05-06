@@ -27,3 +27,5 @@ LEOINSTR_DECL(Property,LEO_NUMBER_OF_PROPERTY_INSTRUCTIONS)
 extern size_t					kFirstPropertyInstruction;
 
 extern struct THostCommandEntry	gPropertyHostFunctions[];
+
+extern struct TOperatorEntry	gPropertyOperators[];
