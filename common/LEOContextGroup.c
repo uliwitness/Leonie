@@ -14,6 +14,7 @@
 #include "LEOContextGroup.h"
 #include "LEOHandlerID.h"
 #include "LEOValue.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -199,5 +200,33 @@ const char*		LEOContextGroupHandlerNameForHandlerID( LEOContextGroup* inContext,
 	return inContext->handlerNames[inHandlerID];
 }
 
+
+static void	LEODebugPrintContextGroupPrintArrayKey( struct LEOArrayEntry* currEntry, bool *firstItem )
+{
+	if( !currEntry )
+		return;
+	LEODebugPrintContextGroupPrintArrayKey( currEntry->smallerItem, firstItem );
+	printf("%s\"%s\"", firstItem?"":", ", currEntry->key);
+	*firstItem = false;	// We just did an item, next ona can never be first again.
+	LEODebugPrintContextGroupPrintArrayKey( currEntry->smallerItem, false );
+}
+
+
+void	LEODebugPrintContextGroup( LEOContextGroup* inContext )
+{
+	printf("Context Group %p:\n", inContext);
+	printf("\tReference Count: %zu\n",inContext->referenceCount);
+	printf("\tFlags: %s %s %s\n", ((inContext->flags & kLEOContextGroupFlagNoNetwork) ? "NoNetwork":"[]"), ((inContext->flags & kLEOContextGroupFlagHyperCardCompatibility) ? "HyperCardCompatibility":"[]"), ((inContext->flags & kLEOContextGroupFlagFromNetwork) ? "FromNetwork":"[]"));
+	printf("\tGlobals: ");
+	bool	firstItem = true;
+	LEODebugPrintContextGroupPrintArrayKey( inContext->globals, &firstItem );
+	printf("\n\tHandler IDs:\n");
+	for( size_t x = 0; x < inContext->numHandlerNames; x++ )
+		printf( "\t\t%zu: %s\n", x, inContext->handlerNames[x] );
+	printf("\tReferences:\n");
+	for( size_t x = 0; x < inContext->numReferences; x++ )
+		printf( "\t\t%p %lu\n", inContext->references[x].value, inContext->references[x].seed );
+	printf("\tMessageSent Callback: %p\n", inContext->messageSent);
+}
 
 

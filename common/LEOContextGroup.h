@@ -172,6 +172,8 @@ LEOHandlerID	LEOContextGroupHandlerIDForHandlerName( LEOContextGroup* inContext,
 const char*		LEOContextGroupHandlerNameForHandlerID( LEOContextGroup* inContext, LEOHandlerID inHandlerID );
 
 
+void	LEODebugPrintContextGroup( LEOContextGroup* inContext );
+
 #if __cplusplus
 }
 #endif

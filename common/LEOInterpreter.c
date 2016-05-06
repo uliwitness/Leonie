@@ -628,6 +628,7 @@ void	LEODebugPrintContext( LEOContext* ctx )
 		printf( "    -----------------------------\n" );
 		LEOContextDebugPrintCallStack( ctx );
 	}
+	LEODebugPrintContextGroup( ctx->group );
 }
 
 

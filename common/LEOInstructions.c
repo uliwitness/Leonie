@@ -105,7 +105,7 @@ void	LEOPushArrayConstantInstruction( LEOContext* inContext );
 void	LEOParseErrorInstruction( LEOContext* inContext );
 
 
-void		LEOInstructionsFindLineForInstruction( LEOInstruction* instr, size_t *lineNo, uint16_t *fileID )
+void	LEOInstructionsFindLineForInstruction( LEOInstruction* instr, size_t *lineNo, uint16_t *fileID )
 {
 	if( instr == NULL )
 		return;
