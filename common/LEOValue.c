@@ -2425,6 +2425,68 @@ void	LEOGetStringValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, L
 }
 
 
+void	LEOSetStringLikeValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
+{
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	size_t	usedLen = 0;
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+		usedLen = snprintf( buf, sizeof(buf) -1, "%lld,%lld,%lld,%lld", l, t, r, b );
+	else
+		usedLen = snprintf( buf, sizeof(buf) -1, "left:%lld\ntop:%lld\nright:%lld\nbottom:%lld", l, t, r, b );
+	LEOSetValueAsString( self, buf, usedLen, inContext );
+}
+
+
+void	LEOSetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
+{
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	size_t	usedLen = 0;
+	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
+		usedLen = snprintf( buf, sizeof(buf) -1, "%lld,%lld", l, t );
+	else
+		usedLen = snprintf( buf, sizeof(buf) -1, "horizontal:%lld\nvertical:%lld", l, t );
+	LEOSetValueAsString( self, buf, usedLen, inContext );
+}
+
+
+void	LEOGetStringLikeValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
+{
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	size_t	usedLen = 0;
+	const char*		str = LEOGetValueAsString( self, buf, &usedLen, inContext );
+	LEOStringToRect( str, usedLen, l, t, r, b, inContext );
+}
+
+
+void	LEOGetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext )
+{
+	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	size_t			usedLen = 0;
+	const char*		str = LEOGetValueAsString( self, buf, &usedLen, inContext );
+	LEOStringToPoint( str, usedLen, l, t, inContext );
+}
+
+
+void	LEOSetStringLikeValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext )
+{
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	size_t	usedLen = 0;
+	if( s == e )
+		usedLen = snprintf( buf, sizeof(buf) -1, "%s %lld", gLEOChunkTypeNames[t], s );
+	else
+		usedLen = snprintf( buf, sizeof(buf) -1, "%s %lld to %lld", gLEOChunkTypeNames[t], s, e );
+}
+
+
+void	LEOGetStringLikeValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext )
+{
+	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	size_t			usedLen = 0;
+	const char*		str = LEOGetValueAsString( self, buf, &usedLen, inContext );
+	LEOStringToRange( str, usedLen, s, e, t, inContext );
+}
+
+
 #pragma mark -
 #pragma mark String Constant
 

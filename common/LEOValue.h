@@ -1339,12 +1339,20 @@ bool		LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext
 size_t		LEOCantGetKeyCount( LEOValuePtr self, struct LEOContext* inContext );
 LEOValuePtr	LEOCantFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOValueTypePtr inType, struct LEOContext* inContext );
 void		LEOCantSetValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext );
-void		LEOSetStringLikeValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext );
-void		LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext );
-size_t		LEOGetStringLikeValueKeyCount( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOCantGetValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext );
 void		LEOCantSetValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext );
 bool		LEOValueIsNotUnset( LEOValuePtr self, struct LEOContext* inContext );
+
+// Functions for values that can take any string, but aren't actually our built-in strings (e.g. objects with contents):
+void		LEOSetStringLikeValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext );
+void		LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext );
+size_t		LEOGetStringLikeValueKeyCount( LEOValuePtr self, struct LEOContext* inContext );
+void		LEOSetStringLikeValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
+void		LEOSetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext );
+void		LEOGetStringLikeValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext );
+void		LEOGetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext );
+void		LEOSetStringLikeValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext );
+void		LEOGetStringLikeValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext );
 
 // Other methods reusable across several types:
 void		LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
