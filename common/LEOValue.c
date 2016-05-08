@@ -4392,6 +4392,13 @@ void	LEOInitReferenceValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepRefer
 void	LEOInitReferenceValueSimpleCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue == self )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Internal error: A value is referencing itself." );
+	}
 	if( theValue == NULL )
 	{
 		size_t		lineNo = SIZE_T_MAX;
