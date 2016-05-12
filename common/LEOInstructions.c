@@ -674,7 +674,7 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 	if( !foundHandler )
 	{
 		if( inContext->callNonexistentHandlerProc )
-			inContext->callNonexistentHandlerProc( inContext, handlerName );
+			inContext->callNonexistentHandlerProc( inContext, handlerName, EMustBeHandled );
 		else
 		{
 			size_t		lineNo = SIZE_T_MAX;

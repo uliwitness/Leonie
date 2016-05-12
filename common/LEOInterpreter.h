@@ -65,6 +65,13 @@ extern "C" {
 #define BACK_OF_STACK			((uint16_t) INT16_MIN)
 
 
+typedef enum
+{
+	EMayGoUnhandled,	//!< If there is no handler for this message, just quietly ignore it.
+	EMustBeHandled		//!< Present an error if this message is not handled.
+} TMayGoUnhandledFlag;
+
+
 // -----------------------------------------------------------------------------
 //	Types:
 // -----------------------------------------------------------------------------
@@ -89,7 +96,7 @@ typedef void (*LEOInstructionFuncPtr)( struct LEOContext* inContext );
 /*! If a handler call can't find the handler in the current script and no parent
 	for that script exists that handles the call, this function is called to
 	allow the host application to provide default behaviour for unhandled messages. */
-typedef void (*LEONonexistentHandlerFuncPtr)( struct LEOContext* inContext, LEOHandlerID inHandler );
+typedef void (*LEONonexistentHandlerFuncPtr)( struct LEOContext* inContext, LEOHandlerID inHandler, TMayGoUnhandledFlag mayGoUnhandled );
 
 
 /*! Callback you can give to a context when you attach user data to it, which
