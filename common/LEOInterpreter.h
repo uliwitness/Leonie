@@ -407,6 +407,22 @@ LEOValuePtr	LEOPushNumberOnStack( LEOContext* theContext, LEONumber inNumber, LE
 LEOValuePtr	LEOPushBooleanOnStack( LEOContext* theContext, bool inBoolean );
 
 
+/*! Push a copy of the given point onto the stack, returning a pointer to it.
+	This is a shorthand for LEOPushValueOnStack and the corresponding LEOInitXXValue call.
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ */
+LEOValuePtr	LEOPushPointOnStack( LEOContext* theContext, LEOInteger l, LEOInteger t );
+
+
+/*! Push a copy of the given rectangle onto the stack, returning a pointer to it.
+	This is a shorthand for LEOPushValueOnStack and the corresponding LEOInitXXValue call.
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ */
+LEOValuePtr	LEOPushRectOnStack( LEOContext* theContext, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b );
+
+
 /*! Pushes a special empty string on the stack that a user can't generate,
 	and which returns TRUE from LEOGetValueIsUnset(). To the user it looks
 	just like any empty string, but if the user replaces it with any other

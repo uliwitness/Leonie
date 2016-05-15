@@ -383,6 +383,36 @@ LEOValuePtr	LEOPushBooleanOnStack( LEOContext* theContext, bool inBoolean )
 }
 
 
+LEOValuePtr	LEOPushPointOnStack( LEOContext* theContext, LEOInteger l, LEOInteger t )
+{
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitPointValue( theValue, l, t, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
+LEOValuePtr	LEOPushRectOnStack( LEOContext* theContext, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b )
+{
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitRectValue( theValue, l, t, r, b, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete )
 {
 	if( theContext->stack > lastItemToDelete )
