@@ -36,6 +36,10 @@ extern "C" {
 
 typedef struct LEOObject LEOObject;
 
+/*! Callback you can give to a context when you attach user data to it, which
+ 	it will call when it is cleaned up to allow disposing of the user data. */
+typedef void (*LEOUserDataCleanUpFuncPtr)( void* inUserData );
+
 enum
 {
 	kLEOContextGroupFlagFromNetwork				= (1 << 0),		//!< This stack was loaded from the net. Don't do any file system access or native calls or similarly dangerous things.
@@ -64,6 +68,8 @@ typedef struct LEOContextGroup
 	size_t					numReferences;		// Available slots in "references" array.
 	LEOObject				*references;		// "Master pointer" table for references so we can detect when a reference goes away.
 	void					(*messageSent)( LEOHandlerID sentMessage, struct LEOContextGroup* inContext );
+	void*							userData;
+	LEOUserDataCleanUpFuncPtr		cleanUpUserData;
 } LEOContextGroup;
 
 
@@ -76,7 +82,7 @@ typedef struct LEOContextGroup
 	@seealso //leo_ref/c/func/LEOContextGroupRetain LEOContextGroupRetain
 	@seealso //leo_ref/c/func/LEOContextGroupRelease LEOContextGroupRelease
 */
-LEOContextGroup*	LEOContextGroupCreate( void );	// Gives referenceCount of 1.
+LEOContextGroup*	LEOContextGroupCreate( void* inUserData, LEOUserDataCleanUpFuncPtr inCleanUpFunc );	// Gives referenceCount of 1.
 
 
 /*!

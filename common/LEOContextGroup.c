@@ -43,10 +43,12 @@ struct LEOObject	// What a LEOObjectID refers to. These are kept in a big array 
 
 
 
-LEOContextGroup*	LEOContextGroupCreate( void )
+LEOContextGroup*	LEOContextGroupCreate( void* inUserData, LEOUserDataCleanUpFuncPtr inCleanUpFunc )
 {
 	LEOContextGroup*	theGroup = calloc( 1, sizeof(LEOContextGroup) );
 	theGroup->referenceCount = 1;
+	theGroup->userData = inUserData;
+	theGroup->cleanUpUserData = inCleanUpFunc;
 	
 	return theGroup;
 }
@@ -69,6 +71,12 @@ void	LEOContextGroupRelease( LEOContextGroup* inGroup )
 			free( inGroup->references );
 			inGroup->references = NULL;
 			inGroup->numReferences = 0;
+		}
+		if( inGroup->cleanUpUserData )
+		{
+			inGroup->cleanUpUserData( inGroup->userData );
+			inGroup->cleanUpUserData = NULL;
+			inGroup->userData = NULL;
 		}
 		free( inGroup );
 	}
