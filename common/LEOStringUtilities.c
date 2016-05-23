@@ -19,11 +19,13 @@ const char*	LEOStringEscapedForPrintingInQuotes( const char* inStr )
 	
 	if( sTempBuf == NULL )
 	{
-		sTempBuf = malloc(len +1);
+		sTempBuf = calloc(len +1,1);
 		if( !sTempBuf )
 			return NULL;
 		sTempBufLen = len +1;
 	}
+	else if( inStr[0] == 0 )
+		sTempBuf[0] = 0;
 	
 	for( size_t x = 0; x < len; x++ )
 	{

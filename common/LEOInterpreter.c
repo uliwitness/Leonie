@@ -633,9 +633,17 @@ void	LEODebugPrintContext( LEOContext* ctx )
                 strcpy( ctx->errMsg, oldErrMsg );
                 ctx->errLine = oldErrLine;
                 ctx->errOffset = oldErrOffset;
+				printf( "[%s] (%s)", LEOStringEscapedForPrintingInQuotes(str), currValue->base.isa->displayTypeName );
+			}
+			else if( str[0] == 0 && LEOGetValueIsUnset(currValue, ctx) )
+			{
+				printf( "<unset> (%s)", currValue->base.isa->displayTypeName );
+			}
+			else
+			{
+				printf( "\"%s\" (%s)", LEOStringEscapedForPrintingInQuotes(str), currValue->base.isa->displayTypeName );
 			}
             ctx->promptProc = oldPromptProc;
-			printf( "\"%s\" (%s)", LEOStringEscapedForPrintingInQuotes(str), currValue->base.isa->displayTypeName );
 			
 			long		bpRelativeAddress = currValue -ctx->stackBasePtr;
 			if( bpRelativeAddress >= 0 && ctx->numCallStackEntries > 0 )
