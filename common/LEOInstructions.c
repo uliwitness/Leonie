@@ -101,6 +101,8 @@ void	LEONumToHexInstruction( LEOContext* inContext );
 void	LEOHexToNumInstruction( LEOContext* inContext );
 void	LEONumToBinaryInstruction( LEOContext* inContext );
 void	LEOBinaryToNumInstruction( LEOContext* inContext );
+void	LEOIsWithinInstruction( LEOContext* inContext );
+void	LEOIntersectsInstruction( LEOContext* inContext );
 void	LEOPushArrayConstantInstruction( LEOContext* inContext );
 void	LEOParseErrorInstruction( LEOContext* inContext );
 
@@ -2313,6 +2315,52 @@ void	LEOBinaryToNumInstruction( LEOContext* inContext )
 }
 
 
+void	LEOIsWithinInstruction( LEOContext* inContext )
+{
+	LEOInteger		l = 0, t = 0, r = 0, b = 0, x = 0, y = 0;
+	LEOGetValueAsRect( inContext->stackEndPtr -2, &l, &t, &r, &b, inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+		return;
+	LEOGetValueAsPoint( inContext->stackEndPtr -1, &x, &y, inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+		return;
+	
+	if( l > r ) { LEOInteger n = r; r = l; l = n; }
+	if( t > b ) { LEOInteger	n = b; b = t; t = n; }
+	
+	bool			isWithin = x <= r && x >= l && y <= b && y >= t;
+	
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	LEOInitBooleanValue( inContext->stackEndPtr -1, isWithin, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOIntersectsInstruction( LEOContext* inContext )
+{
+	LEOInteger		l = 0, t = 0, r = 0, b = 0, l2 = 0, t2 = 0, r2 = 0, b2 = 0;
+	LEOGetValueAsRect( inContext->stackEndPtr -2, &l, &t, &r, &b, inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+		return;
+	LEOGetValueAsRect( inContext->stackEndPtr -1, &l2, &t2, &r2, &b2, inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+		return;
+	
+	if( l > r ) { LEOInteger n = r; r = l; l = n; }
+	if( t > b ) { LEOInteger	n = b; b = t; t = n; }
+	if( l2 > r2 ) { LEOInteger	n = r2; r2 = l2; l2 = n; }
+	if( t2 > b2 ) { LEOInteger	n = b2; b2 = t2; t2 = n; }
+	
+	bool			isWithin = (l2 <= r) && (r2 >= l) && (t2 <= b) && (b2 >= t);
+	
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	LEOInitBooleanValue( inContext->stackEndPtr -1, isWithin, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
 #pragma mark -
 #pragma mark Instruction table
 
@@ -2396,7 +2444,9 @@ LEOINSTR(LEOBinaryToNumInstruction)
 LEOINSTR(LEOSetChunkPropertyInstruction)
 LEOINSTR(LEOPushChunkPropertyInstruction)
 LEOINSTR(LEOPushArrayConstantInstruction)
-LEOINSTR_LAST(LEOParseErrorInstruction)
+LEOINSTR(LEOParseErrorInstruction)
+LEOINSTR(LEOIsWithinInstruction)
+LEOINSTR_LAST(LEOIntersectsInstruction)
 
 
 
