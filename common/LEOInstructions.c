@@ -631,12 +631,13 @@ void	LEOAddIntegerInstruction( LEOContext* inContext )
 
 void	LEOCallHandlerInstruction( LEOContext* inContext )
 {
+	bool			isMessagePassing = (inContext->currentInstruction->param1 & kLEOCallHandler_PassMessage) == kLEOCallHandler_PassMessage;
 	LEOHandlerID	handlerName = inContext->currentInstruction->param2;
-	if( inContext->group->messageSent )
+	if( inContext->group->messageSent && !isMessagePassing )
 		inContext->group->messageSent( handlerName, inContext->group );
 
 	LEOScript*		currScript = LEOContextPeekCurrentScript( inContext );
-	if( (inContext->currentInstruction->param1 & kLEOCallHandler_PassMessage) == kLEOCallHandler_PassMessage
+	if( isMessagePassing
 		&& currScript && currScript->GetParentScript )
 		currScript = currScript->GetParentScript( currScript, inContext );
 	
