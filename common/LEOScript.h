@@ -105,7 +105,7 @@ typedef struct LEOHandler
 	@seealso //leo_ref/c/tdef/LEOContext LEOContext */
 // -----------------------------------------------------------------------------
 
-typedef struct LEOScript*	(*LEOGetParentScriptFuncPtr)( struct LEOScript* inScript, struct LEOContext* inContext );
+typedef struct LEOScript*	(*LEOGetParentScriptFuncPtr)( struct LEOScript* inScript, struct LEOContext* inContext, void* inParam );
 
 
 // -----------------------------------------------------------------------------

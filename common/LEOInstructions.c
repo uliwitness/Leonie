@@ -639,7 +639,7 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 	LEOScript*		currScript = LEOContextPeekCurrentScript( inContext );
 	if( isMessagePassing
 		&& currScript && currScript->GetParentScript )
-		currScript = currScript->GetParentScript( currScript, inContext );
+		currScript = currScript->GetParentScript( currScript, inContext, NULL );
 	
 	#if 0
 	printf( "Calling handler '%s'\n", LEOContextGroupHandlerNameForHandlerID( inContext->group, handlerName ) );
@@ -665,7 +665,7 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 			if( !foundHandler )
 			{
 				if( currScript->GetParentScript )
-					currScript = currScript->GetParentScript( currScript, inContext );
+					currScript = currScript->GetParentScript( currScript, inContext, NULL );
 				else
 					currScript = NULL;
 				if( !currScript )
