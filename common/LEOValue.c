@@ -2452,18 +2452,16 @@ void	LEOSetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t,
 void	LEOGetStringLikeValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
 {
 	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
-	size_t	usedLen = 0;
-	const char*		str = LEOGetValueAsString( self, buf, &usedLen, inContext );
-	LEOStringToRect( str, usedLen, l, t, r, b, inContext );
+	const char*		str = LEOGetValueAsString( self, buf, sizeof(buf), inContext );
+	LEOStringToRect( str, strlen(str), l, t, r, b, inContext );
 }
 
 
 void	LEOGetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext )
 {
 	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
-	size_t			usedLen = 0;
-	const char*		str = LEOGetValueAsString( self, buf, &usedLen, inContext );
-	LEOStringToPoint( str, usedLen, l, t, inContext );
+	const char*		str = LEOGetValueAsString( self, buf, sizeof(buf), inContext );
+	LEOStringToPoint( str, strlen(str), l, t, inContext );
 }
 
 
@@ -2481,9 +2479,8 @@ void	LEOSetStringLikeValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e,
 void	LEOGetStringLikeValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext )
 {
 	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
-	size_t			usedLen = 0;
-	const char*		str = LEOGetValueAsString( self, buf, &usedLen, inContext );
-	LEOStringToRange( str, usedLen, s, e, t, inContext );
+	const char*		str = LEOGetValueAsString( self, buf, sizeof(buf), inContext );
+	LEOStringToRange( str, strlen(str), s, e, t, inContext );
 }
 
 

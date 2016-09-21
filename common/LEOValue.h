@@ -326,7 +326,7 @@ typedef struct LEOValuePoint	LEOValuePoint;
 	stored in a variable as a string. That is, they start with a type (character,
 	line etc.) then the start offset (1-based), then the word "to", then the
 	end offset (1-based). If a range's start and end are equal, the "to" portion
-	may be omitted. Note that values of *type* range are sistinct from
+	may be omitted. Note that values of *type* range are distinct from
 	reference values that reference a chunk of another value's string representation.
 	@field	base	The instance variables inherited from the base class.
 	@field	start	The number of the character/line/etc. that is the first in this range (inclusive).
