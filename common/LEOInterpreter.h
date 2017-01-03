@@ -367,10 +367,10 @@ void	LEOContextStopWithError( LEOContext* inContext, size_t errLine, size_t errO
 
     
 /*! Look up the local variable with name varName in the current script, if present, and set
-    its value to the given string. inMessageFmt is a format string like you pass it to
-    printf().
+    its value to the given string. inValueFmt is a format string like you pass it to
+    printf(). Does nothing if the script does not have a local variable of the given name.
 */
-void	LEOContextSetLocalVariable( LEOContext* inContext, const char* varName, const char* inMessageFmt, ... );
+void	LEOContextSetLocalVariable( LEOContext* inContext, const char* varName, const char* inValueFmt, ... );
 
 /*! Push a copy of the given value onto the stack, returning a pointer to it.
  @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
