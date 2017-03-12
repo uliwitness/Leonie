@@ -103,6 +103,7 @@ void	LEONumToBinaryInstruction( LEOContext* inContext );
 void	LEOBinaryToNumInstruction( LEOContext* inContext );
 void	LEOIsWithinInstruction( LEOContext* inContext );
 void	LEOIntersectsInstruction( LEOContext* inContext );
+void	LEOIsUnsetInstruction( LEOContext* inContext );
 void	LEOPushArrayConstantInstruction( LEOContext* inContext );
 void	LEOParseErrorInstruction( LEOContext* inContext );
 
@@ -2316,6 +2317,11 @@ void	LEOBinaryToNumInstruction( LEOContext* inContext )
 }
 
 
+/*
+	(IS_WITHIN_INSTR)
+*/
+
+
 void	LEOIsWithinInstruction( LEOContext* inContext )
 {
 	LEOInteger		l = 0, t = 0, r = 0, b = 0, x = 0, y = 0;
@@ -2338,6 +2344,10 @@ void	LEOIsWithinInstruction( LEOContext* inContext )
 }
 
 
+/*
+	INTERSECTS_INSTR
+*/
+
 void	LEOIntersectsInstruction( LEOContext* inContext )
 {
 	LEOInteger		l = 0, t = 0, r = 0, b = 0, l2 = 0, t2 = 0, r2 = 0, b2 = 0;
@@ -2357,6 +2367,19 @@ void	LEOIntersectsInstruction( LEOContext* inContext )
 	
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
 	LEOInitBooleanValue( inContext->stackEndPtr -1, isWithin, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+/*
+	IS_UNSET_INSTR
+*/
+
+void	LEOIsUnsetInstruction( LEOContext* inContext )
+{
+	bool	isUnset = LEOGetValueIsUnset( inContext->stackEndPtr -1, inContext );
+	LEOInitBooleanValue( inContext->stackEndPtr -1, isUnset, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -2447,7 +2470,8 @@ LEOINSTR(LEOPushChunkPropertyInstruction)
 LEOINSTR(LEOPushArrayConstantInstruction)
 LEOINSTR(LEOParseErrorInstruction)
 LEOINSTR(LEOIsWithinInstruction)
-LEOINSTR_LAST(LEOIntersectsInstruction)
+LEOINSTR(LEOIntersectsInstruction)
+LEOINSTR_LAST(LEOIsUnsetInstruction)
 
 
 
