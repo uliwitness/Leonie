@@ -1353,6 +1353,7 @@ void		LEOGetStringLikeValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *
 void		LEOGetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext );
 void		LEOSetStringLikeValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext );
 void		LEOGetStringLikeValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext );
+void		LEOSetStringLikeValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
 
 // Other methods reusable across several types:
 void		LEOGetAnyValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
@@ -1405,6 +1406,7 @@ void		LEOSetStringValuePredeterminedRangeAsString( LEOValuePtr self,
 												size_t inRangeStart, size_t inRangeEnd,
 												const char* inBuf, struct LEOContext* inContext );
 bool		LEOCanGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
+void		LEOSetStringValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
 void		LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOPutStringValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
 void		LEODetermineChunkRangeOfSubstringOfStringValue( LEOValuePtr self, size_t *ioBytesStart, size_t *ioBytesEnd,
@@ -1449,7 +1451,12 @@ void		LEOCleanUpBooleanValue( LEOValuePtr self, LEOKeepReferencesFlag keepRefere
 
 // Native object instance methods:
 void		LEOInitNativeObjectValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
+const char*	LEOGetNativeObjectValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext );
+void		LEOGetNativeObjectValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
+											size_t inRangeStart, size_t inRangeEnd,
+											char* outBuf, size_t bufSize, struct LEOContext* inContext );
 void		LEOSetNativeObjectValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext );
+bool		LEOGetNativeObjectValueIsUnset( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOPutNativeObjectValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
 void		LEOCleanUpNativeObjectValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 

@@ -200,7 +200,7 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOCantSetValueAsNativeObject,
+	LEOSetStringValueAsNativeObject,
 	
 	LEOSetStringValueAsRect,
 	LEOGetStringValueAsRect,
@@ -471,9 +471,9 @@ struct LEOValueType	kLeoValueTypeNativeObject =
 	
 	LEOCantGetValueAsNumber,
 	LEOCantGetValueAsInteger,
-	LEOCantGetValueAsString,
+	LEOGetNativeObjectValueAsString,
 	LEOCantGetValueAsBoolean,
-	LEOCantGetValueAsRangeOfString,	// Only works as long as booleans can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
+	LEOGetNativeObjectValueAsRangeOfString,
 	
 	LEOCantSetValueAsNumber,
 	LEOCantSetValueAsInteger,
@@ -507,7 +507,7 @@ struct LEOValueType	kLeoValueTypeNativeObject =
 	LEOCantSetValueAsPoint,
 	LEOCantGetValueAsPoint,
 	
-	LEOValueIsNotUnset,
+	LEOGetNativeObjectValueIsUnset,
 	
 	LEOCantSetValueAsRange,
 	LEOCantGetValueAsRange
@@ -1064,6 +1064,10 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 };
 
 
+
+static char		sUnsetConstantString[1] = {0};
+
+
 #pragma mark -
 
 
@@ -1333,6 +1337,28 @@ LEOValuePtr	LEOGetStringValueForKey( LEOValuePtr self, const char* keyName, unio
 	LEOCleanUpArray( convertedArray, inContext );
 	
 	return tempStorage;
+}
+
+
+/*!
+	Generic method implementation used for values that can hold an empty
+	string. A NULL native object is considered the same as the "unset" value
+	by us, which is an empty string.
+*/
+
+void	LEOSetStringLikeValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
+{
+	if( inNativeObject != NULL )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found native object", self->base.isa->displayTypeName );
+	}
+	else
+	{
+		LEOSetValueAsString( self, "", 0, inContext );
+	}
 }
 
 
@@ -2186,6 +2212,22 @@ void LEOSetStringValueAsString( LEOValuePtr self, const char* inString, size_t i
 }
 
 
+void	LEOSetStringValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
+{
+	if( inNativeObject != NULL )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found native object", self->base.isa->displayTypeName );
+	}
+	else
+	{
+		LEOSetStringValueAsStringConstant( self, sUnsetConstantString, inContext );
+	}
+}
+
+
 /*!
 	Implementation of SetAsBoolean for string values. This turns the string
 	value into a constant string.
@@ -2499,9 +2541,6 @@ void	LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString, LE
 	inStorage->string.string = (char*)inString;
 	inStorage->string.stringLen = strlen(inString);
 }
-
-
-static char		sUnsetConstantString[1] = {0};
 
 
 void	LEOInitUnsetValue( LEOValuePtr inStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
@@ -3718,9 +3757,52 @@ void	LEOInitNativeObjectValue( LEOValuePtr self, void* inNativeObject, LEOKeepRe
 }
 
 
+const char*	LEOGetNativeObjectValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+{
+	if( self->object.object != NULL )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
+	}
+	else if( outBuf && bufSize > 0 )	// A NIL object is the same as an "unset" value for us.
+	{
+		outBuf[0] = 0;
+		return sUnsetConstantString;
+	}
+	return "";
+}
+
+
+void	LEOGetNativeObjectValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
+											size_t inRangeStart, size_t inRangeEnd,
+											char* outBuf, size_t bufSize, struct LEOContext* inContext )
+{
+	if( self->object.object != NULL )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
+	}
+	else if( outBuf && bufSize > 0 )	// A NIL object is the same as an "unset" value for us.
+	{
+		outBuf[0] = 0;
+	}
+}
+
+
+
 void	LEOSetNativeObjectValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
 {
 	self->object.object = inNativeObject;
+}
+
+
+bool	LEOGetNativeObjectValueIsUnset( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return self->object.object == NULL;
 }
 
 
