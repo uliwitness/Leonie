@@ -2325,10 +2325,10 @@ void	LEOBinaryToNumInstruction( LEOContext* inContext )
 void	LEOIsWithinInstruction( LEOContext* inContext )
 {
 	LEOInteger		l = 0, t = 0, r = 0, b = 0, x = 0, y = 0;
-	LEOGetValueAsRect( inContext->stackEndPtr -2, &l, &t, &r, &b, inContext );
+	LEOGetValueAsRect( inContext->stackEndPtr -1, &l, &t, &r, &b, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
-	LEOGetValueAsPoint( inContext->stackEndPtr -1, &x, &y, inContext );
+	LEOGetValueAsPoint( inContext->stackEndPtr -2, &x, &y, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
 	
