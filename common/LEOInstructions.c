@@ -2373,12 +2373,16 @@ void	LEOIntersectsInstruction( LEOContext* inContext )
 
 
 /*
-	IS_UNSET_INSTR
+	Set param1 to 1 to have this behave as if there was an IS_NOT_UNSET instruction.
+	
+	(IS_UNSET_INSTR)
 */
 
 void	LEOIsUnsetInstruction( LEOContext* inContext )
 {
 	bool	isUnset = LEOGetValueIsUnset( inContext->stackEndPtr -1, inContext );
+	if( inContext->currentInstruction->param1 == 1 )
+		isUnset = !isUnset;
 	LEOInitBooleanValue( inContext->stackEndPtr -1, isUnset, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
