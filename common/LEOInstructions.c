@@ -2384,6 +2384,7 @@ void	LEOIsUnsetInstruction( LEOContext* inContext )
 	bool	isUnset = LEOGetValueIsUnset( inContext->stackEndPtr -1, inContext );
 	if( inContext->currentInstruction->param1 == 1 )
 		isUnset = !isUnset;
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext);
 	LEOInitBooleanValue( inContext->stackEndPtr -1, isUnset, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
