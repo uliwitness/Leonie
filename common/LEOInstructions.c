@@ -104,6 +104,7 @@ void	LEOBinaryToNumInstruction( LEOContext* inContext );
 void	LEOIsWithinInstruction( LEOContext* inContext );
 void	LEOIntersectsInstruction( LEOContext* inContext );
 void	LEOIsUnsetInstruction( LEOContext* inContext );
+void	LEOIsTypeInstruction( LEOContext* inContext );
 void	LEOPushArrayConstantInstruction( LEOContext* inContext );
 void	LEOParseErrorInstruction( LEOContext* inContext );
 
@@ -2389,6 +2390,33 @@ void	LEOIsUnsetInstruction( LEOContext* inContext )
 }
 
 
+/*
+	Check what type the value on the back of the stack is, then pop it and push the result.
+	param1 specifies what type you want it checked against:
+	
+	1	-	This is "is not a <type>", not "is a <type>", i.e. this will return the reverse of the type check. (add this to the other number)
+	2	-	number
+	4	-	integer
+	
+	(IS_TYPE_INSTR)
+*/
+
+void	LEOIsTypeInstruction( LEOContext* inContext )
+{
+	bool	isThisType = false;
+	if( (inContext->currentInstruction->param1 & ~1) == 2 )
+		isThisType = LEOCanGetAsNumber(inContext->stackEndPtr -1, inContext );
+	else if( (inContext->currentInstruction->param1 & ~1) == 4 )
+		isThisType = LEOCanGetAsInteger(inContext->stackEndPtr -1, inContext );
+	if( inContext->currentInstruction->param1 & 1 )
+		isThisType = !isThisType;
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext);
+	LEOInitBooleanValue( inContext->stackEndPtr -1, isThisType, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
 #pragma mark -
 #pragma mark Instruction table
 
@@ -2475,7 +2503,8 @@ LEOINSTR(LEOPushArrayConstantInstruction)
 LEOINSTR(LEOParseErrorInstruction)
 LEOINSTR(LEOIsWithinInstruction)
 LEOINSTR(LEOIntersectsInstruction)
-LEOINSTR_LAST(LEOIsUnsetInstruction)
+LEOINSTR(LEOIsUnsetInstruction)
+LEOINSTR_LAST(LEOIsTypeInstruction)
 
 
 

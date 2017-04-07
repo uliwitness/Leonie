@@ -110,7 +110,9 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCanGetNumberValueAsInteger
 };
 
 
@@ -160,7 +162,9 @@ struct LEOValueType	kLeoValueTypeInteger =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCanGetValueAsInteger
 };
 
 
@@ -210,7 +214,9 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOValueIsNotUnset,
 	
 	LEOSetStringValueAsRange,
-	LEOGetStringValueAsRange
+	LEOGetStringValueAsRange,
+	
+	LEOCanGetStringValueAsInteger
 };
 
 
@@ -260,7 +266,9 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOGetStringConstantValueIsUnset,
 	
 	LEOSetStringConstantValueAsRange,
-	LEOGetStringValueAsRange
+	LEOGetStringValueAsRange,
+	
+	LEOCanGetStringValueAsInteger
 };
 
 
@@ -310,7 +318,9 @@ struct LEOValueType	kLeoValueTypeRect =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -360,7 +370,9 @@ struct LEOValueType	kLeoValueTypePoint =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -410,7 +422,9 @@ struct LEOValueType	kLeoValueTypeRange =
 	LEOValueIsNotUnset,
 	
 	LEOSetRangeValueAsRange,
-	LEOGetRangeValueAsRange
+	LEOGetRangeValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -460,7 +474,9 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -510,7 +526,9 @@ struct LEOValueType	kLeoValueTypeNativeObject =
 	LEOGetNativeObjectValueIsUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -560,7 +578,9 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOGetReferenceValueIsUnset,
 	
 	LEOSetReferenceValueAsRange,
-	LEOGetReferenceValueAsRange
+	LEOGetReferenceValueAsRange,
+	
+	LEOCanGetReferenceValueAsInteger
 };
 
 
@@ -610,7 +630,9 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCanGetNumberValueAsInteger
 };
 
 
@@ -660,7 +682,9 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCanGetValueAsInteger
 };
 
 
@@ -710,7 +734,9 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOGetStringValueAsRange
+	LEOGetStringValueAsRange,
+	
+	LEOCanGetStringValueAsInteger
 };
 
 
@@ -760,7 +786,9 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -810,7 +838,9 @@ struct LEOValueType	kLeoValueTypeRectVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -860,7 +890,9 @@ struct LEOValueType	kLeoValueTypePointVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -910,7 +942,9 @@ struct LEOValueType	kLeoValueTypeRangeVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOGetRangeValueAsRange
+	LEOGetRangeValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -960,7 +994,9 @@ struct LEOValueType	kLeoValueTypeNativeObjectVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -1010,7 +1046,9 @@ struct LEOValueType	kLeoValueTypeArray =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -1060,7 +1098,9 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -1586,6 +1626,18 @@ bool	LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext 
 }
 
 
+bool	LEOCanGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return true;
+}
+
+
+bool	LEOCantCanGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return false;
+}
+
+
 size_t	LEOCantGetKeyCount( LEOValuePtr self, struct LEOContext* inContext )
 {
 	return 0;
@@ -1820,6 +1872,12 @@ void	LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 void	LEOPutNumberValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
 {
 	LEOSetValueAsNumber( dest, self->number.number, self->number.unit, inContext );
+}
+
+
+bool	LEOCanGetNumberValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return trunc(self->number.number) == self->number.number;
 }
 
 
@@ -2399,6 +2457,29 @@ void	LEOCleanUpStringValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferenc
 
 
 bool	LEOCanGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContext )
+{
+	if( self->string.stringLen == 0 )	// Empty string? Not a number!
+		return false;
+	
+	bool hadDot = false;
+	
+	for( size_t x = 0; x < self->string.stringLen; x++ )
+	{
+		if( !hadDot && self->string.string[x] == '.' )
+		{
+			hadDot = true;
+		}
+		else if( self->string.string[x] < '0' || self->string.string[x] > '9' )
+		{
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+
+bool	LEOCanGetStringValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
 {
 	if( self->string.stringLen == 0 )	// Empty string? Not a number!
 		return false;
@@ -4546,6 +4627,16 @@ bool	LEOCanGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inCon
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue != NULL )
 		return LEOCanGetAsNumber( theValue, inContext );
+	else
+		return false;
+}
+
+
+bool	LEOCanGetReferenceValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue != NULL )
+		return LEOCanGetAsInteger( theValue, inContext );
 	else
 		return false;
 }

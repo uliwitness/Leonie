@@ -179,6 +179,8 @@ struct LEOValueType
 	bool		(*GetValueIsUnset)( LEOValuePtr self, struct LEOContext* inContext );
 	void		(*SetValueAsRange)( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext );
 	void		(*GetValueAsRange)( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext );
+
+	bool		(*CanGetAsInteger)( LEOValuePtr self, struct LEOContext* inContext );
 };
 
 
@@ -1025,6 +1027,16 @@ void		LEOInitArrayVariantValue( LEOValuePtr self, struct LEOArrayEntry* array, L
 
 
 /*!
+	@function LEOCanGetAsInteger
+	Returns TRUE if the value can be converted to an integral number, FALSE otherwise.
+	@param	v	The value you wish to know about.
+	@param	c	The context in which your script is currently running and in
+				which errors will be stored.
+*/
+#define 	LEOCanGetAsInteger(v,c)		((LEOValuePtr)(v))->base.isa->CanGetAsInteger(((LEOValuePtr)(v)),(c))
+
+
+/*!
 	@function LEOInitCopy
 	Initializes the given storage to be an exact copy of the given value. If the
 	value is a reference, you will get a second reference to the original value,
@@ -1336,6 +1348,8 @@ void		LEOCantSetValuePredeterminedRangeAsString( LEOValuePtr self,
 bool		LEOCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOCantSetValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext );
 bool		LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext );
+bool		LEOCanGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
+bool		LEOCantCanGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
 size_t		LEOCantGetKeyCount( LEOValuePtr self, struct LEOContext* inContext );
 LEOValuePtr	LEOCantFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOValueTypePtr inType, struct LEOContext* inContext );
 void		LEOCantSetValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext );
@@ -1373,6 +1387,7 @@ void		LEOSetNumberValueAsInteger( LEOValuePtr self, LEOInteger inNumber, LEOUnit
 void		LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, size_t inNumberLen, struct LEOContext* inContext );
 void		LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 void		LEOPutNumberValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext );
+bool		LEOCanGetNumberValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
 void		LEOCleanUpNumberValue( LEOValuePtr self, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext );
 
 // Integer instance methods:
@@ -1421,6 +1436,7 @@ void		LEOSetStringValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LE
 void		LEOGetStringValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext );
 void		LEOGetStringValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext );
 void		LEOGetStringValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext );
+bool		LEOCanGetStringValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
 
 // Replacement assignment methods and destructors for constant-referencing strings:
 void		LEOSetStringConstantValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit inUnit, struct LEOContext* inContext );	// Makes it a dynamically allocated string.
@@ -1543,6 +1559,7 @@ size_t		LEOGetReferenceValueKeyCount( LEOValuePtr self, struct LEOContext * inCo
 void		LEOGetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext );
 void		LEOSetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext );
 bool		LEOGetReferenceValueIsUnset( LEOValuePtr self, struct LEOContext * inContext );
+bool		LEOCanGetReferenceValueAsInteger( LEOValuePtr self, struct LEOContext* inContext );
 
 
 // Variant-specific replacements for certain instance methods:
