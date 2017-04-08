@@ -2462,10 +2462,13 @@ bool	LEOCanGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContex
 		return false;
 	
 	bool hadDot = false;
+	bool isFirst = true;
 	
 	for( size_t x = 0; x < self->string.stringLen; x++ )
 	{
-		if( !hadDot && self->string.string[x] == '.' )
+		if( isFirst && self->string.string[x] == '-' )
+			;	// It's OK to have negative numbers.
+		else if( !hadDot && self->string.string[x] == '.' )
 		{
 			hadDot = true;
 		}
@@ -2473,6 +2476,7 @@ bool	LEOCanGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContex
 		{
 			return false;
 		}
+		isFirst = false;
 	}
 	
 	return true;
@@ -2484,10 +2488,16 @@ bool	LEOCanGetStringValueAsInteger( LEOValuePtr self, struct LEOContext* inConte
 	if( self->string.stringLen == 0 )	// Empty string? Not a number!
 		return false;
 	
+	bool isFirst = true;
+
 	for( size_t x = 0; x < self->string.stringLen; x++ )
 	{
-		if( self->string.string[x] < '0' || self->string.string[x] > '9' )
+		if( isFirst && self->string.string[x] == '-' )
+			;	// It's OK to have negative numbers.
+		else if( self->string.string[x] < '0' || self->string.string[x] > '9' )
 			return false;
+		
+		isFirst = false;
 	}
 	
 	return true;
