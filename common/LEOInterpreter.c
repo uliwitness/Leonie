@@ -455,6 +455,7 @@ void	LEOResumeContext( LEOContext *inContext )
 void	LEOContextResumeIfAvailable( void )
 {
 	LEOContext*	contextToResume = sContextToResume;
+	sContextToResume = NULL;
 	contextToResume->flags |= kLEOContextResuming | kLEOContextKeepRunning;
 	contextToResume->flags &= ~kLEOContextPause;
 	
@@ -469,6 +470,7 @@ void	LEOContextResumeIfAvailable( void )
 	if( (contextToResume->flags & kLEOContextPause) == 0 && contextToResume->contextCompleted )
 		contextToResume->contextCompleted( contextToResume );
 	
+	LEOContextRelease(contextToResume);
 	contextToResume = NULL;	// Either we're done, or we're paused.
 }
 
