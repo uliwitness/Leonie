@@ -139,9 +139,9 @@ void	LEOInstructionsFindLineForInstruction( LEOInstruction* instr, size_t *lineN
 
 void	LEOInvalidInstruction( LEOContext* inContext )
 {
-		size_t		lineNo = SIZE_T_MAX;
-		uint16_t	fileID = 0;
-		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+	size_t		lineNo = SIZE_T_MAX;
+	uint16_t	fileID = 0;
+	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
 	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Unknown instruction %u", inContext->currentInstruction->instructionID );	// Causes interpreter loop to exit.
 }
 
