@@ -20,6 +20,7 @@
 #include "LEOScript.h"
 #include "LEOContextGroup.h"
 #include "UTF8UTF32Utilities.h"
+#include "LEOStringUtilities.h"
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -1650,10 +1651,13 @@ void	LEOGreaterThanOperatorInstruction( LEOContext* inContext )
 	}
 	else
 	{
-		char			firstArgumentStr[1024] = { 0 };
-		char			secondArgumentStr[1024] = { 0 };
-		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
-		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		char		firstArgumentBuf[1024] = { 0 };
+		char		secondArgumentBuf[1024] = { 0 };
+		const char* firstArgumentStr = LEOGetValueAsString(firstArgumentValue, firstArgumentBuf, sizeof(firstArgumentBuf), inContext);
+		const char* secondArgumentStr = LEOGetValueAsString(secondArgumentValue, secondArgumentBuf, sizeof(secondArgumentBuf), inContext);
+		
+//		printf("COMPARING \"%s", LEOStringEscapedForPrintingInQuotes(firstArgumentStr));
+//		printf("\" > \"%s\"\n", LEOStringEscapedForPrintingInQuotes(secondArgumentStr));
 		
 		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) > 0);
 	}
@@ -1694,10 +1698,13 @@ void	LEOLessThanOperatorInstruction( LEOContext* inContext )
 	}
 	else
 	{
-		char			firstArgumentStr[1024] = { 0 };
-		char			secondArgumentStr[1024] = { 0 };
-		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
-		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		char		firstArgumentBuf[1024] = { 0 };
+		char		secondArgumentBuf[1024] = { 0 };
+		const char* firstArgumentStr = LEOGetValueAsString(firstArgumentValue, firstArgumentBuf, sizeof(firstArgumentBuf), inContext);
+		const char* secondArgumentStr = LEOGetValueAsString(secondArgumentValue, secondArgumentBuf, sizeof(secondArgumentBuf), inContext);
+		
+//		printf("COMPARING \"%s", LEOStringEscapedForPrintingInQuotes(firstArgumentStr));
+//		printf("\" < \"%s\"\n", LEOStringEscapedForPrintingInQuotes(secondArgumentStr));
 		
 		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) < 0);
 	}
@@ -1738,10 +1745,13 @@ void	LEOGreaterThanEqualOperatorInstruction( LEOContext* inContext )
 	}
 	else
 	{
-		char			firstArgumentStr[1024] = { 0 };
-		char			secondArgumentStr[1024] = { 0 };
-		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
-		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		char		firstArgumentBuf[1024] = { 0 };
+		char		secondArgumentBuf[1024] = { 0 };
+		const char* firstArgumentStr = LEOGetValueAsString(firstArgumentValue, firstArgumentBuf, sizeof(firstArgumentBuf), inContext);
+		const char* secondArgumentStr = LEOGetValueAsString(secondArgumentValue, secondArgumentBuf, sizeof(secondArgumentBuf), inContext);
+		
+//		printf("COMPARING \"%s", LEOStringEscapedForPrintingInQuotes(firstArgumentStr));
+//		printf("\" >= \"%s\"\n", LEOStringEscapedForPrintingInQuotes(secondArgumentStr));
 		
 		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) >= 0);
 	}
@@ -1782,10 +1792,13 @@ void	LEOLessThanEqualOperatorInstruction( LEOContext* inContext )
 	}
 	else
 	{
-		char			firstArgumentStr[1024] = { 0 };
-		char			secondArgumentStr[1024] = { 0 };
-		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
-		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		char		firstArgumentBuf[1024] = { 0 };
+		char		secondArgumentBuf[1024] = { 0 };
+		const char* firstArgumentStr = LEOGetValueAsString(firstArgumentValue, firstArgumentBuf, sizeof(firstArgumentBuf), inContext);
+		const char* secondArgumentStr = LEOGetValueAsString(secondArgumentValue, secondArgumentBuf, sizeof(secondArgumentBuf), inContext);
+		
+//		printf("COMPARING \"%s", LEOStringEscapedForPrintingInQuotes(firstArgumentStr));
+//		printf("\" <= \"%s\"\n", LEOStringEscapedForPrintingInQuotes(secondArgumentStr));
 		
 		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) <= 0);
 	}
@@ -1897,10 +1910,13 @@ void	LEOEqualOperatorInstruction( LEOContext* inContext )
 	}
 	else
 	{
-		char			firstArgumentStr[1024] = { 0 };
-		char			secondArgumentStr[1024] = { 0 };
-		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
-		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		char		firstArgumentBuf[1024] = { 0 };
+		char		secondArgumentBuf[1024] = { 0 };
+		const char* firstArgumentStr = LEOGetValueAsString(firstArgumentValue, firstArgumentBuf, sizeof(firstArgumentBuf), inContext);
+		const char* secondArgumentStr = LEOGetValueAsString(secondArgumentValue, secondArgumentBuf, sizeof(secondArgumentBuf), inContext);
+		
+//		printf("COMPARING \"%s", LEOStringEscapedForPrintingInQuotes(firstArgumentStr));
+//		printf("\" == \"%s\"\n", LEOStringEscapedForPrintingInQuotes(secondArgumentStr));
 		
 		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) == 0);
 	}
@@ -1941,10 +1957,13 @@ void	LEONotEqualOperatorInstruction( LEOContext* inContext )
 	}
 	else
 	{
-		char			firstArgumentStr[1024] = { 0 };
-		char			secondArgumentStr[1024] = { 0 };
-		LEOGetValueAsString(firstArgumentValue, firstArgumentStr, sizeof(firstArgumentStr), inContext);
-		LEOGetValueAsString(secondArgumentValue, secondArgumentStr, sizeof(secondArgumentStr), inContext);
+		char		firstArgumentBuf[1024] = { 0 };
+		char		secondArgumentBuf[1024] = { 0 };
+		const char* firstArgumentStr = LEOGetValueAsString(firstArgumentValue, firstArgumentBuf, sizeof(firstArgumentBuf), inContext);
+		const char* secondArgumentStr = LEOGetValueAsString(secondArgumentValue, secondArgumentBuf, sizeof(secondArgumentBuf), inContext);
+		
+//		printf("COMPARING \"%s", LEOStringEscapedForPrintingInQuotes(firstArgumentStr));
+//		printf("\" != \"%s\"\n", LEOStringEscapedForPrintingInQuotes(secondArgumentStr));
 		
 		isEqual = (strcasecmp(firstArgumentStr, secondArgumentStr) != 0);
 	}
