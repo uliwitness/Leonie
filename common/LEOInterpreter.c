@@ -552,7 +552,7 @@ void	LEOContextSetLocalVariable( LEOContext* inContext, const char* varName, con
 }
 
 
-void	LEODebugPrintInstr( LEOInstruction* instruction )
+void	LEODebugPrintInstr( LEOInstruction* instruction, LEOScript* inScript )
 {
 	if( !instruction )
 	{
@@ -566,17 +566,26 @@ void	LEODebugPrintInstr( LEOInstruction* instruction )
 		printf("UNKNOWN_%d",currID);
 	else
 		printf("%s",gInstructions[currID].name);
-	printf("( %u, %d );\n", instruction->param1, instruction->param2 );
+	printf("( %u, %d );", instruction->param1, instruction->param2 );
+	
+	if( currID == PUSH_STR_VARIANT_FROM_TABLE_INSTR || currID == PUSH_STR_FROM_TABLE_INSTR )
+	{
+		const char*		theString = "";
+		if( instruction->param2 < inScript->numStrings )
+			theString = inScript->strings[instruction->param2];
+		printf(" --> \"%s\"", LEOStringEscapedForPrintingInQuotes(theString) );
+	}
+	printf("\n" );
 }
 
 
-void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions )
+void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions, LEOScript* inScript )
 {
 	//printf( "%u INSTRUCTIONS:\n", (unsigned int)numInstructions );
 	for( size_t x = 0; x < numInstructions; x++ )
 	{
 		printf( "    " );
-		LEODebugPrintInstr( instructions +x );
+		LEODebugPrintInstr( instructions +x, inScript );
 	}
 }
 
@@ -600,12 +609,14 @@ void	LEOContextDebugPrintCallStack( LEOContext* inContext )
 
 void	LEODebugPrintContext( LEOContext* ctx )
 {
+	LEOScript * script = LEOContextPeekCurrentScript( ctx );
+	
 	printf( "CONTEXT:\n" );
 	if( (ctx->flags & kLEOContextKeepRunning) == 0 )
 		printf( "    keepRunning: FALSE\n" );
 	if( ctx->errMsg[0] != 0 )
 		printf( "    errMsg: \"%s\"\n", LEOStringEscapedForPrintingInQuotes(ctx->errMsg) );
-	printf( "    currentInstruction: " ); LEODebugPrintInstr( ctx->currentInstruction );
+	printf( "    currentInstruction: " ); LEODebugPrintInstr( ctx->currentInstruction, script );
 	
 	if( ctx->stackEndPtr != NULL )
 	{

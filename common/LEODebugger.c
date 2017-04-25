@@ -51,7 +51,7 @@ void LEODebuggerPrompt( struct LEOContext* inContext )
 			}
 			else if( strcasecmp(currCmd,"b") == 0 || strcasecmp(currCmd,"breakpoint") == 0 )
 			{
-				LEODebuggerAddBreakpoint( inContext->currentInstruction );
+				LEODebuggerAddBreakpoint( inContext->currentInstruction, LEOContextPeekCurrentScript(inContext) );
 				printf("\n");
 			}
 			else if( strcasecmp(currCmd,"delete") == 0 )
@@ -94,7 +94,8 @@ void LEODebuggerPreInstructionProc( struct LEOContext* inContext )
 	if( inContext->numSteps > 0 )
 	{
 		inContext->numSteps--;
-		printf("  %p: ", inContext->currentInstruction); LEODebugPrintInstr( inContext->currentInstruction );
+		LEOScript * script = LEOContextPeekCurrentScript( inContext );
+		printf("  %p: ", inContext->currentInstruction); LEODebugPrintInstr( inContext->currentInstruction, script );
 		LEODebuggerPrompt( inContext );
 	}
 	else if( gLEODebuggerBreakpoints )
@@ -103,7 +104,8 @@ void LEODebuggerPreInstructionProc( struct LEOContext* inContext )
 		{
 			if( inContext->currentInstruction == gLEODebuggerBreakpoints[x] )
 			{
-				printf("* %p: ", inContext->currentInstruction); LEODebugPrintInstr( inContext->currentInstruction );
+				LEOScript * script = LEOContextPeekCurrentScript( inContext );
+				printf("* %p: ", inContext->currentInstruction); LEODebugPrintInstr( inContext->currentInstruction, script );
 				LEODebuggerPrompt( inContext );
 				break;
 			}
@@ -122,9 +124,9 @@ void LEODebuggerPreInstructionProc( struct LEOContext* inContext )
 }
 
 
-void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction )
+void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction, LEOScript * inScript )
 {
-	printf("Set Breakpoint on instruction %p: ",targetInstruction); LEODebugPrintInstr( targetInstruction );
+	printf("Set Breakpoint on instruction %p: ",targetInstruction); LEODebugPrintInstr( targetInstruction, inScript );
 	
 	gLEONumDebuggerBreakpoints += 1;
 	

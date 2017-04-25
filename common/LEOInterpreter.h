@@ -476,12 +476,12 @@ void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDel
 /*! Print the given instruction to the console for debugging purposes.
 	@seealso //leo_ref/c/func/LEODebugPrintInstructions	LEODebugPrintInstructions
 */
-void	LEODebugPrintInstr( LEOInstruction* instruction );
+void	LEODebugPrintInstr( LEOInstruction* instruction, struct LEOScript* inScript );
 
 /*! Print the given array of instructions to the console for debugging purposes using LEODebugPrintInstr.
 	@seealso //leo_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
 */
-void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions );
+void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions, struct LEOScript* inScript );
 
 /*! Print the given context to the console for debugging purposes. This includes
 	the stack, and is very useful for debugging new instructions.

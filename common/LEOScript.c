@@ -475,10 +475,10 @@ bool	LEOScriptHasBreakpointAtLine( LEOScript* inScript, size_t inLineNumber )
 }
 
 
-void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler )
+void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler, struct LEOScript * inScript )
 {
 	printf( "%s:\n", LEOContextGroupHandlerNameForHandlerID( inGroup, inHandler->handlerName ) );
-	LEODebugPrintInstructions( inHandler->instructions, inHandler->numInstructions );
+	LEODebugPrintInstructions( inHandler->instructions, inHandler->numInstructions, inScript );
 	for( size_t x = 0; x < inHandler->numVariables; x++ )
 	{
 		printf( "%s @%ld (%s)\n", inHandler->varNames[x].realVariableName,
@@ -493,12 +493,12 @@ void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript )
 	printf("FUNCTIONS:\n");
 	for( size_t x = 0; x < inScript->numFunctions; x++ )
 	{
-		LEODebugPrintHandler( inGroup, inScript->functions +x );
+		LEODebugPrintHandler( inGroup, inScript->functions +x, inScript );
 	}
 	printf("COMMANDS:\n");
 	for( size_t x = 0; x < inScript->numCommands; x++ )
 	{
-		LEODebugPrintHandler( inGroup, inScript->commands +x );
+		LEODebugPrintHandler( inGroup, inScript->commands +x, inScript );
 	}
 	printf("STRINGS:\n");
 	for( size_t x = 0; x < inScript->numStrings; x++ )

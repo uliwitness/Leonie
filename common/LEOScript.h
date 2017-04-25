@@ -405,7 +405,7 @@ bool	LEOScriptHasBreakpointAtLine( LEOScript* inScript, size_t inLineNumber );
 
 void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript );
 
-void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler );
+void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler, struct LEOScript * inScript );
 
 
 #if __cplusplus
