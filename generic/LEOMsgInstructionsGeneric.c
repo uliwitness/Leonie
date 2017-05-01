@@ -38,7 +38,7 @@ void	LEOPrintInstruction( LEOContext* inContext )
 	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	LEOGetValueAsString( theValue, buf, sizeof(buf), inContext );
-	printf( "%s\n", buf );
+	printf( "%s", buf );
 	if( popOffStack )
 		LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
 	
