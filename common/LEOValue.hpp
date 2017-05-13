@@ -23,14 +23,11 @@
 #include <sstream>
 
 
-#define CPPVMAX2(a,b) (((a) > (b)) ? (a) : (b))
-#define CPPVMAX3(a,b,c)	CPPVMAX2(CPPVMAX2((a), (b)),(c))
-
-
 using namespace std;
 
 
 #include "LEOChunks.h"
+#include "LEOInterpreter.h"
 
 
 // -----------------------------------------------------------------------------
@@ -121,11 +118,11 @@ public:
 	
 	virtual LEONumber		GetAsNumber( LEOUnit *outUnit, struct LEOContext* inContext ) = 0;
 	virtual LEOInteger		GetAsInteger( LEOUnit *outUnit, struct LEOContext* inContext ) = 0;
-	virtual const string	GetAsString( string& outBuf, struct LEOContext* inContext ) = 0;	// Either returns buf, or an internal pointer holding the entire string.
+	virtual const string	GetAsString( struct LEOContext* inContext ) = 0;
 	virtual bool			GetAsBoolean( struct LEOContext* inContext ) = 0;
 	virtual void			GetAsRangeOfString( LEOChunkType inType,
 											size_t inRangeStart, size_t inRangeEnd,
-											string& outBuf, struct LEOContext* inContext ) = 0;
+											string& outBuf, struct LEOContext* inContext );
 	
 	virtual void		SetAsNumber( LEONumber inNumber, LEOUnit inUnit, struct LEOContext* inContext ) = 0;
 	virtual void		SetAsInteger( LEOInteger inNumber, LEOUnit inUnit, struct LEOContext* inContext ) = 0;
@@ -142,14 +139,17 @@ public:
 	virtual void		InitSimpleCopy( LEOValue& dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext ) = 0;	//! dest is an uninitialized value.
 	virtual void		PutValueIntoValue( LEOValue& dest, struct LEOContext* inContext ) = 0;	//! dest must be a VALID, initialized value!
 	template<class T>
-	LEOValue*			FollowReferencesAndReturnValueOfType( struct LEOContext* inContext );	// Returns NULL if no direct reference.
-	LEOValue*			FollowReferencesAndReturnValue( struct LEOContext* inContext );	// Returns NULL if no direct reference.
+	CppVariantBase*		FollowReferencesAndReturnValueOfType( struct LEOContext* inContext );	// Returns NULL if no direct reference.
+	CppVariantBase*		FollowReferencesAndReturnValue( struct LEOContext* inContext );	// Returns NULL if no direct reference.
 	
 	virtual void		DetermineChunkRangeOfSubstring( size_t *ioBytesStart, size_t *ioBytesEnd,
 													size_t *ioBytesDelStart, size_t *ioBytesDelEnd,
 													LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
-													struct LEOContext* inContext ) = 0;
-	virtual void		CleanUp( LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext ) = 0;
+													struct LEOContext* inContext );
+	virtual void		CleanUp( LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
+	{
+		((CppVariantBase*)dest.mBuf)->~CppVariantBase(); new (dest.mBuf) CppVariantInteger( 0, kLEOUnitNone ); if( keepReferences == kLEOInvalidateReferences ) dest.refObjectID = kLEOObjectIDINVALID;
+	}
 
 	virtual bool		CanGetAsNumber( struct LEOContext* inContext ) = 0;
 	
@@ -175,35 +175,78 @@ public:
 };
 
 
-class CppVariantInt : public CppVariantBase
+class CppVariantInteger : public CppVariantBase
 {
 public:
-	CppVariantInt( int n = 0 ) : mInt(n)
+	explicit CppVariantInteger( LEOInteger n = 0, LEOUnit u = kLEOUnitNone )
+		: mInteger(n), mUnit(u)
 	{
-		cout << "CppVariantInt constructor." << endl;
+		cout << "CppVariantInteger constructor." << endl;
 	}
-	~CppVariantInt() { cout << "CppVariantInt destructor." << endl; }
+	~CppVariantInteger() { cout << "CppVariantInteger destructor." << endl; }
 
-	virtual int		GetAsInt()		{ return mInt; }
-	virtual double	GetAsDouble()	{ return mInt; }
+	virtual const string	GetDisplayTypeName() { return "integer"; }
 	
-	virtual void	SetAsInt( int n )			{ mInt = n; }
+	virtual LEONumber		GetAsNumber( LEOUnit *outUnit, struct LEOContext* inContext ) { *outUnit = mUnit; return mInteger; }
+	virtual LEOInteger		GetAsInteger( LEOUnit *outUnit, struct LEOContext* inContext ) { *outUnit = mUnit; return mInteger; }
+	virtual const string	GetAsString( struct LEOContext* inContext ) { return to_string(mInteger); }
+	virtual bool			GetAsBoolean( struct LEOContext* inContext );
+	
+	virtual void		SetAsNumber( LEONumber inNumber, LEOUnit inUnit, struct LEOContext* inContext ) = 0;
+	virtual void		SetAsInteger( LEOInteger inNumber, LEOUnit inUnit, struct LEOContext* inContext ) { mInteger = inNumber; mUnit = inUnit; }
+	virtual void		SetAsString( const string inBuf, struct LEOContext* inContext );
+	virtual void		SetAsBoolean( bool inBoolean, struct LEOContext* inContext ) = 0;
+	virtual void		SetRangeAsString( LEOChunkType inType,
+									size_t inRangeStart, size_t inRangeEnd,
+									const string inBuf, struct LEOContext* inContext ) = 0;
+	virtual void		SetPredeterminedRangeAsString(
+									size_t inRangeStart, size_t inRangeEnd,
+									const string inBuf, struct LEOContext* inContext ) = 0;
+	
+	virtual void		InitCopy( LEOValue& dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext ) { ((CppVariantBase*)dest.mBuf)->~CppVariantBase(); new (dest.mBuf) CppVariantInteger( mInteger, mUnit ); if( keepReferences == kLEOInvalidateReferences ) dest.refObjectID = kLEOObjectIDINVALID; }
+	virtual void		InitSimpleCopy( LEOValue& dest, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext ) { ((CppVariantBase*)dest.mBuf)->~CppVariantBase(); new (dest.mBuf) CppVariantInteger( mInteger, mUnit ); if( keepReferences == kLEOInvalidateReferences ) dest.refObjectID = kLEOObjectIDINVALID; }
+	virtual void		PutValueIntoValue( LEOValue& dest, struct LEOContext* inContext ) { dest.SetAsInteger( mInteger, mUnit ); }
+	
+	virtual void		CleanUp( LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext ) = 0;
+
+	virtual bool		CanGetAsNumber( struct LEOContext* inContext ) { return true; }
+	
+	virtual LEOValue&	GetValueForKey( const string keyName, LEOValue& tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext ) = 0;
+	virtual void		SetValueForKey( const string keyName, LEOValue& inValue, struct LEOContext* inContext ) = 0;
+	
+	virtual void		SetValueAsArray( struct LEOArrayEntry* inArray, struct LEOContext* inContext ) = 0;
+	
+	virtual size_t		GetKeyCount( struct LEOContext* inContext ) = 0;
+	
+	virtual void		GetValueForKeyOfRange( const string keyName, size_t startOffset, size_t endOffset, LEOValue& outValue, struct LEOContext* inContext ) = 0;
+	virtual void		SetValueForKeyOfRange( const string keyName, LEOValue& inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext ) = 0;
+	
+	virtual void		SetValueAsNativeObject( void* inNativeObject, struct LEOContext* inContext ) = 0;
+	
+	virtual void		SetValueAsRect( LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext ) = 0;
+	virtual void		GetValueAsRect( LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext ) = 0;
+	virtual void		SetValueAsPoint( LEOInteger l, LEOInteger t, struct LEOContext* inContext ) = 0;
+	virtual void		GetValueAsPoint( LEOInteger *l, LEOInteger *t, struct LEOContext* inContext ) = 0;
+	virtual bool		GetValueIsUnset( struct LEOContext* inContext ) = 0;
+	virtual void		SetValueAsRange( LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext ) = 0;
+	virtual void		GetValueAsRange( LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext ) = 0;
 	
 protected:
-	int		mInt;
+	LEOInteger	mInteger;
+	LEOUnit		mUnit;
 };
 
 
-class CppVariantDouble : public CppVariantBase
+class CppVariantNumber : public CppVariantBase
 {
 public:
-	CppVariantDouble( double n = 0 ) : mDouble(n)
+	CppVariantNumber( double n = 0 ) : mDouble(n)
 	{
-		cout << "CppVariantDouble constructor." << endl;
+		cout << "CppVariantNumber constructor." << endl;
 	}
-	~CppVariantDouble()
+	~CppVariantNumber()
 	{
-		cout << "CppVariantDouble destructor." << endl;
+		cout << "CppVariantNumber destructor." << endl;
 	}
 
 	virtual int		GetAsInt()
@@ -222,17 +265,37 @@ protected:
 };
 
 
+class CppVariantReference : public CppVariantBase
+{
+public:
+	virtual CppVariantBase*	FollowReferencesAndReturnValue( struct LEOContext* inContext );
+
+protected:
+	LEOObjectID			mObjectID;
+	LEOObjectSeed		mObjectSeed;
+	LEOChunkType		mChunkType;
+	size_t				mChunkStart = 0;
+	size_t				mChunkEnd = 0;
+};
+
+
+union LEOValueUnion { CppVariantInteger a; CppVariantNumber b; };
+
 class LEOValue
 {
 public:
-	LEOValue( int n = 0 )	{ new (mBuf) CppVariantInt(n); }
-	~LEOValue()				{ ((CppVariantBase*)mBuf)->~CppVariantBase(); }
+	explicit LEOValue( int n = 0, LEOUnit inUnit = kLEOUnitNone )	{ new (mBuf) CppVariantInteger(n,inUnit); }
+	explicit LEOValue( double n, LEOUnit inUnit = kLEOUnitNone )	{ new (mBuf) CppVariantNumber(n,inUnit); }
+	~LEOValue()						{ ((CppVariantBase*)mBuf)->~CppVariantBase(); }
 	
 	operator CppVariantBase* () { return (CppVariantBase*)mBuf; }
 	CppVariantBase* operator -> () { return (CppVariantBase*)mBuf; }
 
 protected:
-	uint8_t mBuf[CPPVMAX3(sizeof(CppVariantBase),sizeof(CppVariantInt),sizeof(CppVariantDouble))];
+	uint8_t			mBuf[sizeof(LEOValueUnion)];
+	LEOObjectID		refObjectID = 0;	//! If we have a reference to us, this is our index in the LEOContextGroup's reference table, so we can clear it on destruction.
+	
+	friend class CppVariantBase;
 };
 
 
