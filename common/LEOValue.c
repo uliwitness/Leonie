@@ -3541,6 +3541,8 @@ LEOValuePtr		LEOGetPointValueValueForKey( LEOValuePtr self, const char* inKey, u
 		theNum = self->point.horizontal;
 	else if( strcasecmp(inKey, "vertical") == 0 )
 		theNum = self->point.vertical;
+	else
+		return NULL;
 	LEOInitIntegerValue( tempStorage, theNum, kLEOUnitNone, keepReferences, inContext );
 	return tempStorage;
 }
