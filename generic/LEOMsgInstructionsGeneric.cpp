@@ -13,12 +13,14 @@
 	systems.
 */
 
-#include <stdio.h>
 #include "LEOMsgInstructionsGeneric.h"
 #include "LEOInterpreter.h"
+#include <iostream>
 
 
 size_t					kFirstMsgInstruction = 0;
+std::ostream*			gLEOMsgOutputStream = &std::cout;
+
 
 
 /*!
@@ -38,7 +40,7 @@ void	LEOPrintInstruction( LEOContext* inContext )
 	bool			popOffStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = popOffStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +inContext->currentInstruction->param1);
 	LEOGetValueAsString( theValue, buf, sizeof(buf), inContext );
-	printf( "%s", buf );
+	(*gLEOMsgOutputStream) << buf;
 	if( popOffStack )
 		LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
 	
