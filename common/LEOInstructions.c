@@ -2183,6 +2183,8 @@ void	LEOSetItemDelimiterInstruction( LEOContext* inContext )
 }
 
 
+/* (PUSH_GLOBAL_REFERENCE_INSTR)
+*/
 void	LEOPushGlobalReferenceInstruction( LEOContext* inContext )
 {
 	char		globalNameBuf[1024] = { 0 };
