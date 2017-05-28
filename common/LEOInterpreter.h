@@ -44,6 +44,7 @@ extern "C" {
 
 #include "LEOValue.h"
 #include "LEOHandlerID.h"
+#include "LEOUserData.h"
 #include <stdint.h>
 #include <assert.h>
 
@@ -97,11 +98,6 @@ typedef void (*LEOInstructionFuncPtr)( struct LEOContext* inContext );
 	for that script exists that handles the call, this function is called to
 	allow the host application to provide default behaviour for unhandled messages. */
 typedef void (*LEONonexistentHandlerFuncPtr)( struct LEOContext* inContext, LEOHandlerID inHandler, TMayGoUnhandledFlag mayGoUnhandled );
-
-
-/*! Callback you can give to a context when you attach user data to it, which
- 	it will call when it is cleaned up to allow disposing of the user data. */
-typedef void (*LEOUserDataCleanUpFuncPtr)( void* inUserData );
 
 
 /*! This function is called when a context finishes execution, either

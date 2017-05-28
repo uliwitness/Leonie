@@ -28,6 +28,7 @@ extern "C" {
 
 #include "LEOValue.h"
 #include "LEOHandlerID.h"
+#include "LEOUserData.h"
 
 
 // -----------------------------------------------------------------------------
@@ -36,9 +37,6 @@ extern "C" {
 
 typedef struct LEOObject LEOObject;
 
-/*! Callback you can give to a context when you attach user data to it, which
- 	it will call when it is cleaned up to allow disposing of the user data. */
-typedef void (*LEOUserDataCleanUpFuncPtr)( void* inUserData );
 
 enum
 {
