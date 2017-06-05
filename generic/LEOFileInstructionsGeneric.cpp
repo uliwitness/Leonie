@@ -20,6 +20,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+
+#include "fake_filesystem.hpp"	// Until std::filesystem arrives on Xcode's clang.
+using namespace fake;
+
+
 void	LEOWriteToFileInstruction( LEOContext* inContext );
 void	LEOReadFromFileInstruction( LEOContext* inContext );
 void	LEOCopyFileInstruction( LEOContext* inContext );
@@ -56,6 +61,26 @@ struct THostCommandEntry	gFileCommands[] =
 			{ EHostParamInvisibleIdentifier, EFileIdentifier, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', '\0' },
 			{ EHostParamExpression, ELastIdentifier_Sentinel, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', 'X' },
 			{ EHostParamInvisibleIdentifier, EToIdentifier, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', '\0' },
+			{ EHostParamExpression, ELastIdentifier_Sentinel, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', 'X' },
+			{ EHostParam_Sentinel, ELastIdentifier_Sentinel, EHostParameterOptional, INVALID_INSTR2, 0, 0, '\0', '\0' }
+		}
+	},
+	{
+		ELastIdentifier_Sentinel, INVALID_INSTR2, 0, 0, '\0', '\0',
+		{
+			{ EHostParam_Sentinel, ELastIdentifier_Sentinel, EHostParameterOptional, INVALID_INSTR2, 0, 0, '\0', '\0' }
+		}
+	}
+};
+
+
+struct THostCommandEntry		gFileHostFunctions[] =
+{
+	{
+		EFilesIdentifier, LEO_LIST_FILES_INSTR, BACK_OF_STACK, 0, '\0', 'X',
+		{
+			{ EHostParamInvisibleIdentifier, EInIdentifier, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', '\0' },
+			{ EHostParamInvisibleIdentifier, EFolderIdentifier, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', '\0' },
 			{ EHostParamExpression, ELastIdentifier_Sentinel, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', 'X' },
 			{ EHostParam_Sentinel, ELastIdentifier_Sentinel, EHostParameterOptional, INVALID_INSTR2, 0, 0, '\0', '\0' }
 		}
@@ -117,7 +142,7 @@ void	LEOReadFromFileInstruction( LEOContext* inContext )
 		size_t fileLength = ftell( theFile );
 		fseek( theFile, 0, SEEK_SET);
 		
-		char*	fileBuf = malloc(fileLength);
+		char*	fileBuf = (char*) malloc(fileLength);
 		
 		size_t itemsRead = fread( fileBuf, 1, fileLength, theFile );
 		fclose( theFile );
@@ -217,7 +242,42 @@ void	LEOCopyFileInstruction( LEOContext* inContext )
 		numBytesRead += currBytesRead;
 	}
 	
-	LEOCleanUpValue( inContext->stackEndPtr -2, kLEOInvalidateReferences, inContext );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+
+	inContext->currentInstruction++;
+}
+
+
+/*
+	(LEO_LIST_FILES_INSTR)
+ */
+
+
+void	LEOListFilesInstruction( LEOContext* inContext )
+{
+	char			filePathBuf[1024] = { 0 };
+	union LEOValue*	theFileValue = inContext->stackEndPtr -1;
+	const char*		filePath = LEOGetValueAsString( theFileValue, filePathBuf, sizeof(filePathBuf), inContext );
+	
+	filesystem::directory_iterator	currFile(filePath);
+	
+	LEOCleanUpValue(theFileValue, kLEOInvalidateReferences, inContext);
+	LEOValueArray * theArrayValue = (LEOValueArray*)theFileValue;
+	LEOInitArrayValue( theArrayValue, NULL, kLEOInvalidateReferences, inContext );
+	
+	char	keyStr[100] = {};
+	size_t	x = 0;
+	for( ; currFile != filesystem::directory_iterator(); ++currFile )
+	{
+		filesystem::path	fpath( (*currFile).path() );
+		std::string			fname( fpath.filename().string() );
+		if( fname == "." || fname == ".." )
+			continue;
+		
+		snprintf( keyStr, sizeof(keyStr) -1, "%zu", ++x );
+		
+		LEOAddStringArrayEntryToRoot( &theArrayValue->array, keyStr, fname.data(), fname.size(), inContext );
+	}
 	
 	inContext->currentInstruction++;
 }
@@ -226,5 +286,6 @@ void	LEOCopyFileInstruction( LEOContext* inContext )
 LEOINSTR_START(File,LEO_NUMBER_OF_FILE_INSTRUCTIONS)
 LEOINSTR(LEOWriteToFileInstruction)
 LEOINSTR(LEOReadFromFileInstruction)
-LEOINSTR_LAST(LEOCopyFileInstruction)
+LEOINSTR(LEOCopyFileInstruction)
+LEOINSTR_LAST(LEOListFilesInstruction)
 

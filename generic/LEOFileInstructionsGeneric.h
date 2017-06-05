@@ -15,6 +15,7 @@ enum
 	WRITE_TO_FILE_INSTR = 0,
 	READ_FROM_FILE_INSTR,
 	LEO_COPY_FILE_INSTR,
+	LEO_LIST_FILES_INSTR,
 	
 	LEO_NUMBER_OF_FILE_INSTRUCTIONS
 };
@@ -26,3 +27,4 @@ extern size_t						kFirstFileInstruction;
 
 
 extern struct THostCommandEntry		gFileCommands[];
+extern struct THostCommandEntry		gFileHostFunctions[];
