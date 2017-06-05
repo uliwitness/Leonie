@@ -413,6 +413,21 @@ LEOValuePtr	LEOPushRectOnStack( LEOContext* theContext, LEOInteger l, LEOInteger
 }
 
 
+LEOValuePtr	LEOPushArrayValueOnStack( LEOContext* theContext, struct LEOArrayEntry* inArray )
+{
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+	
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitArrayValue( &theValue->array, inArray, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete )
 {
 	if( theContext->stack > lastItemToDelete )

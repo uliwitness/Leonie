@@ -418,6 +418,16 @@ LEOValuePtr	LEOPushPointOnStack( LEOContext* theContext, LEOInteger l, LEOIntege
  */
 LEOValuePtr	LEOPushRectOnStack( LEOContext* theContext, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b );
 
+	
+/*! Push the given array onto the stack, returning a pointer to the value.
+ This is a shorthand for LEOPushValueOnStack and the corresponding LEOInitXXValue call.
+ You may pass NULL for inArray to push an empty array.
+ *** This takes over ownership of the given array. ***
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ */
+LEOValuePtr	LEOPushArrayValueOnStack( LEOContext* theContext, struct LEOArrayEntry* inArray );
+
 
 /*! Pushes a special empty string on the stack that a user can't generate,
 	and which returns TRUE from LEOGetValueIsUnset(). To the user it looks
