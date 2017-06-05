@@ -39,7 +39,7 @@ struct TBuiltInFunctionEntry	gWebPageBuiltInFunctions[] =
 /*!
 	Pop a string off the stack and return a version with all HTML-unsafe characters
 	escaped as entities. I.e. replace < and > and & with &lt; and &gt; and &amp;.
-	(WRITE_TO_FILE_INSTR)
+	(LEO_HTML_ENCODED_INSTR)
 */
 
 void	LEOHTMLEncodedInstruction( LEOContext* inContext )

@@ -22,6 +22,7 @@
 
 void	LEOWriteToFileInstruction( LEOContext* inContext );
 void	LEOReadFromFileInstruction( LEOContext* inContext );
+void	LEOCopyFileInstruction( LEOContext* inContext );
 
 
 
@@ -45,6 +46,16 @@ struct THostCommandEntry	gFileCommands[] =
 		{
 			{ EHostParamInvisibleIdentifier, EFromIdentifier, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', '\0' },
 			{ EHostParamInvisibleIdentifier, EFileIdentifier, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', '\0' },
+			{ EHostParamExpression, ELastIdentifier_Sentinel, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', 'X' },
+			{ EHostParam_Sentinel, ELastIdentifier_Sentinel, EHostParameterOptional, INVALID_INSTR2, 0, 0, '\0', '\0' }
+		}
+	},
+	{
+		ECopyIdentifier, LEO_COPY_FILE_INSTR, BACK_OF_STACK, 0, '\0', 'X',
+		{
+			{ EHostParamInvisibleIdentifier, EFileIdentifier, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', '\0' },
+			{ EHostParamExpression, ELastIdentifier_Sentinel, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', 'X' },
+			{ EHostParamInvisibleIdentifier, EToIdentifier, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', '\0' },
 			{ EHostParamExpression, ELastIdentifier_Sentinel, EHostParameterRequired, INVALID_INSTR2, 0, 0, '\0', 'X' },
 			{ EHostParam_Sentinel, ELastIdentifier_Sentinel, EHostParameterOptional, INVALID_INSTR2, 0, 0, '\0', '\0' }
 		}
@@ -135,7 +146,85 @@ void	LEOReadFromFileInstruction( LEOContext* inContext )
 }
 
 
+/*!
+	Pop two strings off the stack, the source path and destination path,
+	and copy the given file to the given destination.
+	(LEO_COPY_FILE_INSTR)
+ */
+
+void	LEOCopyFileInstruction( LEOContext* inContext )
+{
+	char			dataBuf[1024] = { 0 };
+	union LEOValue*	theSrcPathValue = inContext->stackEndPtr -2;
+	const char* srcPath = LEOGetValueAsString( theSrcPathValue, dataBuf, sizeof(dataBuf), inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+		return;
+	
+	char			dataBuf2[1024] = { 0 };
+	union LEOValue*	theDstPathValue = inContext->stackEndPtr -1;
+	const char* dstPath = LEOGetValueAsString( theDstPathValue, dataBuf2, sizeof(dataBuf2), inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+		return;
+	
+	FILE * srcFile = fopen( srcPath, "r" );
+	if( !srcFile )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't open source file \"%s\" for reading.", srcPath );
+		return;
+	}
+	FILE * dstFile = fopen( dstPath, "w" );
+	if( !dstFile )
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Couldn't create file at \"%s\".", dstPath );
+		return;
+	}
+	
+	char fileBuf[1024] = {};
+	size_t numBytesRead = 0, numBytesToRead = 0;
+	fseek( srcFile, 0, SEEK_END );
+	numBytesToRead = ftell( srcFile );
+	fseek( srcFile, 0, SEEK_SET );
+	while( numBytesRead < numBytesToRead )
+	{
+		size_t currBytesToRead = sizeof(fileBuf);
+		size_t bytesLeft = numBytesToRead -numBytesRead;
+		if( currBytesToRead > bytesLeft )
+			currBytesToRead = bytesLeft;
+		size_t currBytesRead = fread( fileBuf, 1, currBytesToRead, srcFile );
+		if( currBytesRead != currBytesToRead )
+		{
+			size_t		lineNo = SIZE_T_MAX;
+			uint16_t	fileID = 0;
+			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Unable to read the remaining %zu bytes from file \"%s\".", bytesLeft, srcPath );
+			return;
+		}
+		size_t currBytesWritten = fwrite( fileBuf, 1, currBytesRead, dstFile );
+		if( currBytesWritten != currBytesRead )
+		{
+			size_t		lineNo = SIZE_T_MAX;
+			uint16_t	fileID = 0;
+			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Unable to write the remaining %zu bytes to file \"%s\".", bytesLeft, dstPath );
+			return;
+		}
+		numBytesRead += currBytesRead;
+	}
+	
+	LEOCleanUpValue( inContext->stackEndPtr -2, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
 LEOINSTR_START(File,LEO_NUMBER_OF_FILE_INSTRUCTIONS)
 LEOINSTR(LEOWriteToFileInstruction)
-LEOINSTR_LAST(LEOReadFromFileInstruction)
+LEOINSTR(LEOReadFromFileInstruction)
+LEOINSTR_LAST(LEOCopyFileInstruction)
 
