@@ -2131,12 +2131,11 @@ void	LEOGetArrayItemInstruction( LEOContext* inContext )
 void	LEOGetArrayItemCountInstruction( LEOContext* inContext )
 {
 	bool					onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
-	LEOValuePtr				dstValue = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	if( !onStack )
-		LEOCleanUpValue( dstValue, kLEOKeepReferences, inContext );
+	LEOValuePtr				dstValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
 	union LEOValue	*		srcValue = inContext->stackEndPtr -1;
 	
-	size_t	numKeys = LEOGetKeyCount( srcValue, inContext );
+	size_t	numKeys = LEOGetKeyCount( srcValue, inContext );	// Must happen before clean-up of dstValue, as that can overlap with srcValue in stack case.
+	LEOCleanUpValue( dstValue, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	LEOInitIntegerValue( dstValue, numKeys, kLEOUnitNone, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	
 	inContext->currentInstruction++;
