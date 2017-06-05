@@ -215,8 +215,8 @@ static void	LEODebugPrintContextGroupPrintArrayKey( struct LEOArrayEntry* currEn
 		return;
 	LEODebugPrintContextGroupPrintArrayKey( currEntry->smallerItem, firstItem );
 	printf("%s\"%s\"", firstItem?"":", ", currEntry->key);
-	*firstItem = false;	// We just did an item, next ona can never be first again.
-	LEODebugPrintContextGroupPrintArrayKey( currEntry->smallerItem, false );
+	*firstItem = false;	// We just did an item, next one can never be first again.
+	LEODebugPrintContextGroupPrintArrayKey( currEntry->smallerItem, firstItem );
 }
 
 
