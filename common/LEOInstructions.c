@@ -2067,7 +2067,9 @@ static bool LEOCountChunksChunkCallback( const char *currStr, size_t currLen, si
 /*!
 	@function LEOCountChunksInstruction
 	Determine the number of chunks of the given type in a value's string
-	representation.
+	representation and push it on the stack.
+ 
+	(COUNT_CHUNKS_INSTR)
 	
 	param2		-	The chunk type to use.
 */
@@ -2076,11 +2078,14 @@ void	LEOCountChunksInstruction( LEOContext* inContext )
 {
 	union LEOValue	*		srcValue = inContext->stackEndPtr -1;
 	int						numItems = 0;
-	char					tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
+	char					tempStr[1024] = {};
 	
-	LEOGetValueAsString( srcValue, tempStr, sizeof(tempStr), inContext );
+	const char* str = LEOGetValueAsString( srcValue, tempStr, sizeof(tempStr), inContext );
 	
-	LEODoForEachChunk( tempStr, strlen(tempStr), inContext->currentInstruction->param2, LEOCountChunksChunkCallback, inContext->itemDelimiter, &numItems );
+	LEODoForEachChunk( str, strlen(str), inContext->currentInstruction->param2, LEOCountChunksChunkCallback, inContext->itemDelimiter, &numItems );
+	
+	LEOCleanUpValue( srcValue, kLEOInvalidateReferences, inContext );
+	LEOInitIntegerValue( srcValue, numItems, kLEOUnitNone, kLEOInvalidateReferences, inContext );
 
 	inContext->currentInstruction++;
 }
