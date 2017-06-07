@@ -569,7 +569,7 @@ void	LEOContextSetLocalVariable( LEOContext* inContext, const char* varName, con
 }
 
 
-void	LEODebugPrintInstr( LEOInstruction* instruction, LEOScript* inScript )
+void	LEODebugPrintInstr( LEOInstruction* instruction, LEOScript* inScript, LEOHandler * inHandler, LEOContext * inContext )
 {
 	if( !instruction )
 	{
@@ -577,13 +577,22 @@ void	LEODebugPrintInstr( LEOInstruction* instruction, LEOScript* inScript )
 		return;
 	}
 	
-	printf( "%p: ", instruction );
+	if( !inHandler && inContext )
+		inHandler = LEOContextPeekCurrentHandler(inContext);
+	
 	LEOInstructionID	currID = instruction->instructionID;
 	if( currID >= gNumInstructions )
-		printf("UNKNOWN_%d",currID);
+	{
+		printf("%p: UNKNOWN_%d", instruction, currID);
+		printf("( %u, %d );", instruction->param1, instruction->param2 );
+	}
+	else if( currID == LINE_MARKER_INSTR )
+		printf("# LINE %d \"%s\"", instruction->param2, LEOFileNameForFileID( instruction->param1 ) );
 	else
-		printf("%s",gInstructions[currID].name);
-	printf("( %u, %d );", instruction->param1, instruction->param2 );
+	{
+		printf("%p: %s", instruction,gInstructions[currID].name);
+		printf("( %u, %d );", instruction->param1, instruction->param2 );
+	}
 	
 	if( currID == PUSH_STR_VARIANT_FROM_TABLE_INSTR || currID == PUSH_STR_FROM_TABLE_INSTR )
 	{
@@ -592,17 +601,40 @@ void	LEODebugPrintInstr( LEOInstruction* instruction, LEOScript* inScript )
 			theString = inScript->strings[instruction->param2];
 		printf(" --> \"%s\"", LEOStringEscapedForPrintingInQuotes(theString) );
 	}
+	else if( currID == PUSH_REFERENCE_INSTR )
+	{
+		if( instruction->param1 == BACK_OF_STACK )
+			printf(" --> BACK_OF_STACK" );
+		else if( inHandler )
+		{
+			char* varName = NULL;
+			char* realVarName = NULL;
+			LEOHandlerFindVariableByAddress( inHandler, instruction->param1, &varName, &realVarName, inContext );
+			printf(" @%s", varName );
+		}
+	}
+	else if( currID == PUSH_INTEGER_INSTR )
+	{
+		LEOUnit theUnit = (LEOUnit) instruction->param1;
+		printf( " --> %d%s", instruction->param2, LEOUnitSuffixForUnit(theUnit) );
+	}
+	else if( currID == PUSH_NUMBER_INSTR )
+	{
+		LEOUnit theUnit = (LEOUnit) instruction->param1;
+		float theNumber = (*(float*)&instruction->param2);
+		printf( " --> %g%s", theNumber, LEOUnitSuffixForUnit(theUnit) );
+	}
 	printf("\n" );
 }
 
 
-void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions, LEOScript* inScript )
+void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions, LEOScript* inScript, LEOHandler * inHandler, LEOContext * inContext )
 {
 	//printf( "%u INSTRUCTIONS:\n", (unsigned int)numInstructions );
 	for( size_t x = 0; x < numInstructions; x++ )
 	{
 		printf( "    " );
-		LEODebugPrintInstr( instructions +x, inScript );
+		LEODebugPrintInstr( instructions +x, inScript, inHandler, inContext );
 	}
 }
 
@@ -633,7 +665,7 @@ void	LEODebugPrintContext( LEOContext* ctx )
 		printf( "    keepRunning: FALSE\n" );
 	if( ctx->errMsg[0] != 0 )
 		printf( "    errMsg: \"%s\"\n", LEOStringEscapedForPrintingInQuotes(ctx->errMsg) );
-	printf( "    currentInstruction: " ); LEODebugPrintInstr( ctx->currentInstruction, script );
+	printf( "    currentInstruction: " ); LEODebugPrintInstr( ctx->currentInstruction, script, NULL, ctx );
 	
 	if( ctx->stackEndPtr != NULL )
 	{

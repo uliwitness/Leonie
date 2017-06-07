@@ -1160,6 +1160,14 @@ LEOUnit	LEOConvertNumbersToCommonUnit( LEONumber* firstArgument, LEOUnit firstUn
 }
 
 
+const char* LEOUnitSuffixForUnit( LEOUnit inUnit )
+{
+	if( inUnit >= kLEOUnit_Last )
+		return "";
+	return gUnitLabels[inUnit];
+}
+
+
 #pragma mark -
 #pragma mark Shared
 

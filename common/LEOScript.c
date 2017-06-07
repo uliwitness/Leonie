@@ -136,8 +136,8 @@ void	LEOHandlerFindVariableByAddress( LEOHandler* inHandler, long bpRelativeAddr
 	}
 	else if( bpRelativeAddress < 0 )
 	{
-		LEOValuePtr	paramCountObj = (inContext->stackBasePtr -1);
-		LEOInteger	paramCount = LEOGetValueAsInteger( paramCountObj, NULL, inContext );
+		LEOValuePtr	paramCountObj = inContext ? (inContext->stackBasePtr -1) : NULL;
+		LEOInteger	paramCount = paramCountObj ? LEOGetValueAsInteger( paramCountObj, NULL, inContext ) : 0;
 		
 		if( bpRelativeAddress >= (-paramCount -1) )
 		{
@@ -478,7 +478,7 @@ bool	LEOScriptHasBreakpointAtLine( LEOScript* inScript, size_t inLineNumber )
 void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler, struct LEOScript * inScript )
 {
 	printf( "%s:\n", LEOContextGroupHandlerNameForHandlerID( inGroup, inHandler->handlerName ) );
-	LEODebugPrintInstructions( inHandler->instructions, inHandler->numInstructions, inScript );
+	LEODebugPrintInstructions( inHandler->instructions, inHandler->numInstructions, inScript, inHandler, NULL );
 	for( size_t x = 0; x < inHandler->numVariables; x++ )
 	{
 		printf( "%s @%ld (%s)\n", inHandler->varNames[x].realVariableName,

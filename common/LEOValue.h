@@ -1645,6 +1645,7 @@ struct LEOArrayEntry
 
 LEONumber	LEONumberWithUnitAsUnit( LEONumber inNumber, LEOUnit fromUnit, LEOUnit toUnit );
 LEOUnit		LEOConvertNumbersToCommonUnit( LEONumber* firstArgument, LEOUnit firstUnit, LEONumber* secondArgument, LEOUnit secondUnit );
+const char* LEOUnitSuffixForUnit( LEOUnit inUnit );
 void		LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext );
 void		LEOStringToPoint( const char* inString, size_t inStringLen, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext );
 void		LEOStringToRange( const char* inString, size_t inStringLen, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext );
