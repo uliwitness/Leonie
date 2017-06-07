@@ -200,6 +200,9 @@ void	LEOCopyFileInstruction( LEOContext* inContext )
 		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't open source file \"%s\" for reading.", srcPath );
 		return;
 	}
+	
+	filesystem::create_directories( filesystem::path(dstPath).parent_path() );
+	
 	FILE * dstFile = fopen( dstPath, "w" );
 	if( !dstFile )
 	{
