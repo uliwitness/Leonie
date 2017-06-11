@@ -61,6 +61,7 @@ void	LEOHTMLEncodedInstruction( LEOContext* inContext )
 			case '>': escapedStr.append("&gt;"); break;
 			case '&': escapedStr.append("&amp;"); break;
 			case '"': escapedStr.append("&quot;"); break;
+			case '\r': case '\n': escapedStr.append("<br />"); break;
 			default: escapedStr.append( 1, strToEncode[x] );
 		}
 	}
