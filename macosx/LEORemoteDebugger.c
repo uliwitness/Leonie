@@ -237,7 +237,7 @@ void	LEORemoteDebuggerAddFile( const char* filecontents, uint16_t inFileID, stru
 	size_t		actuallyWritten = write( gLEORemoteDebuggerSocketFD, "SOUR", 4 );
 	uint32_t	dataLen = (uint32_t) (sizeof(uint16_t) + filenameLen + filecontentsLen);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
-	printf("Remote debugger: Sending 'SOUR' (%u bytes) for %s\n",dataLen,filename);
+	printf("Remote debugger: Sending 'SOUR' (%u bytes) for %s (%d)\n",dataLen,filename,inFileID);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &inFileID, sizeof(uint16_t) );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filename, filenameLen );
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filecontents, filecontentsLen );
