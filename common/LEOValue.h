@@ -1632,6 +1632,7 @@ LEOValuePtr	LEOAddStringConstantArrayEntryToRoot( struct LEOArrayEntry** arrayPt
 LEOValuePtr	LEOAddStringArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, const char* inStr, size_t inLen, struct LEOContext* inContext );
 LEOValuePtr	LEOAddRectArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext );
 LEOValuePtr	LEOAddPointArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOInteger l, LEOInteger t, struct LEOContext* inContext );
+LEOValuePtr	LEOAddArrayArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOValueArray* inArray, struct LEOContext* inContext );
 
 // One array entry:
 struct LEOArrayEntry

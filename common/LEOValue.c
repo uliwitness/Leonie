@@ -5381,6 +5381,17 @@ LEOValuePtr	LEOAddPointArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByRefere
 }
 
 
+LEOValuePtr	LEOAddArrayArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOValueArray* inArray, struct LEOContext* inContext )
+{
+	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, (LEOValuePtr)inArray, inContext );
+	if( !inArray )
+	{
+		LEOInitArrayValue( &outValue->array, NULL, kLEOInvalidateReferences, inContext );
+	}
+	return outValue;
+}
+
+
 LEOValuePtr	LEOAddArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOValuePtr inValue, struct LEOContext* inContext )
 {
 	struct LEOArrayEntry	*	currEntry = NULL;
