@@ -16,6 +16,8 @@
 #include "LEOMsgInstructionsGeneric.h"
 #include "LEOInterpreter.h"
 #include <iostream>
+#include <sstream>
+#include <vector>
 
 
 size_t					kFirstMsgInstruction = 0;
@@ -58,7 +60,86 @@ void	LEODeleteInstruction( LEOContext* inContext )
 }
 
 
+struct LEOOutputRecordingEntry
+{
+	explicit LEOOutputRecordingEntry( std::string inVariableName ) : mOutputVariableName(inVariableName) {}
+	
+	std::string			mOutputVariableName;
+	std::stringstream	mOutputDestination;
+};
+
+
+static std::vector<LEOOutputRecordingEntry> sOutputRecordingStack;
+static std::ostream*						sOriginalLEOMsgOutputStream = nullptr;
+
+
+void	LEOStartRecordingOutputInstruction( LEOContext* inContext )
+{
+	char			buf[1024] = { 0 };
+	
+	union LEOValue*	theValue = inContext->stackEndPtr -1;
+	const char* theString = LEOGetValueAsString( theValue, buf, sizeof(buf), inContext );
+	
+	if( !sOriginalLEOMsgOutputStream )
+		sOriginalLEOMsgOutputStream = gLEOMsgOutputStream;
+	sOutputRecordingStack.push_back( LEOOutputRecordingEntry(theString) );
+	gLEOMsgOutputStream = &sOutputRecordingStack.back().mOutputDestination;
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	inContext->currentInstruction++;
+}
+
+
+void	LEOStopRecordingOutputInstruction( LEOContext* inContext )
+{
+	char			buf[1024] = { 0 };
+	
+	union LEOValue*	theValue = inContext->stackEndPtr -1;
+	const char* theString = LEOGetValueAsString( theValue, buf, sizeof(buf), inContext );
+	
+	if( sOutputRecordingStack.size() > 0 )
+	{
+		if( strcasecmp( theString, sOutputRecordingStack.back().mOutputVariableName.c_str()) == 0 )
+		{
+			LEOContextSetLocalVariable( inContext, sOutputRecordingStack.back().mOutputVariableName.c_str(), "%s", sOutputRecordingStack.back().mOutputDestination.str().c_str() );
+			LEODebugPrintContext( inContext );
+			sOutputRecordingStack.pop_back();	// Remove our override.
+			
+			if( sOutputRecordingStack.size() > 0 )	// Restore previous output destination, if one.
+			{
+				gLEOMsgOutputStream = &sOutputRecordingStack.back().mOutputDestination;
+			}
+			else	// No more destinations? Restore default.
+			{
+				gLEOMsgOutputStream = sOriginalLEOMsgOutputStream;
+			}
+		}
+		else
+		{
+			size_t		lineNo = SIZE_T_MAX;
+			uint16_t	fileID = 0;
+			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Unbalanced 'stop recording output' instruction. Original variable name given was '%s', name given for stop was '%s'.", sOutputRecordingStack.back().mOutputVariableName.c_str(), theString );
+		}
+	}
+	else
+	{
+		size_t		lineNo = SIZE_T_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Found 'stop recording output' instruction for variable '%s', but 'start recording output' was never called.", theString );
+	}
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	
+	inContext->currentInstruction++;
+}
+
+
 LEOINSTR_START(Msg,LEO_NUMBER_OF_MSG_INSTRUCTIONS)
 LEOINSTR(LEOPrintInstruction)
-LEOINSTR_LAST(LEODeleteInstruction)
+LEOINSTR(LEODeleteInstruction)
+LEOINSTR(LEOStartRecordingOutputInstruction)
+LEOINSTR_LAST(LEOStopRecordingOutputInstruction)
 
