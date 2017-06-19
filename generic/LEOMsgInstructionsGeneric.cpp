@@ -103,7 +103,6 @@ void	LEOStopRecordingOutputInstruction( LEOContext* inContext )
 		if( strcasecmp( theString, sOutputRecordingStack.back().mOutputVariableName.c_str()) == 0 )
 		{
 			LEOContextSetLocalVariable( inContext, sOutputRecordingStack.back().mOutputVariableName.c_str(), "%s", sOutputRecordingStack.back().mOutputDestination.str().c_str() );
-			LEODebugPrintContext( inContext );
 			sOutputRecordingStack.pop_back();	// Remove our override.
 			
 			if( sOutputRecordingStack.size() > 0 )	// Restore previous output destination, if one.
