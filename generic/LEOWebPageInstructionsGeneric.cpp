@@ -17,6 +17,7 @@
 #include "LEOWebPageInstructionsGeneric.h"
 #include "LEOInterpreter.h"
 #include "LEOScript.h"
+#include "UTF8UTF32Utilities.h"
 #include <string.h>
 #include <stdlib.h>
 #include <string>
@@ -32,6 +33,7 @@ size_t					kFirstWebPageInstruction = 0;
 struct TBuiltInFunctionEntry	gWebPageBuiltInFunctions[] =
 {
 	{ EHTMLEncodedIdentifier, LEO_HTML_ENCODED_INSTR, 0, 0, 1 },
+	{ EOffsetIdentifier, LEO_OFFSET_FUNC_INSTR, 0, 0, 2 },
 	{ ELastIdentifier_Sentinel, INVALID_INSTR2, 0, 0, 0 }
 };
 
@@ -73,6 +75,79 @@ void	LEOHTMLEncodedInstruction( LEOContext* inContext )
 }
 
 
+void	LEOOffsetFunctionInstruction( LEOContext* inContext )
+{
+	/*
+		TODO: Naïve implementation, doesn't account for o¨ being equal to ö
+				and similar Unicode gotchas. Only works correctly on
+				normalized text.
+	 */
+	
+	char			needleBuf[1024] = { 0 };
+	union LEOValue*	theNeedleValue = inContext->stackEndPtr -2;
+	const char	*	needleStr = LEOGetValueAsString( theNeedleValue, needleBuf, sizeof(needleBuf), inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+		return;
+
+	char			haystackBuf[1024] = { 0 };
+	union LEOValue*	theHaystackValue = inContext->stackEndPtr -1;
+	const char	*	haystackStr = LEOGetValueAsString( theHaystackValue, haystackBuf, sizeof(haystackBuf), inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+		return;
+	
+	LEOInteger	offset = -1;
+	
+	size_t haystackLen = strlen(haystackStr);
+	size_t needleLen = strlen(needleStr);
+	
+	if( haystackLen > needleLen && haystackLen > 0 && needleLen > 0 )
+	{
+		size_t currNeedleOffset = 0;
+		uint32_t firstNeedleChar = UTF8StringParseUTF32CharacterAtOffset( needleStr, needleLen, &currNeedleOffset );
+		
+		size_t currHaystackOffset = 0;
+		while( currHaystackOffset < haystackLen )
+		{
+			offset = currHaystackOffset;
+			uint32_t currHaystackChar = UTF8StringParseUTF32CharacterAtOffset( haystackStr, haystackLen, &currHaystackOffset );
+			if( firstNeedleChar != currHaystackChar )
+			{
+				offset = -1;
+				continue;
+			}
+			size_t potentialNeedleOffset = currNeedleOffset;
+			size_t potentialHaystackOffset = currHaystackOffset;
+			
+			while( potentialHaystackOffset < haystackLen && potentialNeedleOffset < needleLen )
+			{
+				uint32_t potentialNeedleChar = UTF8StringParseUTF32CharacterAtOffset( needleStr, needleLen, &potentialNeedleOffset );
+				uint32_t potentialHaystackChar = UTF8StringParseUTF32CharacterAtOffset( haystackStr, haystackLen, &potentialHaystackOffset );
+				if( potentialNeedleChar != potentialHaystackChar )
+				{
+					offset = -1;
+					break;
+				}
+			}
+			
+			if( potentialNeedleOffset == needleLen )	// A full match?
+			{
+				break;
+			}
+			else
+			{
+				offset = -1;
+			}
+		}
+	}
+	
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	LEOInitIntegerValue( inContext->stackEndPtr -1, offset, kLEOUnitNone, kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
 LEOINSTR_START(WebPage,LEO_NUMBER_OF_WEB_PAGE_INSTRUCTIONS)
-LEOINSTR_LAST(LEOHTMLEncodedInstruction)
+LEOINSTR(LEOHTMLEncodedInstruction)
+LEOINSTR_LAST(LEOOffsetFunctionInstruction)
 

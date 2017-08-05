@@ -22,7 +22,6 @@ extern "C" {
 	size_t		GetLengthOfUTF8SequenceStartingWith( unsigned char inChar );
 	uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset );
 	void		UTF8BytesForUTF32Character( uint32_t utf32Char, char* utf8, size_t *outLength );
-	uint32_t	UTF8StringParseUTF32CharacterAtOffset( const char *utf8, size_t len, size_t *ioOffset );
 	size_t		UTF8LengthForUTF32Char( uint32_t utf32Char );
 
 	uint32_t	UTF16StringParseUTF32CharacterAtOffset( const uint16_t *utf16, size_t bytesLen, size_t *ioCharOffset );
