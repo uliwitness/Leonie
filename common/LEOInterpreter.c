@@ -610,7 +610,7 @@ void	LEODebugPrintInstr( LEOInstruction* instruction, LEOScript* inScript, LEOHa
 			char* varName = NULL;
 			char* realVarName = NULL;
 			LEOHandlerFindVariableByAddress( inHandler, instruction->param1, &varName, &realVarName, inContext );
-			printf(" @%s", varName );
+			printf(" --> @%s", varName );
 		}
 	}
 	else if( currID == PUSH_INTEGER_INSTR )
