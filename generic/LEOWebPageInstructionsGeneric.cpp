@@ -21,9 +21,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <string>
+#include "tinymarkdown.hpp"
 
 
 void	LEOHTMLEncodedInstruction( LEOContext* inContext );
+void	LEOMarkdownToHTMLInstruction( LEOContext* inContext );
 
 
 
@@ -33,6 +35,7 @@ size_t					kFirstWebPageInstruction = 0;
 struct TBuiltInFunctionEntry	gWebPageBuiltInFunctions[] =
 {
 	{ EHTMLEncodedIdentifier, LEO_HTML_ENCODED_INSTR, 0, 0, 1 },
+	{ EMarkdownToHTMLIdentifier, LEO_MARKDOWN_TO_HTML_INSTR, 0, 0, 1 },
 	{ EOffsetIdentifier, LEO_OFFSET_FUNC_INSTR, 0, 0, 2 },
 	{ ELastIdentifier_Sentinel, INVALID_INSTR2, 0, 0, 0 }
 };
@@ -67,6 +70,30 @@ void	LEOHTMLEncodedInstruction( LEOContext* inContext )
 			default: escapedStr.append( 1, strToEncode[x] );
 		}
 	}
+	
+	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	LEOInitStringValue( inContext->stackEndPtr -1, escapedStr.c_str(), escapedStr.length(), kLEOInvalidateReferences, inContext );
+	
+	inContext->currentInstruction++;
+}
+
+
+/*!
+ Pop a string containing Markdown-formatted text off the stack and return an HTMLversion.
+ (LEO_MARKDOWN_TO_HTML_INSTR)
+ */
+
+void	LEOMarkdownToHTMLInstruction( LEOContext* inContext )
+{
+	char			dataBuf[1024] = { 0 };
+	union LEOValue*	theDataValue = inContext->stackEndPtr -1;
+	const char* strToEncode = LEOGetValueAsString( theDataValue, dataBuf, sizeof(dataBuf), inContext );
+	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
+		return;
+	
+	size_t strToEncodeLen = strlen(strToEncode);
+	tinymarkdown::parser	parser;
+	std::string escapedStr = parser.parse( std::string( strToEncode, strToEncodeLen ) );
 	
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
 	LEOInitStringValue( inContext->stackEndPtr -1, escapedStr.c_str(), escapedStr.length(), kLEOInvalidateReferences, inContext );
@@ -149,5 +176,6 @@ void	LEOOffsetFunctionInstruction( LEOContext* inContext )
 
 LEOINSTR_START(WebPage,LEO_NUMBER_OF_WEB_PAGE_INSTRUCTIONS)
 LEOINSTR(LEOHTMLEncodedInstruction)
+LEOINSTR(LEOMarkdownToHTMLInstruction)
 LEOINSTR_LAST(LEOOffsetFunctionInstruction)
 
