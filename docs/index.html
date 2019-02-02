@@ -1,0 +1,21 @@
+<html>
+<head>
+<title>Stacksmith &gt; Leonie Bytecode Interpreter</title>
+</head>
+<body>
+<h3>What is Stacksmith?</h3>
+<p><a href="https://stacksmith.org/">Stacksmith</a> is an app that lets you make your own apps, easily, by using a
+program that thinks like a human, not like a programmer. Leonie is an internal detail of how Stacksmith works, and users should
+never have to deal with it directly, or even know it is there.</p>
+<p>For advanced users, we might eventually offer the option to remove all clear-text scripts from their final app and
+instead only include the Leonie bytecode they compile to, thus decreasing startup overhead a little and making it slightly
+arder to read what their app does internally than just opening a text file.</p>
+<h3>What is leonie?</h3>
+<p>Leonie is the "virtual machine" that Stacksmith's "Forge" programming language uses to run its programs.</p>
+<p>Think of Leonie as a "virtual CPU". All your Forge scripts get compiled into instructions this CPU understands,
+and only the C code that implements this virtual CPU needs to be ported to another platform. Also, by compiling your
+scripts to virtual instructions like that, your loops do not waste time repeatedly reading the text of each command and variable name.
+</p>
+<p>Source code can be found at <a href="https://github.com/uliwitness/leonie">The Leonie Bytecode Interpreter Github</a></p>
+</body>
+</html>
