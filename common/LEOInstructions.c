@@ -934,9 +934,10 @@ void	LEOPushChunkInstruction( LEOContext* inContext )
 	
 	size_t	startDelOffs = 0, endDelOffs = 0;
 	LEOGetChunkRanges( completeStr, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
-	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
+	union LEOValue cleanupData = *(inContext->stackEndPtr -1);
 	LEOInitStringValue( inContext->stackEndPtr -1, completeStr +chunkStartOffs, chunkEndOffs -chunkStartOffs, kLEOInvalidateReferences, inContext );
-	
+	LEOCleanUpValue( &cleanupData, kLEOInvalidateReferences, inContext ); // completeStr is now possibly deallocated.
+
 	inContext->currentInstruction++;
 }
 
