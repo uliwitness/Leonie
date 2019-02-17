@@ -934,10 +934,20 @@ void	LEOPushChunkInstruction( LEOContext* inContext )
 	
 	size_t	startDelOffs = 0, endDelOffs = 0;
 	LEOGetChunkRanges( completeStr, inContext->currentInstruction->param2, chunkStartOffs, chunkEndOffs, &chunkStartOffs, &chunkEndOffs, &startDelOffs, &endDelOffs, inContext->itemDelimiter );
-	union LEOValue cleanupData = *(inContext->stackEndPtr -1);
-	LEOInitStringValue( inContext->stackEndPtr -1, completeStr +chunkStartOffs, chunkEndOffs -chunkStartOffs, kLEOInvalidateReferences, inContext );
-	LEOCleanUpValue( &cleanupData, kLEOInvalidateReferences, inContext ); // completeStr is now possibly deallocated.
-
+	if( onStack )
+	{
+		// We need to pop the string off the stack before we can push the result
+		// in its place, but that might deallocate completeStr. So what we do is
+		// keep the contents of the value around, overwrite the copy on the stack,
+		// and only *then* actually clean up the contents.
+		union LEOValue cleanupData = *(inContext->stackEndPtr -1);
+		LEOInitStringValue( inContext->stackEndPtr -1, completeStr +chunkStartOffs, chunkEndOffs -chunkStartOffs, kLEOInvalidateReferences, inContext );
+		LEOCleanUpValue( &cleanupData, kLEOInvalidateReferences, inContext ); // completeStr is now possibly deallocated.
+	}
+	else
+	{
+		LEOPushStringValueOnStack( inContext, completeStr +chunkStartOffs, chunkEndOffs -chunkStartOffs );
+	}
 	inContext->currentInstruction++;
 }
 
@@ -1237,33 +1247,52 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 	size_t			startOffs = 0, endOffs = SIZE_MAX,
 					startDelOffs, endDelOffs;
 	uint32_t		delimChar = inContext->currentInstruction->param2;
-	char			tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
+	char			tempStr[1024] = { 0 };
 	char			tempStr2[1024] = { 0 };
 	size_t			offs = 0;
-	union LEOValue	resultValue;
 	
-	if( delimChar != 0 )
-	{
-		tempStr[0] = delimChar;		// TODO: Make this work with any Unicode character.
-		offs = 1;
-	}
-	
-	const char*		secondArgumentString = LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
+	const char*		secondArgumentString = LEOGetValueAsString( secondArgumentValue, NULL, 0, inContext );
+	if( !secondArgumentString )
+		secondArgumentString = LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
 	const char*		firstArgumentString = LEOGetValueAsString( firstArgumentValue, NULL, 0, inContext );
 	if( !firstArgumentString )
 		firstArgumentString = LEOGetValueAsString( firstArgumentValue, tempStr2, sizeof(tempStr2), inContext );
-	LEOInitStringValue( &resultValue, firstArgumentString, strlen(firstArgumentString), kLEOInvalidateReferences, inContext );
 	
-	LEODetermineChunkRangeOfSubstring(	&resultValue, &startOffs, &endOffs,
+	// We need to clean up the parameters before we can push the result on the
+	//	stack in the spot where our first parameter used to be. But we can't
+	//	clean up firstArgumentValue and secondArgumentValue yet, that could
+	//	deallocate firstArgumentString and secondArgumentString. So we keep
+	//	their contents around to clean up later, and do a lightweight version
+	//	of LEOCleanUpStackToPtr(stackEnd - 2).
+	union LEOValue firstCleanUpValue = *firstArgumentValue;
+	union LEOValue secondCleanUpValue = *secondArgumentValue;
+	inContext->stackEndPtr -= 1;
+
+	LEOInitStringValue( firstArgumentValue, firstArgumentString, strlen(firstArgumentString), kLEOInvalidateReferences, inContext );
+
+	// Measure length of first argument in a NUL-safe way, so we can append
+	// to it in that spot:
+	LEODetermineChunkRangeOfSubstring( firstArgumentValue, &startOffs, &endOffs,
 										&startDelOffs, &endDelOffs,
-										kLEOChunkTypeCharacter,
+										kLEOChunkTypeByte,
 										SIZE_MAX, SIZE_MAX, inContext );
-	LEOSetValuePredeterminedRangeAsString( &resultValue, endOffs, endOffs, secondArgumentString, inContext );
-	
-	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 ); // secondArgumentString and firstArgumentString may be invalid now.
-	
-	LEOPushValueOnStack( inContext, &resultValue );
-	LEOCleanUpValue( &resultValue, kLEOInvalidateReferences, inContext );
+	if( delimChar != 0 )
+	{
+		// Insert delimiter:
+		char delimiter[5] = {};
+		size_t usedLength = 0;
+		UTF8BytesForUTF32Character( delimChar, delimiter, &usedLength );
+		delimiter[usedLength] = 0;
+		
+		// Append
+		LEOSetValuePredeterminedRangeAsString( firstArgumentValue, endOffs, endOffs, delimiter, inContext );
+		endOffs += usedLength;
+	}
+
+	LEOSetValuePredeterminedRangeAsString( firstArgumentValue, endOffs, endOffs, secondArgumentString, inContext );
+
+	LEOCleanUpValue(&firstCleanUpValue, kLEOInvalidateReferences, inContext);
+	LEOCleanUpValue(&secondCleanUpValue, kLEOInvalidateReferences, inContext);
 	
 	inContext->currentInstruction++;
 }
@@ -1274,32 +1303,57 @@ void	LEOConcatenateValuesWithSpaceInstruction( LEOContext* inContext )
 	union LEOValue*	secondArgumentValue = inContext->stackEndPtr -1;
 	union LEOValue*	firstArgumentValue = inContext->stackEndPtr -2;
 	size_t			startOffs = 0, endOffs = SIZE_MAX,
-					startDelOffs, endDelOffs;
+	startDelOffs, endDelOffs;
 	uint32_t		delimChar = inContext->currentInstruction->param2;
-	char			tempStr[1024] = { 0 };	// TODO: Make this work with any length of string.
+	char			tempStr[1024] = { 0 };
 	char			tempStr2[1024] = { 0 };
 	size_t			offs = 0;
 	union LEOValue	resultValue;
 	
 	if( delimChar == 0 )
+	{
 		delimChar = ' ';
-
-	tempStr[0] = delimChar;		// TODO: Make this work with any Unicode character.
-	offs = 1;
+	}
 	
-	LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
+	const char*		secondArgumentString = LEOGetValueAsString( secondArgumentValue, NULL, 0, inContext );
+	if( !secondArgumentString )
+		secondArgumentString = LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
 	const char*		firstArgumentString = LEOGetValueAsString( firstArgumentValue, NULL, 0, inContext );
 	if( !firstArgumentString )
 		firstArgumentString = LEOGetValueAsString( firstArgumentValue, tempStr2, sizeof(tempStr2), inContext );
-	LEOInitStringValue( &resultValue, firstArgumentString, strlen(firstArgumentString), kLEOInvalidateReferences, inContext );
-		
-	LEODetermineChunkRangeOfSubstring(	&resultValue, &startOffs, &endOffs,
-										&startDelOffs, &endDelOffs,
-										kLEOChunkTypeCharacter,
-										SIZE_MAX, SIZE_MAX, inContext );
-	LEOSetValuePredeterminedRangeAsString( &resultValue, endOffs, endOffs, tempStr, inContext );
 	
-	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	// We need to clean up the parameters before we can push the result on the
+	//	stack in the spot where our first parameter used to be. But we can't
+	//	clean up firstArgumentValue and secondArgumentValue yet, that could
+	//	deallocate firstArgumentString and secondArgumentString. So we keep
+	//	their contents around to clean up later, and do a lightweight version
+	//	of LEOCleanUpStackToPtr(stackEnd - 2).
+	union LEOValue firstCleanUpValue = *firstArgumentValue;
+	union LEOValue secondCleanUpValue = *secondArgumentValue;
+	inContext->stackEndPtr -= 1;
+	
+	LEOInitStringValue( firstArgumentValue, firstArgumentString, strlen(firstArgumentString), kLEOInvalidateReferences, inContext );
+	
+	// Measure length of first argument in a NUL-safe way, so we can append
+	// to it in that spot:
+	LEODetermineChunkRangeOfSubstring( firstArgumentValue, &startOffs, &endOffs,
+									  &startDelOffs, &endDelOffs,
+									  kLEOChunkTypeByte,
+									  SIZE_MAX, SIZE_MAX, inContext );
+	// Insert delimiter:
+	char delimiter[5] = {};
+	size_t usedLength = 0;
+	UTF8BytesForUTF32Character( delimChar, delimiter, &usedLength );
+	delimiter[usedLength] = 0;
+	
+	// Append
+	LEOSetValuePredeterminedRangeAsString( firstArgumentValue, endOffs, endOffs, delimiter, inContext );
+	endOffs += usedLength;
+	
+	LEOSetValuePredeterminedRangeAsString( firstArgumentValue, endOffs, endOffs, secondArgumentString, inContext );
+	
+	LEOCleanUpValue(&firstCleanUpValue, kLEOInvalidateReferences, inContext);
+	LEOCleanUpValue(&secondCleanUpValue, kLEOInvalidateReferences, inContext);
 	
 	LEOPushValueOnStack( inContext, &resultValue );
 	LEOCleanUpValue( &resultValue, kLEOInvalidateReferences, inContext );
