@@ -1248,7 +1248,7 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 		offs = 1;
 	}
 	
-	LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
+	const char*		secondArgumentString = LEOGetValueAsString( secondArgumentValue, tempStr +offs, sizeof(tempStr) -offs, inContext );
 	const char*		firstArgumentString = LEOGetValueAsString( firstArgumentValue, NULL, 0, inContext );
 	if( !firstArgumentString )
 		firstArgumentString = LEOGetValueAsString( firstArgumentValue, tempStr2, sizeof(tempStr2), inContext );
@@ -1258,9 +1258,9 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 										&startDelOffs, &endDelOffs,
 										kLEOChunkTypeCharacter,
 										SIZE_MAX, SIZE_MAX, inContext );
-	LEOSetValuePredeterminedRangeAsString( &resultValue, endOffs, endOffs, tempStr, inContext );
+	LEOSetValuePredeterminedRangeAsString( &resultValue, endOffs, endOffs, secondArgumentString, inContext );
 	
-	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 );
+	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -2 ); // secondArgumentString and firstArgumentString may be invalid now.
 	
 	LEOPushValueOnStack( inContext, &resultValue );
 	LEOCleanUpValue( &resultValue, kLEOInvalidateReferences, inContext );
