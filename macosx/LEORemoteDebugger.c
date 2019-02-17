@@ -71,7 +71,7 @@ bool	LEOInitRemoteDebugger( const char* inHostName )
 		serv_addr.sin_port = htons(LEO_DEBUGGER_PORT);
 		if( connect( gLEORemoteDebuggerSocketFD, (struct sockaddr*)&serv_addr, sizeof(serv_addr) ) < 0 ) 
 		{
-			fprintf( stderr, "Couldn't connect to remote debugger %s:%d error = %d\n", gLEORemoteDebuggerHostName, LEO_DEBUGGER_PORT, errno );
+			//fprintf( stderr, "Couldn't connect to remote debugger %s:%d error = %d\n", gLEORemoteDebuggerHostName, LEO_DEBUGGER_PORT, errno );
 			return false;
 		}
 		gLEORemoteDebuggerInitialized = true;
