@@ -1308,7 +1308,6 @@ void	LEOConcatenateValuesWithSpaceInstruction( LEOContext* inContext )
 	char			tempStr[1024] = { 0 };
 	char			tempStr2[1024] = { 0 };
 	size_t			offs = 0;
-	union LEOValue	resultValue;
 	
 	if( delimChar == 0 )
 	{
@@ -1354,9 +1353,6 @@ void	LEOConcatenateValuesWithSpaceInstruction( LEOContext* inContext )
 	
 	LEOCleanUpValue(&firstCleanUpValue, kLEOInvalidateReferences, inContext);
 	LEOCleanUpValue(&secondCleanUpValue, kLEOInvalidateReferences, inContext);
-	
-	LEOPushValueOnStack( inContext, &resultValue );
-	LEOCleanUpValue( &resultValue, kLEOInvalidateReferences, inContext );
 	
 	inContext->currentInstruction++;
 }
