@@ -40,10 +40,10 @@ char*	*			gFileNamesTable = NULL;
 size_t				gFileNamesTableSize = 0;
 LEOInstructionID	gInstructionIDToDebugPrintBefore = INVALID_INSTR;
 LEOInstructionID	gInstructionIDToDebugPrintAfter = INVALID_INSTR;
-void				(*gCheckForResumeProc)() = NULL;
+void				(*gCheckForResumeProc)(void) = NULL;
 
 
-void	LEOSetCheckForResumeProc( void (*checkForResumeProc)() )
+void	LEOSetCheckForResumeProc( void (*checkForResumeProc)(void) )
 {
 	gCheckForResumeProc = checkForResumeProc;
 }

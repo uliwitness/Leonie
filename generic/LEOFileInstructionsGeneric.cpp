@@ -28,6 +28,7 @@ using namespace fake;
 void	LEOWriteToFileInstruction( LEOContext* inContext );
 void	LEOReadFromFileInstruction( LEOContext* inContext );
 void	LEOCopyFileInstruction( LEOContext* inContext );
+void	LEOListFilesInstruction( LEOContext* inContext );
 
 
 

@@ -615,7 +615,7 @@ void	LEOSetInstructionIDToDebugPrintAfter( LEOInstructionID inID );
 	opportunity to ensure a call to LEOContextResumeIfAvailable() will be triggered
 	by whatever mechanism you choose (queue up an event, signal a semaphore, whatever).
 */
-void	LEOSetCheckForResumeProc( void (*checkForResumeProc)() );
+void	LEOSetCheckForResumeProc( void (*checkForResumeProc)(void) );
 
 
 #if __cplusplus
