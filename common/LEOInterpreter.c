@@ -482,6 +482,11 @@ void	LEOContextResumeIfAvailable( void )
 			;
 	}
 	
+	if( contextToResume->errMsg[0] != 0 )
+	{
+		printf("Error in resumed context: %s\n", contextToResume->errMsg); // TODO: Provide a callback here (so host apps can present error dialogs or whatever).
+	}
+	
 	if( (contextToResume->flags & kLEOContextPause) == 0 && contextToResume->contextCompleted )
 		contextToResume->contextCompleted( contextToResume );
 	
