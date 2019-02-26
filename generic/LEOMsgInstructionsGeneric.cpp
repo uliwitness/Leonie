@@ -19,6 +19,10 @@
 #include <sstream>
 #include <vector>
 
+#if WIN32
+#define strcasecmp _stricmp
+#endif
+
 
 LEOInstructionID		kFirstMsgInstruction = 0;
 std::ostream*			gLEOMsgOutputStream = &std::cout;

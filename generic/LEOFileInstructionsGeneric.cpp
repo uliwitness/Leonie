@@ -21,8 +21,24 @@
 #include <stdlib.h>
 
 
-#include "fake_filesystem.hpp"	// Until std::filesystem arrives on Xcode's clang.
+#if WIN32
+#include <filesystem>
+using namespace std;
+
+FILE* LEOFOpen(const char* path, const char* mode)
+{
+	FILE* theFile = NULL;
+	errno_t err = fopen_s(&theFile, path, mode);
+	if (err != 0) theFile = NULL;
+	return theFile;
+}
+#else
+#include <unistd.h>
+#include "fake_filesystem.hpp"	// until <filesystem> ships for Xcode's clang.
 using namespace fake;
+#define LEOFOpen fopen
+#endif
+
 
 
 void	LEOWriteToFileInstruction( LEOContext* inContext );
@@ -109,7 +125,7 @@ void	LEOWriteToFileInstruction( LEOContext* inContext )
 	union LEOValue*	theFileValue = inContext->stackEndPtr -1;
 	const char* strToWrite = LEOGetValueAsString( theDataValue, dataBuf, sizeof(dataBuf), inContext );
 	const char* filePath = LEOGetValueAsString( theFileValue, filePathBuf, sizeof(filePathBuf), inContext );
-	FILE * theFile = fopen( filePath, "w" );
+	FILE * theFile = LEOFOpen( filePath, "w" );
 	if( theFile )
 	{
 		size_t itemsToWrite = strlen(strToWrite);
@@ -136,7 +152,7 @@ void	LEOReadFromFileInstruction( LEOContext* inContext )
 	char			filePathBuf[1024] = { 0 };
 	union LEOValue*	theFileValue = inContext->stackEndPtr -1;
 	const char* filePath = LEOGetValueAsString( theFileValue, filePathBuf, sizeof(filePathBuf), inContext );
-	FILE * theFile = fopen( filePath, "r" );
+	FILE * theFile = LEOFOpen( filePath, "r" );
 	if( theFile )
 	{
 		fseek( theFile, 0, SEEK_END);
@@ -192,7 +208,7 @@ void	LEOCopyFileInstruction( LEOContext* inContext )
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
 	
-	FILE * srcFile = fopen( srcPath, "r" );
+	FILE * srcFile = LEOFOpen( srcPath, "r" );
 	if( !srcFile )
 	{
 		size_t		lineNo = SIZE_MAX;
@@ -204,7 +220,7 @@ void	LEOCopyFileInstruction( LEOContext* inContext )
 	
 	filesystem::create_directories( filesystem::path(dstPath).parent_path() );
 	
-	FILE * dstFile = fopen( dstPath, "w" );
+	FILE * dstFile = LEOFOpen( dstPath, "w" );
 	if( !dstFile )
 	{
 		size_t		lineNo = SIZE_MAX;
