@@ -29,7 +29,7 @@ void	LEOMarkdownToHTMLInstruction( LEOContext* inContext );
 
 
 
-size_t					kFirstWebPageInstruction = 0;
+LEOInstructionID				kFirstWebPageInstruction = 0;
 
 
 struct TBuiltInFunctionEntry	gWebPageBuiltInFunctions[] =

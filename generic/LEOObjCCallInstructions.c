@@ -9,5 +9,5 @@
 #include "LEOObjCCallInstructions.h"
 
 
-size_t			kFirstObjCCallInstruction = 0;
+LEOInstructionID			kFirstObjCCallInstruction = 0;
 

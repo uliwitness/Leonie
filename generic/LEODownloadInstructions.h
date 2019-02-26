@@ -24,6 +24,6 @@ enum
 
 LEOINSTR_DECL(Download,LEO_NUMBER_OF_DOWNLOAD_INSTRUCTIONS)
 
-extern size_t					kFirstDownloadInstruction;
+extern LEOInstructionID				kFirstDownloadInstruction;
 
 extern struct TGlobalPropertyEntry	gDownloadGlobalProperties[];

@@ -22,7 +22,7 @@ enum
 
 LEOINSTR_DECL(WebPage,LEO_NUMBER_OF_WEB_PAGE_INSTRUCTIONS)
 
-extern size_t						kFirstWebPageInstruction;
+extern LEOInstructionID					kFirstWebPageInstruction;
 
 
 extern struct TBuiltInFunctionEntry	gWebPageBuiltInFunctions[];

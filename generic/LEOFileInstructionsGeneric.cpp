@@ -32,7 +32,7 @@ void	LEOListFilesInstruction( LEOContext* inContext );
 
 
 
-size_t					kFirstFileInstruction = 0;
+LEOInstructionID			kFirstFileInstruction = 0;
 
 
 struct THostCommandEntry	gFileCommands[] =
@@ -195,10 +195,10 @@ void	LEOCopyFileInstruction( LEOContext* inContext )
 	FILE * srcFile = fopen( srcPath, "r" );
 	if( !srcFile )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't open source file \"%s\" for reading.", srcPath );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't open source file \"%s\" for reading.", srcPath );
 		return;
 	}
 	
@@ -207,10 +207,10 @@ void	LEOCopyFileInstruction( LEOContext* inContext )
 	FILE * dstFile = fopen( dstPath, "w" );
 	if( !dstFile )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Couldn't create file at \"%s\".", dstPath );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Couldn't create file at \"%s\".", dstPath );
 		return;
 	}
 	
@@ -228,19 +228,19 @@ void	LEOCopyFileInstruction( LEOContext* inContext )
 		size_t currBytesRead = fread( fileBuf, 1, currBytesToRead, srcFile );
 		if( currBytesRead != currBytesToRead )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Unable to read the remaining %zu bytes from file \"%s\".", bytesLeft, srcPath );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Unable to read the remaining %zu bytes from file \"%s\".", bytesLeft, srcPath );
 			return;
 		}
 		size_t currBytesWritten = fwrite( fileBuf, 1, currBytesRead, dstFile );
 		if( currBytesWritten != currBytesRead )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Unable to write the remaining %zu bytes to file \"%s\".", bytesLeft, dstPath );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Unable to write the remaining %zu bytes to file \"%s\".", bytesLeft, dstPath );
 			return;
 		}
 		numBytesRead += currBytesRead;

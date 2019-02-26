@@ -25,7 +25,7 @@ enum
 
 LEOINSTR_DECL(Msg,LEO_NUMBER_OF_MSG_INSTRUCTIONS)
 
-extern size_t						kFirstMsgInstruction;
+extern LEOInstructionID			kFirstMsgInstruction;
 
 
 #if __cplusplus

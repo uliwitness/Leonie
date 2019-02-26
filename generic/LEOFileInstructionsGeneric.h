@@ -23,7 +23,7 @@ enum
 
 LEOINSTR_DECL(File,LEO_NUMBER_OF_FILE_INSTRUCTIONS)
 
-extern size_t						kFirstFileInstruction;
+extern LEOInstructionID				kFirstFileInstruction;
 
 
 extern struct THostCommandEntry		gFileCommands[];

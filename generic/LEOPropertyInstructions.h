@@ -24,7 +24,7 @@ enum
 
 LEOINSTR_DECL(Property,LEO_NUMBER_OF_PROPERTY_INSTRUCTIONS)
 
-extern size_t					kFirstPropertyInstruction;
+extern LEOInstructionID			kFirstPropertyInstruction;
 
 extern struct THostCommandEntry	gPropertyHostFunctions[];
 

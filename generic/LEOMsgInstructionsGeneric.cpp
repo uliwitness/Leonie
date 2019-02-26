@@ -20,7 +20,7 @@
 #include <vector>
 
 
-size_t					kFirstMsgInstruction = 0;
+LEOInstructionID		kFirstMsgInstruction = 0;
 std::ostream*			gLEOMsgOutputStream = &std::cout;
 
 
@@ -116,18 +116,18 @@ void	LEOStopRecordingOutputInstruction( LEOContext* inContext )
 		}
 		else
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Unbalanced 'stop recording output' instruction. Original variable name given was '%s', name given for stop was '%s'.", sOutputRecordingStack.back().mOutputVariableName.c_str(), theString );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Unbalanced 'stop recording output' instruction. Original variable name given was '%s', name given for stop was '%s'.", sOutputRecordingStack.back().mOutputVariableName.c_str(), theString );
 		}
 	}
 	else
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Found 'stop recording output' instruction for variable '%s', but 'start recording output' was never called.", theString );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Found 'stop recording output' instruction for variable '%s', but 'start recording output' was never called.", theString );
 	}
 	
 	LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 );

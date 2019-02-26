@@ -188,7 +188,7 @@ void	LEOInitInstructionArray( void );
 	
 	See the <tt>LEOInstructionEntry</tt> documentation on information on how to most easily
 	declare your instruction array. */
-void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, size_t inNumInstructions, size_t *outFirstNewInstruction );
+void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, size_t inNumInstructions, LEOInstructionID *outFirstNewInstruction );
 
 
 
@@ -251,8 +251,8 @@ typedef struct LEOContext
 	struct LEOContextGroup	*		group;					// The group this context belongs to, containing its global state, references etc.
 	LEOContextFlags					flags;					// But flags for flow control etc.
 	char							errMsg[1024];			// Error message to display when kLEOContextKeepRunning flag has been set to FALSE.
-	size_t							errLine;				// Line on which the error occurred. Or SIZE_T_MAX if we don't know.
-	size_t							errOffset;				// Byte offset in script at which the error occurred, or SIZE_T_MAX if we don't know. If this isn't present, errLine might still be set.
+	size_t							errLine;				// Line on which the error occurred. Or SIZE_MAX if we don't know.
+	size_t							errOffset;				// Byte offset in script at which the error occurred, or SIZE_MAX if we don't know. If this isn't present, errLine might still be set.
 	uint16_t						errFileID;				// ID of the file in which the error occurred.
 	char							itemDelimiter;			// item delimiter to use for chunk expressions in values.
 	size_t							numCallStackEntries;	// Number of items in callStackEntries.

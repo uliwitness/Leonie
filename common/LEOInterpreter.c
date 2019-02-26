@@ -185,10 +185,10 @@ LEOHandler*	LEOContextPeekCurrentHandler( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Error: No current handler found." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Error: No current handler found." );
 		return NULL;
 	}
 	else
@@ -200,10 +200,10 @@ LEOScript*	LEOContextPeekCurrentScript( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Error: No current script found." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Error: No current script found." );
 		return NULL;
 	}
 	else
@@ -215,10 +215,10 @@ LEOInstruction*	LEOContextPeekReturnAddress( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Error: No return address found." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Error: No return address found." );
 		return NULL;
 	}
 	else
@@ -230,10 +230,10 @@ LEOValuePtr	LEOContextPeekBasePtr( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Error: No base pointer found." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Error: No base pointer found." );
 		return NULL;
 	}
 	else
@@ -245,10 +245,10 @@ void	LEOContextPopHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Error: Script attempted to return from handler that has never been called." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Error: Script attempted to return from handler that has never been called." );
 		return;
 	}
 	
