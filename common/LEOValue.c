@@ -5314,7 +5314,7 @@ struct LEOArrayEntry	*	LEOAllocNewEntry( const char* inKey, LEOValuePtr inValue,
 {
 	struct LEOArrayEntry	*	newEntry = NULL;
 	size_t						inKeyLen = strlen(inKey);
-	newEntry = calloc( sizeof(struct LEOArrayEntry) +inKeyLen +1, 1 );
+	newEntry = calloc( sizeof(struct LEOArrayEntry) +inKeyLen, 1 ); // String's NUL byte is already size of the array in the struct.
 	memmove( newEntry->key, inKey, inKeyLen +1 );
 	if( inValue )
 		LEOInitCopy( inValue, &newEntry->value, kLEOInvalidateReferences, inContext );

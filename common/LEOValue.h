@@ -1640,7 +1640,7 @@ struct LEOArrayEntry
 	struct LEOArrayEntry	*	smallerItem;
 	struct LEOArrayEntry	*	largerItem;
 	union LEOValue				value;
-	char						key[0];	// Must be last, dynamically sized array.
+	char						key[1];	// Must be last, dynamically sized array.
 };
 
 

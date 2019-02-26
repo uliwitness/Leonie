@@ -849,7 +849,7 @@ void	LEOPushReferenceInstruction( LEOContext* inContext )
 {
 	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	union LEOValue	tmpRefValue = {};
+	union LEOValue	tmpRefValue = {0};
 	LEOValuePtr		refValueOnStack = NULL;
 	
 	LEOInitReferenceValue( &tmpRefValue, theValue, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
@@ -876,7 +876,7 @@ void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
 	LEOValuePtr		chunkTarget = (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
 	LEOValuePtr		chunkEnd = inContext->stackEndPtr -1;
 	LEOValuePtr		chunkStart = inContext->stackEndPtr -2;
-	union LEOValue	tmpRefValue = {};
+	union LEOValue	tmpRefValue = {0};
 	LEOValuePtr		refValueOnStack = NULL;
 	
 	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
@@ -1279,7 +1279,7 @@ void	LEOConcatenateValuesInstruction( LEOContext* inContext )
 	if( delimChar != 0 )
 	{
 		// Insert delimiter:
-		char delimiter[5] = {};
+		char delimiter[5] = {0};
 		size_t usedLength = 0;
 		UTF8BytesForUTF32Character( delimChar, delimiter, &usedLength );
 		delimiter[usedLength] = 0;
@@ -1340,7 +1340,7 @@ void	LEOConcatenateValuesWithSpaceInstruction( LEOContext* inContext )
 									  kLEOChunkTypeByte,
 									  SIZE_MAX, SIZE_MAX, inContext );
 	// Insert delimiter:
-	char delimiter[5] = {};
+	char delimiter[5] = {0};
 	size_t usedLength = 0;
 	UTF8BytesForUTF32Character( delimChar, delimiter, &usedLength );
 	delimiter[usedLength] = 0;
@@ -2056,7 +2056,7 @@ static bool LEOAssignChunkArrayChunkCallback( const char *currStr, size_t currLe
 	char									keyString[20] = { 0 };
 	snprintf( keyString, sizeof(keyString) -1, "%lu", ++ud->numItems );
 	
-	union LEOValue		tempStringValue = {};
+	union LEOValue		tempStringValue = {0};
 	LEOInitStringValue( &tempStringValue, currStr, currLen, kLEOInvalidateReferences, ud->context );
 	LEOAddArrayEntryToRoot( &ud->array, keyString, &tempStringValue, ud->context );
 	LEOCleanUpValue( &tempStringValue, kLEOInvalidateReferences, ud->context );
@@ -2129,7 +2129,7 @@ void	LEOCountChunksInstruction( LEOContext* inContext )
 {
 	union LEOValue	*		srcValue = inContext->stackEndPtr -1;
 	int						numItems = 0;
-	char					tempStr[1024] = {};
+	char					tempStr[1024] = {0};
 	
 	const char* str = LEOGetValueAsString( srcValue, tempStr, sizeof(tempStr), inContext );
 	
@@ -2248,13 +2248,13 @@ void	LEOPushGlobalReferenceInstruction( LEOContext* inContext )
 	LEOValuePtr	theGlobal = LEOGetArrayValueForKey( inContext->group->globals, globalName );
 	if( !theGlobal )
 	{
-		union LEOValue		emptyString = {};
+		union LEOValue		emptyString = {0};
 		LEOInitStringVariantValue( &emptyString, "", kLEOInvalidateReferences, inContext );
 		theGlobal = LEOAddArrayEntryToRoot( &inContext->group->globals, globalName, &emptyString, inContext );
 		LEOCleanUpValue( &emptyString, kLEOInvalidateReferences, inContext );
 	}
 	
-	union LEOValue	tmpRefValue = {};
+	union LEOValue	tmpRefValue = {0};
 	
 	LEOInitReferenceValue( &tmpRefValue, theGlobal, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
@@ -2585,7 +2585,7 @@ LEOINSTR_LAST(LEOIsTypeInstruction)
 
 
 
-void	LEOInitInstructionArray()
+void	LEOInitInstructionArray(void)
 {
 	if( gInstructions == NULL )
 	{
