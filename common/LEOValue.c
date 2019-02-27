@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <math.h>
 #include "LEOInstructions.h"
+#include "AnsiStrings.h"
 
 
 #define OTHER_VALUE_SHORT_STRING_MAX_LENGTH		256
@@ -1772,7 +1773,7 @@ LEOInteger LEOGetNumberValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, struc
 	if( outUnit )
 		*outUnit = self->number.unit;
 	
-	return self->number.number;
+	return (LEOInteger)self->number.number;
 }
 
 
@@ -1804,7 +1805,7 @@ void LEOSetNumberValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit in
 
 void LEOSetNumberValueAsInteger( LEOValuePtr self, LEOInteger inInteger, LEOUnit inUnit, struct LEOContext* inContext )
 {
-	self->number.number = inInteger; self->number.unit = inUnit;
+	self->number.number = (LEONumber)inInteger; self->number.unit = inUnit;
 }
 
 
@@ -1833,7 +1834,7 @@ void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, size_t i
 		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found string or number that is too large.", self->base.isa->displayTypeName );
 		return;
 	}
-	strncpy( buf, inNumber, inNumberLen );
+	strlcpy( buf, inNumber, inNumberLen );
 	
 	// Determine if there's a unit on this number, remove it but remember it:
 	self->number.unit = kLEOUnitNone;
@@ -1855,7 +1856,7 @@ void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, size_t i
 	
 	// Actually convert the string into a number:
 	char*		endPtr = NULL;
-	LEONumber	theNum = strtod( buf, &endPtr );
+	LEONumber	theNum = strtof( buf, &endPtr );
 	if( endPtr != (buf +inNumberLen) )
 		LEOCantSetValueAsString( self, inNumber, inNumberLen, inContext );
 	else
@@ -1932,7 +1933,7 @@ LEONumber LEOGetIntegerValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, struct
 {
 	if( outUnit )
 		*outUnit = self->integer.unit;
-	return self->integer.integer;
+	return (LEONumber)self->integer.integer;
 }
 
 
@@ -1975,7 +1976,7 @@ void LEOSetIntegerValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit i
 	}
 	else
 	{
-		self->integer.integer = inNumber;
+		self->integer.integer = (LEOInteger)inNumber;
 		self->integer.unit = inUnit;
 	}
 }
@@ -2017,7 +2018,7 @@ void LEOSetIntegerValueAsString( LEOValuePtr self, const char* inInteger, size_t
 		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected a %s here, found a string, or a number that is too large.", self->base.isa->displayTypeName );
 		return;
 	}
-	strncpy( buf, inInteger, inIntegerLen );
+	strlcpy( buf, inInteger, inIntegerLen );
 	
 	// Determine if there's a unit on this number, remove it but remember it:
 	self->integer.unit = kLEOUnitNone;
@@ -2129,7 +2130,7 @@ LEONumber	LEOGetStringValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, struct 
 	}
 
 	char*		endPtr = NULL;
-	LEONumber	num = strtod( self->string.string, &endPtr );
+	LEONumber	num = strtof( self->string.string, &endPtr );
 	if( endPtr != (self->string.string +lengthToParse) )
 		LEOCantGetValueAsNumber( self, outUnit, inContext );
 	
@@ -2185,7 +2186,7 @@ LEOInteger	LEOGetStringValueAsInteger( LEOValuePtr self, LEOUnit* outUnit, struc
 const char*	LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	if( outBuf )	// If given a buffer, copy over, caller may really want a copy. Always return our internal buffer, which contains the whole string.
-		strncpy( outBuf, self->string.string, bufSize );	// TODO: Not NUL-safe!
+		strlcpy( outBuf, self->string.string, bufSize );	// TODO: Not NUL-safe!
 	return self->string.string;
 }
 
@@ -2335,7 +2336,7 @@ void	LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 	size_t		theLen = self->string.stringLen +1;
 	dest->string.string = calloc( theLen, sizeof(char) );
 	dest->string.stringLen = self->string.stringLen;
-	strncpy( dest->string.string, self->string.string, theLen );
+	strlcpy( dest->string.string, self->string.string, theLen );
 }
 
 
@@ -2568,7 +2569,7 @@ void	LEOGetStringValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, L
 
 void	LEOSetStringLikeValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
 {
-	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	size_t	usedLen = 0;
 	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
 		usedLen = snprintf( buf, sizeof(buf) -1, "%lld,%lld,%lld,%lld", l, t, r, b );
@@ -2580,7 +2581,7 @@ void	LEOSetStringLikeValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, 
 
 void	LEOSetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
 {
-	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	size_t	usedLen = 0;
 	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
 		usedLen = snprintf( buf, sizeof(buf) -1, "%lld,%lld", l, t );
@@ -2592,7 +2593,7 @@ void	LEOSetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t,
 
 void	LEOGetStringLikeValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
 {
-	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	const char*		str = LEOGetValueAsString( self, buf, sizeof(buf), inContext );
 	LEOStringToRect( str, strlen(str), l, t, r, b, inContext );
 }
@@ -2600,7 +2601,7 @@ void	LEOGetStringLikeValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t
 
 void	LEOGetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext )
 {
-	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	const char*		str = LEOGetValueAsString( self, buf, sizeof(buf), inContext );
 	LEOStringToPoint( str, strlen(str), l, t, inContext );
 }
@@ -2608,7 +2609,7 @@ void	LEOGetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *
 
 void	LEOSetStringLikeValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext )
 {
-	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	size_t	usedLen = 0;
 	if( s == e )
 		usedLen = snprintf( buf, sizeof(buf) -1, "%s %lld", gLEOChunkTypeNames[t], s );
@@ -2619,7 +2620,7 @@ void	LEOSetStringLikeValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e,
 
 void	LEOGetStringLikeValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext )
 {
-	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	const char*		str = LEOGetValueAsString( self, buf, sizeof(buf), inContext );
 	LEOStringToRange( str, strlen(str), s, e, t, inContext );
 }
@@ -2862,7 +2863,7 @@ const char*	LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, size_t b
 {
 	if( outBuf )
 	{
-		strncpy( outBuf, (self->boolean.boolean ? "true" : "false"), bufSize -1 );
+		strlcpy( outBuf, (self->boolean.boolean ? "true" : "false"), bufSize -1 );
 		return outBuf;
 	}
 	else
@@ -4054,7 +4055,7 @@ LEONumber	LEOGetReferenceValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, stru
 		}
 
 		char*		endPtr = NULL;
-		LEONumber	num = strtod( str, &endPtr );
+		LEONumber	num = strtof( str, &endPtr );
 		if( endPtr != (str +strLen) )
 			LEOCantGetValueAsNumber( self, outUnit, inContext );
 		

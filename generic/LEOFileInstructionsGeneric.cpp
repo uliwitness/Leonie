@@ -19,26 +19,7 @@
 #include "LEOScript.h"
 #include <string.h>
 #include <stdlib.h>
-
-
-#if WIN32
-#include <filesystem>
-using namespace std;
-
-FILE* LEOFOpen(const char* path, const char* mode)
-{
-	FILE* theFile = NULL;
-	errno_t err = fopen_s(&theFile, path, mode);
-	if (err != 0) theFile = NULL;
-	return theFile;
-}
-#else
-#include <unistd.h>
-#include "fake_filesystem.hpp"	// until <filesystem> ships for Xcode's clang.
-using namespace fake;
-#define LEOFOpen fopen
-#endif
-
+#include "AnsiFiles.h"
 
 
 void	LEOWriteToFileInstruction( LEOContext* inContext );

@@ -16,6 +16,7 @@
 #include "LEOContextGroup.h"
 #include "LEOScript.h"
 #include "LEOStringUtilities.h"
+#include "AnsiStrings.h"
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +38,7 @@ void	LEODoNothingPreInstructionProc( LEOContext* inContext );
 
 
 char*	*			gFileNamesTable = NULL;
-size_t				gFileNamesTableSize = 0;
+uint16_t			gFileNamesTableSize = 0;
 LEOInstructionID	gInstructionIDToDebugPrintBefore = INVALID_INSTR;
 LEOInstructionID	gInstructionIDToDebugPrintAfter = INVALID_INSTR;
 void				(*gCheckForResumeProc)(void) = NULL;
@@ -63,7 +64,7 @@ void	LEOSetInstructionIDToDebugPrintAfter( LEOInstructionID inID )
 
 uint16_t		LEOFileIDForFileName( const char* inFileName )
 {
-	for( size_t x = 0; x < gFileNamesTableSize; x++ )
+	for( uint16_t x = 0; x < gFileNamesTableSize; x++ )
 	{
 		if( strcmp(inFileName, gFileNamesTable[x]) == 0 )
 			return x;
@@ -559,7 +560,7 @@ void	LEOContextStopWithError( LEOContext* inContext, size_t errLine, size_t errO
 
 void	LEOContextSetLocalVariable( LEOContext* inContext, const char* varName, const char* inMessageFmt, ... )
 {
-    char        str[1024] = {};
+    char        str[1024] = {0};
 	va_list		varargs;
 	va_start( varargs, inMessageFmt );
 	vsnprintf( str, sizeof(str) -1, inMessageFmt, varargs );
@@ -689,13 +690,13 @@ void	LEODebugPrintContext( LEOContext* ctx )
             char			oldErrMsg[1024];
             size_t          oldErrLine = ctx->errLine;
             size_t          oldErrOffset = ctx->errOffset;
-            strcpy( oldErrMsg, ctx->errMsg );
+            strlcpy( oldErrMsg, ctx->errMsg, sizeof(ctx->errMsg) );
 			LEOGetValueAsString( currValue, str, sizeof(str), ctx );
 			if( (ctx->flags & kLEOContextKeepRunning) == 0 && ctx->errMsg[0] != 0 )
 			{
 				ctx->flags = oldFlags;
-				strcpy( str, ctx->errMsg );
-                strcpy( ctx->errMsg, oldErrMsg );
+				strlcpy( str, ctx->errMsg, sizeof(ctx->errMsg) );
+                strlcpy( ctx->errMsg, oldErrMsg, sizeof(ctx->errMsg) );
                 ctx->errLine = oldErrLine;
                 ctx->errOffset = oldErrOffset;
 				printf( "[%s] (%s)", LEOStringEscapedForPrintingInQuotes(str), currValue->base.isa->displayTypeName );

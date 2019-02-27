@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include "AnsiStrings.h"
 
 
 void	LEOExitToTopInstruction( LEOContext* inContext );
@@ -505,7 +506,7 @@ void	LEOJumpRelativeIfLessSameThanZeroInstruction( LEOContext* inContext )
 
 void	LEOPushNumberInstruction( LEOContext* inContext )
 {
-	LEOInitNumberValue( (LEOValuePtr) inContext->stackEndPtr, LEOCastUInt32ToLEONumber(inContext->currentInstruction->param2), inContext->currentInstruction->param1,
+	LEOInitNumberValue( (LEOValuePtr) inContext->stackEndPtr, LEOCastUInt32ToLEONumber(inContext->currentInstruction->param2), (LEOUnit)inContext->currentInstruction->param1,
 						kLEOInvalidateReferences, inContext );
 	inContext->stackEndPtr++;
 
@@ -522,7 +523,7 @@ void	LEOPushNumberInstruction( LEOContext* inContext )
 
 void	LEOPushIntegerInstruction( LEOContext* inContext )
 {
-	LEOInitIntegerValue( (LEOValuePtr) inContext->stackEndPtr, inContext->currentInstruction->param2, inContext->currentInstruction->param1,
+	LEOInitIntegerValue( (LEOValuePtr) inContext->stackEndPtr, inContext->currentInstruction->param2, (LEOUnit)inContext->currentInstruction->param1,
 							kLEOInvalidateReferences, inContext );
 	inContext->stackEndPtr++;
 
@@ -541,7 +542,7 @@ void	LEOPushIntegerStartInstruction( LEOContext* inContext )
 {
 	uint64_t	topHalf = inContext->currentInstruction->param2;
 	topHalf <<= 32;
-	LEOInitIntegerValue( (LEOValuePtr) inContext->stackEndPtr, topHalf, inContext->currentInstruction->param1,
+	LEOInitIntegerValue( (LEOValuePtr) inContext->stackEndPtr, topHalf, (LEOUnit)inContext->currentInstruction->param1,
 							kLEOInvalidateReferences, inContext );
 	inContext->stackEndPtr++;
 
@@ -604,7 +605,7 @@ void	LEOAddIntegerInstruction( LEOContext* inContext )
 	LEOInteger		theNum = LEOGetValueAsInteger( theValue, NULL, inContext );
 	
 	theNum += LEOCastUInt32ToInt32( inContext->currentInstruction->param2 );
-	LEOSetValueAsNumber( theValue, theNum, kLEOUnitNone, inContext );
+	LEOSetValueAsInteger( theValue, theNum, kLEOUnitNone, inContext );
 	
 	inContext->currentInstruction++;
 }
@@ -716,7 +717,7 @@ void	LEOCleanUpHandlerStackInstruction( LEOContext* inContext )
 	if( inContext->stackBasePtr != inContext->stackEndPtr )
 	{
 		union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
-		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
+		LEOInteger		paramCount = LEOGetValueAsInteger( paramCountValue, NULL, inContext );
 		LEOCleanUpStackToPtr( inContext, inContext->stackBasePtr -1 -paramCount );
 	}
 	
@@ -747,7 +748,7 @@ void	LEOCleanUpHandlerParametersFromEndOfStack( LEOContext* inContext )
 	if( inContext->stackBasePtr != inContext->stackEndPtr )
 	{
 		union LEOValue*	paramCountValue = inContext->stackEndPtr -1;
-		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
+		LEOInteger		paramCount = LEOGetValueAsInteger( paramCountValue, NULL, inContext );
 		LEOCleanUpStackToPtr( inContext, inContext->stackEndPtr -1 -paramCount );
 	}
 }
@@ -773,7 +774,7 @@ LEOValuePtr	LEOGetParameterAtIndexFromEndOfStack( LEOContext* inContext, LEOInte
 	if( inContext->stackBasePtr != inContext->stackEndPtr )
 	{
 		union LEOValue*	paramCountValue = inContext->stackEndPtr -1;
-		LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
+		LEOInteger		paramCount = LEOGetValueAsInteger( paramCountValue, NULL, inContext );
 		if( paramCount < paramIndex )
 			return NULL;
 		return( inContext->stackEndPtr -1 -paramIndex );
@@ -827,7 +828,7 @@ void	LEOReturnFromHandlerInstruction( LEOContext* inContext )
 void	LEOSetReturnValueInstruction( LEOContext* inContext )
 {
 	union LEOValue*	paramCountValue = inContext->stackBasePtr -1;
-	LEOInteger		paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
+	LEOInteger		paramCount = LEOGetValueAsInteger( paramCountValue, NULL, inContext );
 	union LEOValue*	destValue = inContext->stackBasePtr -1 -paramCount -1;
 	LEOCleanUpValue( destValue, kLEOKeepReferences, inContext );
 	LEOInitSimpleCopy( inContext->stackEndPtr -1, destValue, kLEOKeepReferences, inContext );
@@ -879,11 +880,11 @@ void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
 	union LEOValue	tmpRefValue = {0};
 	LEOValuePtr		refValueOnStack = NULL;
 	
-	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
+	size_t	chunkStartOffs = (size_t)LEOGetValueAsInteger(chunkStart, NULL, inContext) -1;
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
+	size_t	chunkEndOffs = (size_t)LEOGetValueAsInteger(chunkEnd, NULL, inContext) -1;
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
 	
@@ -919,11 +920,11 @@ void	LEOPushChunkInstruction( LEOContext* inContext )
 	LEOValuePtr		chunkEnd = inContext->stackEndPtr -1;
 	LEOValuePtr		chunkStart = inContext->stackEndPtr -2;
 	
-	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
+	size_t	chunkStartOffs = (size_t)LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
+	size_t	chunkEndOffs = (size_t)LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
 	
@@ -977,11 +978,11 @@ void	LEOSetChunkPropertyInstruction( LEOContext* inContext )
 	LEOValuePtr		chunkEnd = inContext->stackEndPtr -3;
 	LEOValuePtr		chunkStart = inContext->stackEndPtr -4;
 	
-	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
+	size_t	chunkStartOffs = (size_t)LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
+	size_t	chunkEndOffs = (size_t)LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
 
@@ -1043,11 +1044,11 @@ void	LEOPushChunkPropertyInstruction( LEOContext* inContext )
 	LEOValuePtr		chunkEnd = inContext->stackEndPtr -2 -shiftForTarget;
 	LEOValuePtr		chunkStart = inContext->stackEndPtr -3 -shiftForTarget;
 	
-	size_t	chunkStartOffs = LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
+	size_t	chunkStartOffs = (size_t)LEOGetValueAsInteger(chunkStart,NULL,inContext) -1;
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
 	
-	size_t	chunkEndOffs = LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
+	size_t	chunkEndOffs = (size_t)LEOGetValueAsInteger(chunkEnd,NULL,inContext) -1;
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 		return;
 	
@@ -1095,7 +1096,7 @@ void	LEOParameterInstruction( LEOContext* inContext )
 	if( paramIndex == 0 )
 	{
 		LEOValuePtr	paramIdxValue = inContext->stackEndPtr -1;	// Ignored if param2 isn't 0.
-		paramIndex = LEOGetValueAsInteger( paramIdxValue, NULL, inContext );
+		paramIndex = (int16_t)LEOGetValueAsInteger( paramIdxValue, NULL, inContext );
 		if( onStack )
 		{
 			valueTarget = inContext->stackEndPtr -1;
@@ -1152,7 +1153,7 @@ void	LEOParameterKeepRefsInstruction( LEOContext* inContext )
 	if( paramIndex == 0 )
 	{
 		LEOValuePtr	paramIdxValue = inContext->stackEndPtr -1;	// Ignored if param2 isn't 0.
-		paramIndex = LEOGetValueAsInteger( paramIdxValue, NULL, inContext );
+		paramIndex = (int16_t)LEOGetValueAsInteger( paramIdxValue, NULL, inContext );
 		if( onStack )
 		{
 			valueTarget = inContext->stackEndPtr -1;
@@ -1194,7 +1195,7 @@ void	LEOPushParametersInstruction( LEOContext* inContext )
 	LEOValuePtr	valueTarget = inContext->stackEndPtr++;
 	LEOInitStringConstantValue( valueTarget, "", kLEOInvalidateReferences, inContext );
 	LEOValuePtr	paramCountValue = inContext->stackBasePtr -1;
-	LEOInteger	paramCount = LEOGetValueAsNumber( paramCountValue, NULL, inContext );
+	LEOInteger	paramCount = LEOGetValueAsInteger( paramCountValue, NULL, inContext );
 	struct LEOArrayEntry *inArray = NULL;
 	char	currKey[100] = {0};
 	for( int x = 1; x <= paramCount; x++ )
@@ -1229,7 +1230,7 @@ void	LEOParameterCountInstruction( LEOContext* inContext )
 	LEOValuePtr	valueTarget = onStack ? (inContext->stackEndPtr++) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
 	if( !onStack )
 		LEOCleanUpValue( valueTarget, kLEOKeepReferences, inContext );
-	LEOInteger	paramCount = LEOGetValueAsNumber( inContext->stackBasePtr -1, NULL, inContext );
+	LEOInteger	paramCount = LEOGetValueAsInteger( inContext->stackBasePtr -1, NULL, inContext );
 	LEOInitIntegerValue( valueTarget, paramCount, kLEOUnitNone, (onStack ? kLEOInvalidateReferences : kLEOKeepReferences), inContext );
 	
 	inContext->currentInstruction++;
@@ -1899,7 +1900,7 @@ void	LEOModuloOperatorInstruction( LEOContext* inContext )
 		return;
 	}
 	
-	LEOPushNumberOnStack( inContext, fmod(firstArgument, secondArgument), commonUnit );
+	LEOPushNumberOnStack( inContext, fmodf(firstArgument, secondArgument), commonUnit );
 	
 	inContext->currentInstruction++;
 }
@@ -1927,7 +1928,7 @@ void	LEOPowerOperatorInstruction( LEOContext* inContext )
 		return;
 	}
 	
-	LEOPushNumberOnStack( inContext, pow(firstArgument, secondArgument), commonUnit );
+	LEOPushNumberOnStack( inContext, powf(firstArgument, secondArgument), commonUnit );
 	
 	inContext->currentInstruction++;
 }
@@ -2498,7 +2499,7 @@ void	LEOIsTypeInstruction( LEOContext* inContext )
 #pragma mark Instruction table
 
 struct LEOInstructionEntry*	gInstructions = NULL;
-size_t						gNumInstructions = 0;
+LEOInstructionID			gNumInstructions = 0;
 
 
 LEOINSTR_START(Default,LEO_NUMBER_OF_INSTRUCTIONS)
@@ -2595,7 +2596,7 @@ void	LEOInitInstructionArray(void)
 }
 
 
-void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, size_t inNumInstructions, LEOInstructionID *outFirstNewInstruction )
+void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, LEOInstructionID inNumInstructions, LEOInstructionID *outFirstNewInstruction )
 {
 	LEOInitInstructionArray();
 	

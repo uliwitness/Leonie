@@ -18,10 +18,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-#if WIN32
-#define strcasecmp _stricmp
-#endif
+#include "AnsiStrings.h"
 
 
 LEOInstructionID		kFirstMsgInstruction = 0;

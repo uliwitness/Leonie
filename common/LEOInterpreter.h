@@ -130,7 +130,7 @@ typedef struct LEOInstruction
 	
 	and pass that to LEOAddInstructionsToInstructionArray:
 	
-		size_t outFirstNewInstruction = 0;
+		LEOInstructionID outFirstNewInstruction = 0;
 		LEOAddInstructionsToInstructionArray( gFrobnitzWebServiceInstructions,
 						NUM_WEBSERVICE_INSTRUCTIONS, &outFirstNewInstruction );
 	
@@ -188,7 +188,7 @@ void	LEOInitInstructionArray( void );
 	
 	See the <tt>LEOInstructionEntry</tt> documentation on information on how to most easily
 	declare your instruction array. */
-void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, size_t inNumInstructions, LEOInstructionID *outFirstNewInstruction );
+void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, LEOInstructionID inNumInstructions, LEOInstructionID *outFirstNewInstruction );
 
 
 

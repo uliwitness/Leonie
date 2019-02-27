@@ -145,7 +145,7 @@ void		LEOInstructionsFindLineForInstruction( LEOInstruction* instr, size_t *line
 // -----------------------------------------------------------------------------
 
 extern struct LEOInstructionEntry*	gInstructions;
-extern size_t						gNumInstructions;
+extern LEOInstructionID				gNumInstructions;
 
 #if __cplusplus
 }

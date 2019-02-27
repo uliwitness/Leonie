@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include "LEOContextGroup.h"
 #include "LEOStringUtilities.h"
+#include "AnsiStrings.h"
 
 
 #define		NUM_INSTRUCTIONS_PER_CHUNK		16
@@ -105,8 +106,8 @@ void	LEOHandlerAddVariableNameMapping( LEOHandler* inHandler, const char* inName
 		}
 	}
 	
-	strncpy( inHandler->varNames[ inHandler->numVariables -1 ].variableName, inName, DBG_VAR_NAME_SIZE );
-	strncpy( inHandler->varNames[ inHandler->numVariables -1 ].realVariableName, inRealName, DBG_VAR_NAME_SIZE );
+	strlcpy( inHandler->varNames[ inHandler->numVariables -1 ].variableName, inName, DBG_VAR_NAME_SIZE );
+	strlcpy( inHandler->varNames[ inHandler->numVariables -1 ].realVariableName, inRealName, DBG_VAR_NAME_SIZE );
 	inHandler->varNames[ inHandler->numVariables -1 ].bpRelativeAddress = inBPRelativeAddress;
 }
 
