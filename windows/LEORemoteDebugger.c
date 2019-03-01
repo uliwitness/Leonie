@@ -13,7 +13,7 @@
 
 #include "LEORemoteDebugger.h"
 
-bool LEOInitRemoteDebugger(const char* inHostName) {}
+bool LEOInitRemoteDebugger(const char* inHostName) { return false; }
 
 void LEORemoteDebuggerPreInstructionProc(struct LEOContext* inContext) {}
 
