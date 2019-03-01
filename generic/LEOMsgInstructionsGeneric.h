@@ -11,6 +11,9 @@
 
 #include "LEOInstructions.h"
 
+#if __cplusplus
+extern "C" {
+#endif
 
 enum
 {
@@ -23,15 +26,16 @@ enum
 };
 
 
-LEOINSTR_DECL(Msg,LEO_NUMBER_OF_MSG_INSTRUCTIONS)
+LEOINSTR_DECL(Msg, LEO_NUMBER_OF_MSG_INSTRUCTIONS)
 
 extern LEOInstructionID			kFirstMsgInstruction;
 
 
 #if __cplusplus
+}
 #include <ostream>
 
-extern std::ostream* gLEOMsgOutputStream;
+extern "C" std::ostream* gLEOMsgOutputStream;
 #endif // __cplusplus
 
 #endif // LEO_MSG_INSTRUCTIONS_GENERIC_H

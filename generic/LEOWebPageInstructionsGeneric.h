@@ -10,6 +10,10 @@
 #include "ForgeTypes.h"
 
 
+#if __cplusplus
+extern "C" {
+#endif
+
 enum
 {
 	LEO_HTML_ENCODED_INSTR = 0,
@@ -26,3 +30,7 @@ extern LEOInstructionID					kFirstWebPageInstruction;
 
 
 extern struct TBuiltInFunctionEntry	gWebPageBuiltInFunctions[];
+
+#if __cplusplus
+}
+#endif

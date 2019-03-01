@@ -9,6 +9,9 @@
 #include "LEOInstructions.h"
 #include "ForgeTypes.h"
 
+#if __cplusplus
+extern "C" {
+#endif
 
 enum
 {
@@ -28,3 +31,7 @@ extern LEOInstructionID				kFirstFileInstruction;
 
 extern struct THostCommandEntry		gFileCommands[];
 extern struct THostCommandEntry		gFileHostFunctions[];
+
+#if __cplusplus
+}
+#endif
