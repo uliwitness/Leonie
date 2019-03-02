@@ -164,16 +164,13 @@ struct LEOInstructionEntry
 
 /*! @functiongroup Static typecasting functions */
 /*! Reinterpret the given unsigned uint32_t as a signed int32_t. E.g. useful for an instruction's param2 field. */
-inline int32_t		LEOCastUInt32ToInt32( uint32_t inNum );
-inline int32_t		LEOCastUInt32ToInt32( uint32_t inNum )		{ return *(int32_t*)&inNum; }
+static inline int32_t		LEOCastUInt32ToInt32( uint32_t inNum )		{ return *(int32_t*)&inNum; }
 
 /*! Reinterpret the given unsigned uint16_t as a signed int16_t. E.g. useful for an instruction's param1 field. */
-inline int16_t		LEOCastUInt16ToInt16( uint16_t inNum );
-inline int16_t		LEOCastUInt16ToInt16( uint16_t inNum )		{ return *(int16_t*)&inNum; }
+static inline int16_t		LEOCastUInt16ToInt16( uint16_t inNum )		{ return *(int16_t*)&inNum; }
 
 /*! Reinterpret the given unsigned uint32_t as a LEONumber floating point quantity. E.g. useful for an instruction's param2 field. */
-inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum );
-inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum )	{ assert(sizeof(LEONumber) <= sizeof(uint32_t));  return *(LEONumber*)&inNum; }
+static inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum )	{ assert(sizeof(LEONumber) <= sizeof(uint32_t));  return *(LEONumber*)&inNum; }
 
 
 /*! Call this method once before calling any other interpreter functions. This initializes
