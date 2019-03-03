@@ -850,7 +850,7 @@ void	LEOPushReferenceInstruction( LEOContext* inContext )
 {
 	bool			onStack = (inContext->currentInstruction->param1 == BACK_OF_STACK);
 	union LEOValue*	theValue = onStack ? (inContext->stackEndPtr -1) : (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
-	union LEOValue	tmpRefValue = {0};
+	union LEOValue	tmpRefValue = {.base = {0}};
 	LEOValuePtr		refValueOnStack = NULL;
 	
 	LEOInitReferenceValue( &tmpRefValue, theValue, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
@@ -877,7 +877,7 @@ void	LEOPushChunkReferenceInstruction( LEOContext* inContext )
 	LEOValuePtr		chunkTarget = (inContext->stackBasePtr +(*(int16_t*)&inContext->currentInstruction->param1));
 	LEOValuePtr		chunkEnd = inContext->stackEndPtr -1;
 	LEOValuePtr		chunkStart = inContext->stackEndPtr -2;
-	union LEOValue	tmpRefValue = {0};
+	union LEOValue	tmpRefValue = {.base = {0}};
 	LEOValuePtr		refValueOnStack = NULL;
 	
 	size_t	chunkStartOffs = (size_t)LEOGetValueAsInteger(chunkStart, NULL, inContext) -1;
@@ -2057,7 +2057,7 @@ static bool LEOAssignChunkArrayChunkCallback( const char *currStr, size_t currLe
 	char									keyString[20] = { 0 };
 	snprintf( keyString, sizeof(keyString) -1, "%lu", ++ud->numItems );
 	
-	union LEOValue		tempStringValue = {0};
+	union LEOValue		tempStringValue = {.base = {0}};
 	LEOInitStringValue( &tempStringValue, currStr, currLen, kLEOInvalidateReferences, ud->context );
 	LEOAddArrayEntryToRoot( &ud->array, keyString, &tempStringValue, ud->context );
 	LEOCleanUpValue( &tempStringValue, kLEOInvalidateReferences, ud->context );
@@ -2249,13 +2249,13 @@ void	LEOPushGlobalReferenceInstruction( LEOContext* inContext )
 	LEOValuePtr	theGlobal = LEOGetArrayValueForKey( inContext->group->globals, globalName );
 	if( !theGlobal )
 	{
-		union LEOValue		emptyString = {0};
+		union LEOValue		emptyString = {.base = {0}};
 		LEOInitStringVariantValue( &emptyString, "", kLEOInvalidateReferences, inContext );
 		theGlobal = LEOAddArrayEntryToRoot( &inContext->group->globals, globalName, &emptyString, inContext );
 		LEOCleanUpValue( &emptyString, kLEOInvalidateReferences, inContext );
 	}
 	
-	union LEOValue	tmpRefValue = {0};
+	union LEOValue	tmpRefValue = {.base = {0}};
 	
 	LEOInitReferenceValue( &tmpRefValue, theGlobal, kLEOInvalidateReferences, kLEOChunkTypeINVALID, 0, 0, inContext );
 	LEOCleanUpValue( inContext->stackEndPtr -1, kLEOInvalidateReferences, inContext );
