@@ -121,7 +121,7 @@ typedef struct LEOScript*	(*LEOGetParentScriptFuncPtr)( struct LEOScript* inScri
 	
 	@field	errMsg		The error message as the compiler would have reported it.
 	@field	errorLine	The line number where the parse error occurred.
-	@field	errorOffset	If this isn't SIZE_T_MAX, this is an offset to the actual
+	@field	errorOffset	If this isn't SIZE_MAX, this is an offset to the actual
 						character offset at which the parser choked.
 	@field	fileID		The file ID for the file in which this error occurred.
 	@seealso //leo_ref/c/func/LEOParseErrorInstruction	LEOParseErrorInstruction
@@ -348,7 +348,7 @@ size_t	LEOScriptAddString( LEOScript* inScript, const char* inString );
 	@param	inScript		The script to whose strings table you want to add a string.
 	@param	inErrMsg		The error message to be copied to the script's syntax error table.
 	@param	inErrorLine		The line number at which the error occurred.
-	@param	inErrorOffset	If this isn't SIZE_T_MAX, an actual character offset where the
+	@param	inErrorOffset	If this isn't SIZE_MAX, an actual character offset where the
 							parser croaked.
 	@field	inFileID		The file where the error occurred.
 	@result the index into the syntax error table at which the string can now be found.
@@ -405,7 +405,7 @@ bool	LEOScriptHasBreakpointAtLine( LEOScript* inScript, size_t inLineNumber );
 
 void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript );
 
-void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler );
+void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler, struct LEOScript * inScript );
 
 
 #if __cplusplus

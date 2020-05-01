@@ -44,6 +44,7 @@ extern "C" {
 
 #include "LEOValue.h"
 #include "LEOHandlerID.h"
+#include "LEOUserData.h"
 #include <stdint.h>
 #include <assert.h>
 
@@ -99,11 +100,6 @@ typedef void (*LEOInstructionFuncPtr)( struct LEOContext* inContext );
 typedef void (*LEONonexistentHandlerFuncPtr)( struct LEOContext* inContext, LEOHandlerID inHandler, TMayGoUnhandledFlag mayGoUnhandled );
 
 
-/*! Callback you can give to a context when you attach user data to it, which
- 	it will call when it is cleaned up to allow disposing of the user data. */
-typedef void (*LEOUserDataCleanUpFuncPtr)( void* inUserData );
-
-
 /*! This function is called when a context finishes execution, either
 	because of an error, or because the outermost function finished
 	executing. You can now look at the return value or pass the message
@@ -134,7 +130,7 @@ typedef struct LEOInstruction
 	
 	and pass that to LEOAddInstructionsToInstructionArray:
 	
-		size_t outFirstNewInstruction = 0;
+		LEOInstructionID outFirstNewInstruction = 0;
 		LEOAddInstructionsToInstructionArray( gFrobnitzWebServiceInstructions,
 						NUM_WEBSERVICE_INSTRUCTIONS, &outFirstNewInstruction );
 	
@@ -166,19 +162,15 @@ struct LEOInstructionEntry
 #define LEOINSTR_DUMMY(n)		{ LEOInvalidInstruction, #n },
 #define LEOINSTR_DUMMY_LAST(n)	{ LEOInvalidInstruction, #n } };
 
-
 /*! @functiongroup Static typecasting functions */
 /*! Reinterpret the given unsigned uint32_t as a signed int32_t. E.g. useful for an instruction's param2 field. */
-inline int32_t		LEOCastUInt32ToInt32( uint32_t inNum ) __attribute__((always_inline));
-inline int32_t		LEOCastUInt32ToInt32( uint32_t inNum )		{ return *(int32_t*)&inNum; }
+static inline int32_t		LEOCastUInt32ToInt32( uint32_t inNum )		{ return *(int32_t*)&inNum; }
 
 /*! Reinterpret the given unsigned uint16_t as a signed int16_t. E.g. useful for an instruction's param1 field. */
-inline int16_t		LEOCastUInt16ToInt16( uint16_t inNum ) __attribute__((always_inline));
-inline int16_t		LEOCastUInt16ToInt16( uint16_t inNum )		{ return *(int16_t*)&inNum; }
+static inline int16_t		LEOCastUInt16ToInt16( uint16_t inNum )		{ return *(int16_t*)&inNum; }
 
 /*! Reinterpret the given unsigned uint32_t as a LEONumber floating point quantity. E.g. useful for an instruction's param2 field. */
-inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum ) __attribute__((always_inline));
-inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum )	{ assert(sizeof(LEONumber) <= sizeof(uint32_t));  return *(LEONumber*)&inNum; }
+static inline LEONumber	LEOCastUInt32ToLEONumber( uint32_t inNum )	{ assert(sizeof(LEONumber) <= sizeof(uint32_t));  return *(LEONumber*)&inNum; }
 
 
 /*! Call this method once before calling any other interpreter functions. This initializes
@@ -193,7 +185,7 @@ void	LEOInitInstructionArray( void );
 	
 	See the <tt>LEOInstructionEntry</tt> documentation on information on how to most easily
 	declare your instruction array. */
-void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, size_t inNumInstructions, size_t *outFirstNewInstruction );
+void	LEOAddInstructionsToInstructionArray( struct LEOInstructionEntry *inInstructionArray, LEOInstructionID inNumInstructions, LEOInstructionID *outFirstNewInstruction );
 
 
 
@@ -256,8 +248,8 @@ typedef struct LEOContext
 	struct LEOContextGroup	*		group;					// The group this context belongs to, containing its global state, references etc.
 	LEOContextFlags					flags;					// But flags for flow control etc.
 	char							errMsg[1024];			// Error message to display when kLEOContextKeepRunning flag has been set to FALSE.
-	size_t							errLine;				// Line on which the error occurred. Or SIZE_T_MAX if we don't know.
-	size_t							errOffset;				// Byte offset in script at which the error occurred, or SIZE_T_MAX if we don't know. If this isn't present, errLine might still be set.
+	size_t							errLine;				// Line on which the error occurred. Or SIZE_MAX if we don't know.
+	size_t							errOffset;				// Byte offset in script at which the error occurred, or SIZE_MAX if we don't know. If this isn't present, errLine might still be set.
 	uint16_t						errFileID;				// ID of the file in which the error occurred.
 	char							itemDelimiter;			// item delimiter to use for chunk expressions in values.
 	size_t							numCallStackEntries;	// Number of items in callStackEntries.
@@ -422,6 +414,16 @@ LEOValuePtr	LEOPushPointOnStack( LEOContext* theContext, LEOInteger l, LEOIntege
  */
 LEOValuePtr	LEOPushRectOnStack( LEOContext* theContext, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b );
 
+	
+/*! Push the given array onto the stack, returning a pointer to the value.
+ This is a shorthand for LEOPushValueOnStack and the corresponding LEOInitXXValue call.
+ You may pass NULL for inArray to push an empty array.
+ *** This takes over ownership of the given array. ***
+ @seealso //leo_ref/c/func/LEOCleanUpStackToPtr LEOCleanUpStackToPtr
+ @seealso //leo_ref/c/func/LEOPushValueOnStack LEOPushValueOnStack
+ */
+LEOValuePtr	LEOPushArrayValueOnStack( LEOContext* theContext, struct LEOArrayEntry* inArray );
+
 
 /*! Pushes a special empty string on the stack that a user can't generate,
 	and which returns TRUE from LEOGetValueIsUnset(). To the user it looks
@@ -474,14 +476,22 @@ void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDel
 
 
 /*! Print the given instruction to the console for debugging purposes.
+	@param inContext may be NULL. If not NULL, this context will be used to display
+						additional information about certain instructions.
+	@param inHandler may be NULL. If not NULL, this handler will be used to display
+						additional information about certain instructions.
 	@seealso //leo_ref/c/func/LEODebugPrintInstructions	LEODebugPrintInstructions
 */
-void	LEODebugPrintInstr( LEOInstruction* instruction );
+void	LEODebugPrintInstr( LEOInstruction* instruction, struct LEOScript* inScript, struct LEOHandler * inHandler, LEOContext * inContext );
 
 /*! Print the given array of instructions to the console for debugging purposes using LEODebugPrintInstr.
+	@param inContext may be NULL. If not NULL, this context will be used to display
+					additional information about certain instructions.
+	@param inHandler may be NULL. If not NULL, this handler will be used to display
+					additional information about certain instructions.
 	@seealso //leo_ref/c/func/LEODebugPrintInstr	LEODebugPrintInstr
 */
-void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions );
+void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions, struct LEOScript* inScript, struct LEOHandler * inHandler, LEOContext * inContext );
 
 /*! Print the given context to the console for debugging purposes. This includes
 	the stack, and is very useful for debugging new instructions.
@@ -601,7 +611,7 @@ void	LEOSetInstructionIDToDebugPrintAfter( LEOInstructionID inID );
 	opportunity to ensure a call to LEOContextResumeIfAvailable() will be triggered
 	by whatever mechanism you choose (queue up an event, signal a semaphore, whatever).
 */
-void	LEOSetCheckForResumeProc( void (*checkForResumeProc)() );
+void	LEOSetCheckForResumeProc( void (*checkForResumeProc)(void) );
 
 
 #if __cplusplus

@@ -45,7 +45,7 @@ void	ASSERT_RANGE_MATCHES_STRING( const char* theStr, size_t chunkStart, size_t 
 
 void	DoScriptTest( void )
 {
-	LEOContextGroup	*	group = LEOContextGroupCreate();
+	LEOContextGroup	*	group = LEOContextGroupCreate( NULL, NULL );
 	LEOScript		*	theScript = LEOScriptCreateForOwner( 0, 0, NULL );
 	LEOHandler		*	newHandler = NULL;
 	LEOHandler		*	foundHandler = NULL;
@@ -266,7 +266,7 @@ void	DoChunkValueTests( void )
 	LEOContext		*	ctx;
 	union LEOValue		theValue;
 	char				str[256];
-	LEOContextGroup*	group = LEOContextGroupCreate();
+	LEOContextGroup*	group = LEOContextGroupCreate( NULL, NULL );
 	
 	ctx = LEOContextCreate( group, NULL, NULL );
 	LEOContextGroupRelease( group );
@@ -481,7 +481,7 @@ void	DoReferenceTest( void )
 	union LEOValue		theValue;
 	union LEOValue		originalValue;
 	char				str[256];
-	LEOContextGroup*	group = LEOContextGroupCreate();
+	LEOContextGroup*	group = LEOContextGroupCreate( NULL, NULL );
 	
 	printf( "\nnote: Reference to string value tests\n" );
 		
@@ -772,7 +772,7 @@ void	DoChunkReferenceTests( void )
 	union LEOValue		valueReference;
 	union LEOValue		valueRefReference;
 	char				str[256];
-	LEOContextGroup*	group = LEOContextGroupCreate();
+	LEOContextGroup*	group = LEOContextGroupCreate( NULL, NULL );
 	
 	ctx = LEOContextCreate( group, NULL, NULL );
 	LEOContextGroupRelease( group );

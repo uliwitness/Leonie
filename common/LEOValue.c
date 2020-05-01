@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <math.h>
 #include "LEOInstructions.h"
+#include "AnsiStrings.h"
 
 
 #define OTHER_VALUE_SHORT_STRING_MAX_LENGTH		256
@@ -110,7 +111,9 @@ struct LEOValueType	kLeoValueTypeNumber =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCanGetNumberValueAsInteger
 };
 
 
@@ -160,7 +163,9 @@ struct LEOValueType	kLeoValueTypeInteger =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCanGetValueAsInteger
 };
 
 
@@ -200,7 +205,7 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOCantGetValueForKeyOfRange,
 	LEOCantSetValueForKeyOfRange,
 	
-	LEOCantSetValueAsNativeObject,
+	LEOSetStringValueAsNativeObject,
 	
 	LEOSetStringValueAsRect,
 	LEOGetStringValueAsRect,
@@ -210,7 +215,9 @@ struct LEOValueType	kLeoValueTypeString =
 	LEOValueIsNotUnset,
 	
 	LEOSetStringValueAsRange,
-	LEOGetStringValueAsRange
+	LEOGetStringValueAsRange,
+	
+	LEOCanGetStringValueAsInteger
 };
 
 
@@ -260,7 +267,9 @@ struct LEOValueType	kLeoValueTypeStringConstant =
 	LEOGetStringConstantValueIsUnset,
 	
 	LEOSetStringConstantValueAsRange,
-	LEOGetStringValueAsRange
+	LEOGetStringValueAsRange,
+	
+	LEOCanGetStringValueAsInteger
 };
 
 
@@ -310,7 +319,9 @@ struct LEOValueType	kLeoValueTypeRect =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -360,7 +371,9 @@ struct LEOValueType	kLeoValueTypePoint =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -410,7 +423,9 @@ struct LEOValueType	kLeoValueTypeRange =
 	LEOValueIsNotUnset,
 	
 	LEOSetRangeValueAsRange,
-	LEOGetRangeValueAsRange
+	LEOGetRangeValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -460,7 +475,9 @@ struct LEOValueType	kLeoValueTypeBoolean =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -471,9 +488,9 @@ struct LEOValueType	kLeoValueTypeNativeObject =
 	
 	LEOCantGetValueAsNumber,
 	LEOCantGetValueAsInteger,
-	LEOCantGetValueAsString,
+	LEOGetNativeObjectValueAsString,
 	LEOCantGetValueAsBoolean,
-	LEOCantGetValueAsRangeOfString,	// Only works as long as booleans can't be longer than OTHER_VALUE_SHORT_STRING_MAX_LENGTH as strings.
+	LEOGetNativeObjectValueAsRangeOfString,
 	
 	LEOCantSetValueAsNumber,
 	LEOCantSetValueAsInteger,
@@ -507,10 +524,12 @@ struct LEOValueType	kLeoValueTypeNativeObject =
 	LEOCantSetValueAsPoint,
 	LEOCantGetValueAsPoint,
 	
-	LEOValueIsNotUnset,
+	LEOGetNativeObjectValueIsUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -560,7 +579,9 @@ struct LEOValueType	kLeoValueTypeReference =
 	LEOGetReferenceValueIsUnset,
 	
 	LEOSetReferenceValueAsRange,
-	LEOGetReferenceValueAsRange
+	LEOGetReferenceValueAsRange,
+	
+	LEOCanGetReferenceValueAsInteger
 };
 
 
@@ -610,7 +631,9 @@ struct LEOValueType	kLeoValueTypeNumberVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCanGetNumberValueAsInteger
 };
 
 
@@ -660,7 +683,9 @@ struct LEOValueType	kLeoValueTypeIntegerVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCanGetValueAsInteger
 };
 
 
@@ -710,7 +735,9 @@ struct LEOValueType	kLeoValueTypeStringVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOGetStringValueAsRange
+	LEOGetStringValueAsRange,
+	
+	LEOCanGetStringValueAsInteger
 };
 
 
@@ -760,7 +787,9 @@ struct LEOValueType	kLeoValueTypeBooleanVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -810,7 +839,9 @@ struct LEOValueType	kLeoValueTypeRectVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -860,7 +891,9 @@ struct LEOValueType	kLeoValueTypePointVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -910,7 +943,9 @@ struct LEOValueType	kLeoValueTypeRangeVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOGetRangeValueAsRange
+	LEOGetRangeValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -960,7 +995,9 @@ struct LEOValueType	kLeoValueTypeNativeObjectVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -1010,7 +1047,9 @@ struct LEOValueType	kLeoValueTypeArray =
 	LEOValueIsNotUnset,
 	
 	LEOCantSetValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
 
 
@@ -1060,8 +1099,14 @@ struct LEOValueType	kLeoValueTypeArrayVariant =
 	LEOValueIsNotUnset,
 	
 	LEOSetVariantValueAsRange,
-	LEOCantGetValueAsRange
+	LEOCantGetValueAsRange,
+	
+	LEOCantCanGetValueAsInteger
 };
+
+
+
+static char		sUnsetConstantString[1] = {0};
 
 
 #pragma mark -
@@ -1116,6 +1161,14 @@ LEOUnit	LEOConvertNumbersToCommonUnit( LEONumber* firstArgument, LEOUnit firstUn
 }
 
 
+const char* LEOUnitSuffixForUnit( LEOUnit inUnit )
+{
+	if( inUnit >= kLEOUnit_Last )
+		return "";
+	return gUnitLabels[inUnit];
+}
+
+
 #pragma mark -
 #pragma mark Shared
 
@@ -1134,10 +1187,10 @@ LEOUnit	LEOConvertNumbersToCommonUnit( LEONumber* firstArgument, LEOUnit firstUn
 
 const char*	LEOCantGetValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
 	return "";
 }
 
@@ -1147,10 +1200,10 @@ void	LEOCantDetermineChunkRangeOfSubstringOfValue( LEOValuePtr self, size_t *ioB
 													 LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
 													 struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a string.", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a string.", self->base.isa->displayTypeName );
 }
 
 
@@ -1161,10 +1214,10 @@ void	LEOCantDetermineChunkRangeOfSubstringOfValue( LEOValuePtr self, size_t *ioB
 
 LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a number", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a number", self->base.isa->displayTypeName );
 	
 	return 0.0;
 }
@@ -1177,10 +1230,10 @@ LEONumber	LEOCantGetValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, struct LE
 
 void	LEOCantGetValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a rect", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a rect", self->base.isa->displayTypeName );
 }
 
 
@@ -1191,10 +1244,10 @@ void	LEOCantGetValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOI
 
 void	LEOCantGetValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a point", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a point", self->base.isa->displayTypeName );
 }
 
 
@@ -1205,10 +1258,10 @@ void	LEOCantGetValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, str
 
 void	LEOCantGetValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a range", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a range", self->base.isa->displayTypeName );
 }
 
 
@@ -1219,10 +1272,10 @@ void	LEOCantGetValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEO
 
 LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into an integer", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into an integer", self->base.isa->displayTypeName );
 	
 	return 0LL;
 }
@@ -1235,10 +1288,10 @@ LEOInteger	LEOCantGetValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, struct 
 
 bool	LEOCantGetValueAsBoolean( LEOValuePtr self, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a boolean", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a boolean", self->base.isa->displayTypeName );
 	
 	return false;
 }
@@ -1256,10 +1309,10 @@ void	LEOCantGetValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 										size_t inRangeStart, size_t inRangeEnd,
 										char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
 }
 
 
@@ -1270,10 +1323,10 @@ void	LEOCantGetValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 
 LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, union LEOValue *tempStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into an array", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into an array", self->base.isa->displayTypeName );
 	
 	return NULL;
 }
@@ -1286,10 +1339,10 @@ LEOValuePtr	LEOCantGetValueForKey( LEOValuePtr self, const char* keyName, union 
 
 void	LEOCantSetValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
 }
 
 
@@ -1297,10 +1350,10 @@ LEOValuePtr	LEOGetStringValueForKey( LEOValuePtr self, const char* keyName, unio
 {
 	if( !tempStorage )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Internal error converting %s to array.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Internal error converting %s to array.", self->base.isa->displayTypeName );
 		return NULL;
 	}
 	
@@ -1310,19 +1363,19 @@ LEOValuePtr	LEOGetStringValueForKey( LEOValuePtr self, const char* keyName, unio
 		convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
 			return NULL;
 		}
 	}
 	else
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
 		return NULL;
 	}
 	
@@ -1336,6 +1389,28 @@ LEOValuePtr	LEOGetStringValueForKey( LEOValuePtr self, const char* keyName, unio
 }
 
 
+/*!
+	Generic method implementation used for values that can hold an empty
+	string. A NULL native object is considered the same as the "unset" value
+	by us, which is an empty string.
+*/
+
+void	LEOSetStringLikeValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
+{
+	if( inNativeObject != NULL )
+	{
+		size_t		lineNo = SIZE_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found native object", self->base.isa->displayTypeName );
+	}
+	else
+	{
+		LEOSetValueAsString( self, "", 0, inContext );
+	}
+}
+
+
 void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, struct LEOContext* inContext )
 {
 	struct LEOArrayEntry	*	convertedArray = NULL;
@@ -1344,10 +1419,10 @@ void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValu
 		convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
 			return;
 		}
 	}
@@ -1368,10 +1443,10 @@ void	LEOSetStringLikeValueForKey( LEOValuePtr self, const char* keyName, LEOValu
 
 void	LEOCantSetValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit inUnit, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found number", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found number", self->base.isa->displayTypeName );
 }
 
 
@@ -1382,10 +1457,10 @@ void	LEOCantSetValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit inUn
 
 void	LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, LEOUnit inUnit, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found integer", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found integer", self->base.isa->displayTypeName );
 }
 
 
@@ -1396,10 +1471,10 @@ void	LEOCantSetValueAsInteger( LEOValuePtr self, LEOInteger inInteger, LEOUnit i
 
 void	LEOCantSetValueAsString( LEOValuePtr self, const char* inString, size_t inStringLen, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found string", self->base.isa->displayTypeName );
 }
 
 
@@ -1410,10 +1485,10 @@ void	LEOCantSetValueAsString( LEOValuePtr self, const char* inString, size_t inS
 
 void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found boolean", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found boolean", self->base.isa->displayTypeName );
 }
 
 
@@ -1424,10 +1499,10 @@ void	LEOCantSetValueAsBoolean( LEOValuePtr self, bool inState, struct LEOContext
 
 void	LEOCantSetValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found rect", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found rect", self->base.isa->displayTypeName );
 }
 
 
@@ -1438,10 +1513,10 @@ void	LEOCantSetValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInt
 
 void	LEOCantSetValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found point", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found point", self->base.isa->displayTypeName );
 }
 
 
@@ -1452,10 +1527,10 @@ void	LEOCantSetValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struc
 
 void	LEOCantSetValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found range", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found range", self->base.isa->displayTypeName );
 }
 
 
@@ -1466,10 +1541,10 @@ void	LEOCantSetValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOCh
 
 void	LEOCantSetValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found native object", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found native object", self->base.isa->displayTypeName );
 }
 
 
@@ -1482,20 +1557,20 @@ void	LEOCantSetValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									const char* inBuf, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found string", self->base.isa->displayTypeName );
 }
 
 
 void	LEOCantSetValuePredeterminedRangeAsString( LEOValuePtr self, size_t inRangeStart, size_t inRangeEnd,
 													const char* inBuf, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found string", self->base.isa->displayTypeName );
 }
 
 
@@ -1560,6 +1635,18 @@ bool	LEOCantCanGetValueAsNumber( LEOValuePtr self, struct LEOContext* inContext 
 }
 
 
+bool	LEOCanGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return true;
+}
+
+
+bool	LEOCantCanGetValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return false;
+}
+
+
 size_t	LEOCantGetKeyCount( LEOValuePtr self, struct LEOContext* inContext )
 {
 	return 0;
@@ -1583,7 +1670,7 @@ size_t	LEOGetStringLikeValueKeyCount( LEOValuePtr self, struct LEOContext* inCon
 		size_t		lineNo = 0;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected an array, found %s.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected an array, found %s.", self->base.isa->displayTypeName );
 	}
 	return numKeys;
 }
@@ -1600,10 +1687,10 @@ LEOValuePtr	LEOCantFollowReferencesAndReturnValueOfType( LEOValuePtr self, LEOVa
 
 void	LEOCantSetValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArray, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found array", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found array", self->base.isa->displayTypeName );
 }
 
 
@@ -1617,19 +1704,19 @@ void	LEOSetStringLikeValueAsArray( LEOValuePtr self, struct LEOArrayEntry *inArr
 
 void	LEOCantGetValueForKeyOfRange( LEOValuePtr self, const char* keyName, size_t startOffset, size_t endOffset, LEOValuePtr outValue, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't get properties of ranges of a %s", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't get properties of ranges of a %s", self->base.isa->displayTypeName );
 }
 
 
 void	LEOCantSetValueForKeyOfRange( LEOValuePtr self, const char* keyName, LEOValuePtr inValue, size_t startOffset, size_t endOffset, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Ranges of a %s can't have properties", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Ranges of a %s can't have properties", self->base.isa->displayTypeName );
 }
 
 
@@ -1677,16 +1764,16 @@ LEOInteger LEOGetNumberValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, struc
 {
 	if( trunc(self->number.number) != self->number.number )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected integer, not fractional number." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected integer, not fractional number." );
 	}
 	
 	if( outUnit )
 		*outUnit = self->number.unit;
 	
-	return self->number.number;
+	return (LEOInteger)self->number.number;
 }
 
 
@@ -1718,7 +1805,7 @@ void LEOSetNumberValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit in
 
 void LEOSetNumberValueAsInteger( LEOValuePtr self, LEOInteger inInteger, LEOUnit inUnit, struct LEOContext* inContext )
 {
-	self->number.number = inInteger; self->number.unit = inUnit;
+	self->number.number = (LEONumber)inInteger; self->number.unit = inUnit;
 }
 
 
@@ -1732,22 +1819,22 @@ void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, size_t i
 {
 	if( inNumber == NULL || inNumberLen == 0 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found empty.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found empty.", self->base.isa->displayTypeName );
 		return;
 	}
 	char		buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH +1] = {0};
 	if( inNumberLen > OTHER_VALUE_SHORT_STRING_MAX_LENGTH )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found string or number that is too large.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found string or number that is too large.", self->base.isa->displayTypeName );
 		return;
 	}
-	strncpy( buf, inNumber, inNumberLen );
+	strlcpy( buf, inNumber, inNumberLen );
 	
 	// Determine if there's a unit on this number, remove it but remember it:
 	self->number.unit = kLEOUnitNone;
@@ -1769,7 +1856,7 @@ void LEOSetNumberValueAsString( LEOValuePtr self, const char* inNumber, size_t i
 	
 	// Actually convert the string into a number:
 	char*		endPtr = NULL;
-	LEONumber	theNum = strtod( buf, &endPtr );
+	LEONumber	theNum = strtof( buf, &endPtr );
 	if( endPtr != (buf +inNumberLen) )
 		LEOCantSetValueAsString( self, inNumber, inNumberLen, inContext );
 	else
@@ -1794,6 +1881,12 @@ void	LEOInitNumberValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 void	LEOPutNumberValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct LEOContext* inContext )
 {
 	LEOSetValueAsNumber( dest, self->number.number, self->number.unit, inContext );
+}
+
+
+bool	LEOCanGetNumberValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return trunc(self->number.number) == self->number.number;
 }
 
 
@@ -1840,7 +1933,7 @@ LEONumber LEOGetIntegerValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, struct
 {
 	if( outUnit )
 		*outUnit = self->integer.unit;
-	return self->integer.integer;
+	return (LEONumber)self->integer.integer;
 }
 
 
@@ -1876,14 +1969,14 @@ void LEOSetIntegerValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit i
 {
 	if( trunc(inNumber) != inNumber )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make fractional number into integer." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make fractional number into integer." );
 	}
 	else
 	{
-		self->integer.integer = inNumber;
+		self->integer.integer = (LEOInteger)inNumber;
 		self->integer.unit = inUnit;
 	}
 }
@@ -1910,22 +2003,22 @@ void LEOSetIntegerValueAsString( LEOValuePtr self, const char* inInteger, size_t
 {
 	if( inInteger == NULL || inIntegerLen == 0 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected %s, found empty.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found empty.", self->base.isa->displayTypeName );
 		return;
 	}
 	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH +1] = { 0 };
 	if( inIntegerLen > OTHER_VALUE_SHORT_STRING_MAX_LENGTH )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected a %s here, found a string, or a number that is too large.", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected a %s here, found a string, or a number that is too large.", self->base.isa->displayTypeName );
 		return;
 	}
-	strncpy( buf, inInteger, inIntegerLen );
+	strlcpy( buf, inInteger, inIntegerLen );
 	
 	// Determine if there's a unit on this number, remove it but remember it:
 	self->integer.unit = kLEOUnitNone;
@@ -2037,7 +2130,7 @@ LEONumber	LEOGetStringValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, struct 
 	}
 
 	char*		endPtr = NULL;
-	LEONumber	num = strtod( self->string.string, &endPtr );
+	LEONumber	num = strtof( self->string.string, &endPtr );
 	if( endPtr != (self->string.string +lengthToParse) )
 		LEOCantGetValueAsNumber( self, outUnit, inContext );
 	
@@ -2093,7 +2186,7 @@ LEOInteger	LEOGetStringValueAsInteger( LEOValuePtr self, LEOUnit* outUnit, struc
 const char*	LEOGetStringValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
 	if( outBuf )	// If given a buffer, copy over, caller may really want a copy. Always return our internal buffer, which contains the whole string.
-		strncpy( outBuf, self->string.string, bufSize );	// TODO: Not NUL-safe!
+		strlcpy( outBuf, self->string.string, bufSize );	// TODO: Not NUL-safe!
 	return self->string.string;
 }
 
@@ -2186,6 +2279,22 @@ void LEOSetStringValueAsString( LEOValuePtr self, const char* inString, size_t i
 }
 
 
+void	LEOSetStringValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
+{
+	if( inNativeObject != NULL )
+	{
+		size_t		lineNo = SIZE_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected %s, found native object", self->base.isa->displayTypeName );
+	}
+	else
+	{
+		LEOSetStringValueAsStringConstant( self, sUnsetConstantString, inContext );
+	}
+}
+
+
 /*!
 	Implementation of SetAsBoolean for string values. This turns the string
 	value into a constant string.
@@ -2227,7 +2336,7 @@ void	LEOInitStringValueCopy( LEOValuePtr self, LEOValuePtr dest, LEOKeepReferenc
 	size_t		theLen = self->string.stringLen +1;
 	dest->string.string = calloc( theLen, sizeof(char) );
 	dest->string.stringLen = self->string.stringLen;
-	strncpy( dest->string.string, self->string.string, theLen );
+	strlcpy( dest->string.string, self->string.string, theLen );
 }
 
 
@@ -2361,10 +2470,43 @@ bool	LEOCanGetStringValueAsNumber( LEOValuePtr self, struct LEOContext* inContex
 	if( self->string.stringLen == 0 )	// Empty string? Not a number!
 		return false;
 	
+	bool hadDot = false;
+	bool isFirst = true;
+	
 	for( size_t x = 0; x < self->string.stringLen; x++ )
 	{
-		if( self->string.string[x] < '0' || self->string.string[x] > '9' )
+		if( isFirst && self->string.string[x] == '-' )
+			;	// It's OK to have negative numbers.
+		else if( !hadDot && self->string.string[x] == '.' )
+		{
+			hadDot = true;
+		}
+		else if( self->string.string[x] < '0' || self->string.string[x] > '9' )
+		{
 			return false;
+		}
+		isFirst = false;
+	}
+	
+	return true;
+}
+
+
+bool	LEOCanGetStringValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
+{
+	if( self->string.stringLen == 0 )	// Empty string? Not a number!
+		return false;
+	
+	bool isFirst = true;
+
+	for( size_t x = 0; x < self->string.stringLen; x++ )
+	{
+		if( isFirst && self->string.string[x] == '-' )
+			;	// It's OK to have negative numbers.
+		else if( self->string.string[x] < '0' || self->string.string[x] > '9' )
+			return false;
+		
+		isFirst = false;
 	}
 	
 	return true;
@@ -2427,7 +2569,7 @@ void	LEOGetStringValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, L
 
 void	LEOSetStringLikeValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, LEOInteger r, LEOInteger b, struct LEOContext* inContext )
 {
-	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	size_t	usedLen = 0;
 	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
 		usedLen = snprintf( buf, sizeof(buf) -1, "%lld,%lld,%lld,%lld", l, t, r, b );
@@ -2439,7 +2581,7 @@ void	LEOSetStringLikeValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, 
 
 void	LEOSetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, struct LEOContext* inContext )
 {
-	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	size_t	usedLen = 0;
 	if( inContext->group->flags & kLEOContextGroupFlagHyperCardCompatibility )
 		usedLen = snprintf( buf, sizeof(buf) -1, "%lld,%lld", l, t );
@@ -2451,7 +2593,7 @@ void	LEOSetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t,
 
 void	LEOGetStringLikeValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t, LEOInteger *r, LEOInteger *b, struct LEOContext* inContext )
 {
-	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	const char*		str = LEOGetValueAsString( self, buf, sizeof(buf), inContext );
 	LEOStringToRect( str, strlen(str), l, t, r, b, inContext );
 }
@@ -2459,7 +2601,7 @@ void	LEOGetStringLikeValueAsRect( LEOValuePtr self, LEOInteger *l, LEOInteger *t
 
 void	LEOGetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *t, struct LEOContext* inContext )
 {
-	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	const char*		str = LEOGetValueAsString( self, buf, sizeof(buf), inContext );
 	LEOStringToPoint( str, strlen(str), l, t, inContext );
 }
@@ -2467,7 +2609,7 @@ void	LEOGetStringLikeValueAsPoint( LEOValuePtr self, LEOInteger *l, LEOInteger *
 
 void	LEOSetStringLikeValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, LEOChunkType t, struct LEOContext* inContext )
 {
-	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char	buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	size_t	usedLen = 0;
 	if( s == e )
 		usedLen = snprintf( buf, sizeof(buf) -1, "%s %lld", gLEOChunkTypeNames[t], s );
@@ -2478,7 +2620,7 @@ void	LEOSetStringLikeValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e,
 
 void	LEOGetStringLikeValueAsRange( LEOValuePtr self, LEOInteger *s, LEOInteger *e, LEOChunkType *t, struct LEOContext* inContext )
 {
-	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {};
+	char			buf[OTHER_VALUE_SHORT_STRING_MAX_LENGTH] = {0};
 	const char*		str = LEOGetValueAsString( self, buf, sizeof(buf), inContext );
 	LEOStringToRange( str, strlen(str), s, e, t, inContext );
 }
@@ -2499,9 +2641,6 @@ void	LEOInitStringConstantValue( LEOValuePtr inStorage, const char* inString, LE
 	inStorage->string.string = (char*)inString;
 	inStorage->string.stringLen = strlen(inString);
 }
-
-
-static char		sUnsetConstantString[1] = {0};
 
 
 void	LEOInitUnsetValue( LEOValuePtr inStorage, LEOKeepReferencesFlag keepReferences, struct LEOContext* inContext )
@@ -2724,7 +2863,7 @@ const char*	LEOGetBooleanValueAsString( LEOValuePtr self, char* outBuf, size_t b
 {
 	if( outBuf )
 	{
-		strncpy( outBuf, (self->boolean.boolean ? "true" : "false"), bufSize -1 );
+		strlcpy( outBuf, (self->boolean.boolean ? "true" : "false"), bufSize -1 );
 		return outBuf;
 	}
 	else
@@ -2842,10 +2981,10 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 {
 	if( LEOGetArrayKeyCount(convertedArray) != 4 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle here." );
 		return;
 	}
 	
@@ -2853,20 +2992,20 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 	LEOValuePtr	theNumObj = LEOGetArrayValueForKey( convertedArray, "left" );
 	if( !theNumObj )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle here." );
 		return;
 	}
 	LEOUnit		theUnit = kLEOUnitNone;
 	LEOInteger	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle here." );
 		return;
 	}
 	*l = theNum;
@@ -2875,19 +3014,19 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 	theNumObj = LEOGetArrayValueForKey( convertedArray, "top" );
 	if( !theNumObj )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle here." );
 		return;
 	}
 	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle here." );
 		return;
 	}
 	*t = theNum;
@@ -2896,19 +3035,19 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 	theNumObj = LEOGetArrayValueForKey( convertedArray, "right" );
 	if( !theNumObj )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle here." );
 		return;
 	}
 	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle here." );
 		return;
 	}
 	*r = theNum;
@@ -2917,19 +3056,19 @@ void	LEOArrayToRect( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOInt
 	theNumObj = LEOGetArrayValueForKey( convertedArray, "bottom" );
 	if( !theNumObj )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle here." );
 		return;
 	}
 	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle here." );
 		return;
 	}
 	*b = theNum;
@@ -2950,19 +3089,19 @@ void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, L
 		numPart[numPartLen] = '\0';
 		if( numPartLen == 0 )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle, found string." );
 			return;
 		}
 		*l = strtoll( numPart, &endPtr, 10 );
 		if( endPtr != (numPart +numPartLen) )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle, found string." );
 			return;
 		}
 		
@@ -2974,19 +3113,19 @@ void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, L
 		numPart[numPartLen] = '\0';
 		if( numPartLen == 0 )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle, found string." );
 			return;
 		}
 		*t = strtoll( numPart, &endPtr, 10 );
 		if( endPtr != (numPart +numPartLen) )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle, found string." );
 			return;
 		}
 		
@@ -2998,19 +3137,19 @@ void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, L
 		numPart[numPartLen] = '\0';
 		if( numPartLen == 0 )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle, found string." );
 			return;
 		}
 		*r = strtoll( numPart, &endPtr, 10 );
 		if( endPtr != (numPart +numPartLen) )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle, found string." );
 			return;
 		}
 		
@@ -3022,19 +3161,19 @@ void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, L
 		numPart[numPartLen] = '\0';
 		if( numPartLen == 0 )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle, found string." );
 			return;
 		}
 		*b = strtoll( numPart, &endPtr, 10 );
 		if( endPtr != (numPart +numPartLen) )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle, found string." );
 			return;
 		}
 	}
@@ -3043,10 +3182,10 @@ void	LEOStringToRect( const char* inString, size_t inStringLen, LEOInteger *l, L
 		struct LEOArrayEntry*	convertedArray = LEOCreateArrayFromString( inString, inStringLen, inContext );
 		if( !convertedArray || LEOGetArrayKeyCount( convertedArray ) != 4 )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected rectangle, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected rectangle, found string." );
 			return;
 		}
 		
@@ -3138,10 +3277,10 @@ void		LEOSetRectValueValueForKey( LEOValuePtr self, const char* inKey, LEOValueP
 		}
 		else
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
 			return;
 		}
 	}
@@ -3167,10 +3306,10 @@ void		LEOSetRectValueValueForKey( LEOValuePtr self, const char* inKey, LEOValueP
 	}
 	else
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't set key %s on a rectangle, must be \"left\", \"top\", \"right\" or \"bottom\".", inKey );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't set key %s on a rectangle, must be \"left\", \"top\", \"right\" or \"bottom\".", inKey );
 		return;
 	}
 }
@@ -3238,10 +3377,10 @@ void	LEOArrayToPoint( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOIn
 {
 	if( LEOGetArrayKeyCount(convertedArray) != 2 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected point here." );
 		return;
 	}
 	
@@ -3249,20 +3388,20 @@ void	LEOArrayToPoint( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOIn
 	LEOValuePtr	theNumObj = LEOGetArrayValueForKey( convertedArray, "horizontal" );
 	if( !theNumObj )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected point here." );
 		return;
 	}
 	LEOUnit		theUnit = kLEOUnitNone;
 	LEOInteger	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected point here." );
 		return;
 	}
 	*l = theNum;
@@ -3271,19 +3410,19 @@ void	LEOArrayToPoint( struct LEOArrayEntry* convertedArray, LEOInteger *l, LEOIn
 	theNumObj = LEOGetArrayValueForKey( convertedArray, "vertical" );
 	if( !theNumObj )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected point here." );
 		return;
 	}
 	theNum = LEOGetValueAsInteger( theNumObj, &theUnit, inContext );
 	if( (inContext->flags & kLEOContextKeepRunning) == 0 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point here." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected point here." );
 		return;
 	}
 	*t = theNum;
@@ -3304,19 +3443,19 @@ void	LEOStringToPoint( const char* inString, size_t inStringLen, LEOInteger *l, 
 		numPart[numPartLen] = '\0';
 		if( numPartLen == 0 )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected point, found string." );
 			return;
 		}
 		*l = strtoll( numPart, &endPtr, 10 );
 		if( endPtr != (numPart +numPartLen) )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected point, found string." );
 			return;
 		}
 		
@@ -3328,19 +3467,19 @@ void	LEOStringToPoint( const char* inString, size_t inStringLen, LEOInteger *l, 
 		numPart[numPartLen] = '\0';
 		if( numPartLen == 0 )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected point, found string." );
 			return;
 		}
 		*t = strtoll( numPart, &endPtr, 10 );
 		if( endPtr != (numPart +numPartLen) )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected point, found string." );
 			return;
 		}
 	}
@@ -3349,10 +3488,10 @@ void	LEOStringToPoint( const char* inString, size_t inStringLen, LEOInteger *l, 
 		struct LEOArrayEntry*	convertedArray = LEOCreateArrayFromString( inString, inStringLen, inContext );
 		if( !convertedArray || LEOGetArrayKeyCount( convertedArray ) != 4 )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected point, found string." );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected point, found string." );
 			return;
 		}
 		
@@ -3411,6 +3550,8 @@ LEOValuePtr		LEOGetPointValueValueForKey( LEOValuePtr self, const char* inKey, u
 		theNum = self->point.horizontal;
 	else if( strcasecmp(inKey, "vertical") == 0 )
 		theNum = self->point.vertical;
+	else
+		return NULL;
 	LEOInitIntegerValue( tempStorage, theNum, kLEOUnitNone, keepReferences, inContext );
 	return tempStorage;
 }
@@ -3436,10 +3577,10 @@ void		LEOSetPointValueValueForKey( LEOValuePtr self, const char* inKey, LEOValue
 		}
 		else
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected integer, found %s.", inValue->base.isa->displayTypeName );
 			return;
 		}
 	}
@@ -3459,10 +3600,10 @@ void		LEOSetPointValueValueForKey( LEOValuePtr self, const char* inKey, LEOValue
 	}
 	else
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't set key %s on a point, must be \"horizontal\" or \"vertical\".", inKey );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't set key %s on a point, must be \"horizontal\" or \"vertical\".", inKey );
 		return;
 	}
 }
@@ -3543,10 +3684,10 @@ void	LEOStringToRange( const char* inString, size_t inStringLen, LEOInteger *s, 
 	*t = foundType;
 	if( foundType == kLEOChunkTypeINVALID )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected range, found string." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected range, found string." );
 		return;
 	}
 	
@@ -3560,19 +3701,19 @@ void	LEOStringToRange( const char* inString, size_t inStringLen, LEOInteger *s, 
 	numPart[numPartLen] = '\0';
 	if( numPartLen == 0 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected range, found string." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected range, found string." );
 		return;
 	}
 	*s = strtoll( numPart, &endPtr, 10 );
 	if( endPtr != (numPart +numPartLen) )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected range, found string." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected range, found string." );
 		return;
 	}
 	
@@ -3598,10 +3739,10 @@ void	LEOStringToRange( const char* inString, size_t inStringLen, LEOInteger *s, 
 	
 	if( !foundTo )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected range, found string." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected range, found string." );
 		return;
 	}
 	
@@ -3616,19 +3757,19 @@ void	LEOStringToRange( const char* inString, size_t inStringLen, LEOInteger *s, 
 	numPart[numPartLen] = '\0';
 	if( numPartLen == 0 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected range, found string." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected range, found string." );
 		return;
 	}
 	*e = strtoll( numPart, &endPtr, 10 );
 	if( endPtr != (numPart +numPartLen) )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected range, found string." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected range, found string." );
 		return;
 	}
 	
@@ -3638,10 +3779,10 @@ void	LEOStringToRange( const char* inString, size_t inStringLen, LEOInteger *s, 
 	
 	if( x != inStringLen )	// Invalid chars beyond end?
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected range, found string." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected range, found string." );
 		return;
 	}
 }
@@ -3718,9 +3859,52 @@ void	LEOInitNativeObjectValue( LEOValuePtr self, void* inNativeObject, LEOKeepRe
 }
 
 
+const char*	LEOGetNativeObjectValueAsString( LEOValuePtr self, char* outBuf, size_t bufSize, struct LEOContext* inContext )
+{
+	if( self->object.object != NULL )
+	{
+		size_t		lineNo = SIZE_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
+	}
+	else if( outBuf && bufSize > 0 )	// A NIL object is the same as an "unset" value for us.
+	{
+		outBuf[0] = 0;
+		return sUnsetConstantString;
+	}
+	return "";
+}
+
+
+void	LEOGetNativeObjectValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
+											size_t inRangeStart, size_t inRangeEnd,
+											char* outBuf, size_t bufSize, struct LEOContext* inContext )
+{
+	if( self->object.object != NULL )
+	{
+		size_t		lineNo = SIZE_MAX;
+		uint16_t	fileID = 0;
+		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
+	}
+	else if( outBuf && bufSize > 0 )	// A NIL object is the same as an "unset" value for us.
+	{
+		outBuf[0] = 0;
+	}
+}
+
+
+
 void	LEOSetNativeObjectValueAsNativeObject( LEOValuePtr self, void* inNativeObject, struct LEOContext* inContext )
 {
 	self->object.object = inNativeObject;
+}
+
+
+bool	LEOGetNativeObjectValueIsUnset( LEOValuePtr self, struct LEOContext* inContext )
+{
+	return self->object.object == NULL;
 }
 
 
@@ -3815,10 +3999,10 @@ const char*	LEOGetReferenceValueAsString( LEOValuePtr self, char* outBuf, size_t
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -3840,10 +4024,10 @@ LEONumber	LEOGetReferenceValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, stru
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 		return 0.0;
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
@@ -3871,7 +4055,7 @@ LEONumber	LEOGetReferenceValueAsNumber( LEOValuePtr self, LEOUnit *outUnit, stru
 		}
 
 		char*		endPtr = NULL;
-		LEONumber	num = strtod( str, &endPtr );
+		LEONumber	num = strtof( str, &endPtr );
 		if( endPtr != (str +strLen) )
 			LEOCantGetValueAsNumber( self, outUnit, inContext );
 		
@@ -3894,10 +4078,10 @@ LEOInteger	LEOGetReferenceValueAsInteger( LEOValuePtr self, LEOUnit *outUnit, st
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 		return 0LL;
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
@@ -3948,10 +4132,10 @@ bool	LEOGetReferenceValueAsBoolean( LEOValuePtr self, struct LEOContext* inConte
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 		return false;
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
@@ -3979,10 +4163,10 @@ void	LEOGetReferenceValueAsRect( LEOValuePtr self, LEOInteger* l, LEOInteger* t,
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4004,10 +4188,10 @@ void	LEOGetReferenceValueAsPoint( LEOValuePtr self, LEOInteger* l, LEOInteger* t
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4029,10 +4213,10 @@ void	LEOGetReferenceValueAsRange( LEOValuePtr self, LEOInteger* s, LEOInteger* e
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4056,10 +4240,10 @@ void	LEOGetReferenceValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4082,10 +4266,10 @@ void	LEOSetReferenceValueAsString( LEOValuePtr self, const char* inString, size_
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4109,10 +4293,10 @@ void	LEOSetReferenceValueAsBoolean( LEOValuePtr self, bool inBoolean, struct LEO
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4133,10 +4317,10 @@ void	LEOSetReferenceValueAsRect( LEOValuePtr self, LEOInteger l, LEOInteger t, L
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4162,10 +4346,10 @@ void	LEOSetReferenceValueAsPoint( LEOValuePtr self, LEOInteger l, LEOInteger t, 
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4191,10 +4375,10 @@ void	LEOSetReferenceValueAsRange( LEOValuePtr self, LEOInteger s, LEOInteger e, 
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4220,17 +4404,17 @@ void	LEOSetReferenceValueAsNativeObject( LEOValuePtr self, void* inNativeObject,
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't combine chunk expressions and native strings." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't combine chunk expressions and native strings." );
 	}
 	else
 		LEOSetValueAsNativeObject( theValue, inNativeObject, inContext );
@@ -4246,10 +4430,10 @@ void	LEOSetReferenceValueAsNumber( LEOValuePtr self, LEONumber inNumber, LEOUnit
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4272,10 +4456,10 @@ void	LEOSetReferenceValueAsInteger( LEOValuePtr self, LEOInteger inInteger, LEOU
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4298,10 +4482,10 @@ void		LEOSetReferenceValueAsArray( LEOValuePtr self, struct LEOArrayEntry * inAr
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4325,10 +4509,10 @@ void	LEOSetReferenceValueRangeAsString( LEOValuePtr self, LEOChunkType inType,
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4352,10 +4536,10 @@ void	LEOSetReferenceValuePredeterminedRangeAsString( LEOValuePtr self, size_t in
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOSetValuePredeterminedRangeAsString( theValue, inRangeStart, inRangeEnd, inBuf, inContext );
@@ -4391,17 +4575,17 @@ void	LEOInitReferenceValueSimpleCopy( LEOValuePtr self, LEOValuePtr dest, LEOKee
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == self )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Internal error: A value is referencing itself." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Internal error: A value is referencing itself." );
 	}
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOInitSimpleCopy(theValue, dest, keepReferences, inContext);
@@ -4413,10 +4597,10 @@ void	LEOPutReferenceValueIntoValue( LEOValuePtr self, LEOValuePtr dest, struct L
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOPutValueIntoValue(theValue, dest, inContext);
@@ -4431,10 +4615,10 @@ void	LEODetermineChunkRangeOfSubstringOfReferenceValue( LEOValuePtr self, size_t
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else if( self->reference.chunkType != kLEOChunkTypeINVALID )
 	{
@@ -4469,6 +4653,16 @@ bool	LEOCanGetReferenceValueAsNumber( LEOValuePtr self, struct LEOContext* inCon
 }
 
 
+bool	LEOCanGetReferenceValueAsInteger( LEOValuePtr self, struct LEOContext* inContext )
+{
+	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
+	if( theValue != NULL )
+		return LEOCanGetAsInteger( theValue, inContext );
+	else
+		return false;
+}
+
+
 /*!
 	Destructor for reference values. If this value has references, this makes sure
 	that they will produce an error message if they ever try to access it again.
@@ -4493,10 +4687,10 @@ LEOValuePtr		LEOGetReferenceValueValueForKey( LEOValuePtr self, const char* inKe
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 		
 		return NULL;
 	}
@@ -4510,10 +4704,10 @@ void		LEOSetReferenceValueValueForKey( LEOValuePtr self, const char* inKey, LEOV
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOSetValueForKey( theValue, inKey, inValue, inContext );
@@ -4525,10 +4719,10 @@ size_t		LEOGetReferenceValueKeyCount( LEOValuePtr self, struct LEOContext * inCo
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 		
 		return 0;
 	}
@@ -4542,10 +4736,10 @@ void		LEOGetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, 
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOGetValueForKeyOfRange( theValue, keyName, startOffset, endOffset, outValue, inContext );
@@ -4557,10 +4751,10 @@ void		LEOSetReferenceValueForKeyOfRange( LEOValuePtr self, const char* keyName, 
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 	}
 	else
 		LEOSetValueForKeyOfRange( theValue, keyName, inValue, startOffset, endOffset, inContext );
@@ -4574,10 +4768,10 @@ LEOValuePtr	LEOReferenceValueFollowReferencesAndReturnValueOfType( LEOValuePtr s
 		return self;
 	else if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 		
 		return NULL;
 	}
@@ -4595,10 +4789,10 @@ bool	LEOGetReferenceValueIsUnset( LEOValuePtr self, struct LEOContext * inContex
 	LEOValuePtr		theValue = LEOContextGroupGetPointerForObjectIDAndSeed( inContext->group, self->reference.objectID, self->reference.objectSeed );
 	if( theValue == NULL )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "The referenced value doesn't exist anymore." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "The referenced value doesn't exist anymore." );
 		
 		return 0;
 	}
@@ -4760,19 +4954,19 @@ LEOValuePtr	LEOGetStringVariantValueForKey( LEOValuePtr self, const char* keyNam
 		convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
 			return NULL;
 		}
 	}
 	else
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected array, found %s", self->base.isa->displayTypeName );
 		return NULL;
 	}
 	
@@ -4800,10 +4994,10 @@ void	LEOSetStringVariantValueValueForKey( LEOValuePtr self, const char* inKey, L
 		struct LEOArrayEntry	*	convertedArray = LEOCreateArrayFromString( self->string.string, self->string.stringLen, inContext );
 		if( !convertedArray )
 		{
-			size_t		lineNo = SIZE_T_MAX;
+			size_t		lineNo = SIZE_MAX;
 			uint16_t	fileID = 0;
 			LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-			LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Expected array here, found \"%s\".", self->string.string );
+			LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Expected array here, found \"%s\".", self->string.string );
 			return;
 		}
 		
@@ -4911,10 +5105,10 @@ void	LEOGetArrayValueAsRangeOfString( LEOValuePtr self, LEOChunkType inType,
 									size_t inRangeStart, size_t inRangeEnd,
 									char* outBuf, size_t bufSize, struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
 }
 
 
@@ -4923,10 +5117,10 @@ void	LEODetermineChunkRangeOfSubstringOfArrayValue( LEOValuePtr self, size_t *io
 														LEOChunkType inType, size_t inRangeStart, size_t inRangeEnd,
 														struct LEOContext* inContext )
 {
-	size_t		lineNo = SIZE_T_MAX;
+	size_t		lineNo = SIZE_MAX;
 	uint16_t	fileID = 0;
 	LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-	LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
+	LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Can't make %s into a string", self->base.isa->displayTypeName );
 }
 
 
@@ -5121,7 +5315,7 @@ struct LEOArrayEntry	*	LEOAllocNewEntry( const char* inKey, LEOValuePtr inValue,
 {
 	struct LEOArrayEntry	*	newEntry = NULL;
 	size_t						inKeyLen = strlen(inKey);
-	newEntry = calloc( sizeof(struct LEOArrayEntry) +inKeyLen +1, 1 );
+	newEntry = calloc( sizeof(struct LEOArrayEntry) +inKeyLen, 1 ); // String's NUL byte is already size of the array in the struct.
 	memmove( newEntry->key, inKey, inKeyLen +1 );
 	if( inValue )
 		LEOInitCopy( inValue, &newEntry->value, kLEOInvalidateReferences, inContext );
@@ -5184,6 +5378,17 @@ LEOValuePtr	LEOAddPointArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByRefere
 {
 	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, NULL, inContext );
 	LEOInitPointValue( outValue, l, t, kLEOInvalidateReferences, inContext );
+	return outValue;
+}
+
+
+LEOValuePtr	LEOAddArrayArrayEntryToRoot( struct LEOArrayEntry** arrayPtrByReference, const char* inKey, LEOValueArray* inArray, struct LEOContext* inContext )
+{
+	LEOValuePtr	outValue = LEOAddArrayEntryToRoot( arrayPtrByReference, inKey, (LEOValuePtr)inArray, inContext );
+	if( !inArray )
+	{
+		LEOInitArrayValue( &outValue->array, NULL, kLEOInvalidateReferences, inContext );
+	}
 	return outValue;
 }
 

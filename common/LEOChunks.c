@@ -140,14 +140,14 @@ void	LEOGetChunkRanges( const char* inStr, LEOChunkType inType,
 				didFindStart = true;
 			}
 			
+			/*uint32_t*/ LEOUTF8StringParseUTF32CharacterAtOffset( inStr, theLen, &currOffset );
+
 			if( currChar == inRangeEnd )
 			{
 				*outChunkEnd = currOffset;
 				*outDelChunkEnd = currOffset;
 				didFindEnd = true;
 			}
-			
-			/*uint32_t*/ LEOUTF8StringParseUTF32CharacterAtOffset( inStr, theLen, &currOffset );
 			
 			currChar ++;
 		}

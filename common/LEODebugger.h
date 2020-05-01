@@ -39,7 +39,7 @@ void LEODebuggerPreInstructionProc( struct LEOContext* inContext );
 	interrupted and a debugger console to be shown that allows examining the
 	current stack.
 	@seealso //leo_ref/c/func/LEODebuggerRemoveBreakpoint LEODebuggerRemoveBreakpoint */
-void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction );
+void LEODebuggerAddBreakpoint( LEOInstruction* targetInstruction, struct LEOScript * inScript );
 
 /*! Remove a breakpoint set using LEODebuggerAddBreakpoint().
 	@seealso //leo_ref/c/func/LEODebuggerAddBreakpoint LEODebuggerAddBreakpoint */

@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include "LEOContextGroup.h"
 #include "LEOStringUtilities.h"
+#include "AnsiStrings.h"
 
 
 #define		NUM_INSTRUCTIONS_PER_CHUNK		16
@@ -105,8 +106,8 @@ void	LEOHandlerAddVariableNameMapping( LEOHandler* inHandler, const char* inName
 		}
 	}
 	
-	strncpy( inHandler->varNames[ inHandler->numVariables -1 ].variableName, inName, DBG_VAR_NAME_SIZE );
-	strncpy( inHandler->varNames[ inHandler->numVariables -1 ].realVariableName, inRealName, DBG_VAR_NAME_SIZE );
+	strlcpy( inHandler->varNames[ inHandler->numVariables -1 ].variableName, inName, DBG_VAR_NAME_SIZE );
+	strlcpy( inHandler->varNames[ inHandler->numVariables -1 ].realVariableName, inRealName, DBG_VAR_NAME_SIZE );
 	inHandler->varNames[ inHandler->numVariables -1 ].bpRelativeAddress = inBPRelativeAddress;
 }
 
@@ -136,8 +137,8 @@ void	LEOHandlerFindVariableByAddress( LEOHandler* inHandler, long bpRelativeAddr
 	}
 	else if( bpRelativeAddress < 0 )
 	{
-		LEOValuePtr	paramCountObj = (inContext->stackBasePtr -1);
-		LEOInteger	paramCount = LEOGetValueAsInteger( paramCountObj, NULL, inContext );
+		LEOValuePtr	paramCountObj = inContext ? (inContext->stackBasePtr -1) : NULL;
+		LEOInteger	paramCount = paramCountObj ? LEOGetValueAsInteger( paramCountObj, NULL, inContext ) : 0;
 		
 		if( bpRelativeAddress >= (-paramCount -1) )
 		{
@@ -475,10 +476,10 @@ bool	LEOScriptHasBreakpointAtLine( LEOScript* inScript, size_t inLineNumber )
 }
 
 
-void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler )
+void	LEODebugPrintHandler( struct LEOContextGroup* inGroup, LEOHandler* inHandler, struct LEOScript * inScript )
 {
 	printf( "%s:\n", LEOContextGroupHandlerNameForHandlerID( inGroup, inHandler->handlerName ) );
-	LEODebugPrintInstructions( inHandler->instructions, inHandler->numInstructions );
+	LEODebugPrintInstructions( inHandler->instructions, inHandler->numInstructions, inScript, inHandler, NULL );
 	for( size_t x = 0; x < inHandler->numVariables; x++ )
 	{
 		printf( "%s @%ld (%s)\n", inHandler->varNames[x].realVariableName,
@@ -493,12 +494,12 @@ void	LEODebugPrintScript( struct LEOContextGroup* inGroup, LEOScript* inScript )
 	printf("FUNCTIONS:\n");
 	for( size_t x = 0; x < inScript->numFunctions; x++ )
 	{
-		LEODebugPrintHandler( inGroup, inScript->functions +x );
+		LEODebugPrintHandler( inGroup, inScript->functions +x, inScript );
 	}
 	printf("COMMANDS:\n");
 	for( size_t x = 0; x < inScript->numCommands; x++ )
 	{
-		LEODebugPrintHandler( inGroup, inScript->commands +x );
+		LEODebugPrintHandler( inGroup, inScript->commands +x, inScript );
 	}
 	printf("STRINGS:\n");
 	for( size_t x = 0; x < inScript->numStrings; x++ )

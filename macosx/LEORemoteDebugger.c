@@ -28,6 +28,7 @@
 void	LEORemoteDebuggerUpdateState( struct LEOContext* inContext );
 void	LEORemoteDebuggerAddHandler( struct LEOHandler* inHandler );
 void	LEORemoteDebuggerDoNothingPreInstructionProc( LEOContext* inContext );
+void	LEORemoteDebuggerDisconnect( void );
 
 
 
@@ -71,7 +72,7 @@ bool	LEOInitRemoteDebugger( const char* inHostName )
 		serv_addr.sin_port = htons(LEO_DEBUGGER_PORT);
 		if( connect( gLEORemoteDebuggerSocketFD, (struct sockaddr*)&serv_addr, sizeof(serv_addr) ) < 0 ) 
 		{
-			fprintf( stderr, "Couldn't connect to remote debugger %s:%d error = %d\n", gLEORemoteDebuggerHostName, LEO_DEBUGGER_PORT, errno );
+			//fprintf( stderr, "Couldn't connect to remote debugger %s:%d error = %d\n", gLEORemoteDebuggerHostName, LEO_DEBUGGER_PORT, errno );
 			return false;
 		}
 		gLEORemoteDebuggerInitialized = true;
@@ -81,12 +82,22 @@ bool	LEOInitRemoteDebugger( const char* inHostName )
 }
 
 
+void LEORemoteDebuggerDisconnect( void )
+{
+	close(gLEORemoteDebuggerSocketFD);
+	gLEORemoteDebuggerSocketFD = -1;
+	
+	gLEORemoteDebuggerInitialized = false;
+}
+
+
 void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 {
 	if( !gLEORemoteDebuggerInitialized )
 		return;
 	
 	size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "EMTY\0\0\0\0", 8 );	// Clear any existing variable display.
+	if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 	printf( "Remote debugger: Emptying (%lu bytes written)\n", actuallyWritten );
 	
 	// Print all local variables:
@@ -134,14 +145,22 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 				dataLen = (uint32_t) (strlen(str) +1 +strlen(theTypeName) +1 +strlen(theRealName) +1 +sizeof(objectID) +sizeof(referenceObjectID) +sizeof(referenceObjectSeed));
 				
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, "VARI", 4 );
+				if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+				if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 				printf("Remote debugger: Sending 'VARI' (%u bytes) for %s\n",dataLen,theName);
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, theRealName, strlen(theRealName) +1 );
+				if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, theTypeName, strlen(theTypeName) +1 );
+				if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, str, strlen(str) +1 );
+				if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &objectID, sizeof(objectID) );
+				if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &referenceObjectID, sizeof(referenceObjectID) );
+				if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 				actuallyWritten = write( gLEORemoteDebuggerSocketFD, &referenceObjectSeed, sizeof(referenceObjectSeed) );
+				if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 			}
 			currValue ++;
 		}
@@ -160,9 +179,12 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 			const char*		hdlNameStr = LEOContextGroupHandlerNameForHandlerID( inContext->group, theID );
 			uint32_t		dataLen = (uint32_t) (strlen(hdlNameStr) +1);
 			actuallyWritten = write( gLEORemoteDebuggerSocketFD, "CALL", 4 );
+			if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 			actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+			if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 			printf("Remote debugger: Sending 'CALL' (%u bytes) for %s\n",dataLen,hdlNameStr);
 			actuallyWritten = write( gLEORemoteDebuggerSocketFD, hdlNameStr, strlen(hdlNameStr) +1 );
+			if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 		} while( x > 0 );
 	}
 	
@@ -171,9 +193,12 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 	assert( sizeof(instructionPointer) >= sizeof(LEOInstruction*) );
 	uint32_t		dataLen = sizeof(instructionPointer);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "CURR", 4 );
+	if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
-			printf("Remote debugger: Sending 'CURR' (%u bytes) for %llx\n",dataLen,instructionPointer);
+	if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
+	printf("Remote debugger: Sending 'CURR' (%u bytes) for %llx\n",dataLen,instructionPointer);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &instructionPointer, sizeof(instructionPointer) );
+	if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 
 	// Tell the debugger what source file we're dealing with:
 	if( inContext->currentInstruction->instructionID == LINE_MARKER_INSTR )
@@ -183,9 +208,12 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 		uint32_t	lineNumber = inContext->currentInstruction->param2;
 		dataLen = sizeof(fileID) + sizeof(lineNumber);
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, sizeof(dataLen) );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 		printf("Remote debugger: Sending 'LINE' (%u bytes) for %u\n",dataLen,lineNumber);
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &fileID, sizeof(fileID) );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &lineNumber, sizeof(lineNumber) );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 	}
 	else if( inContext->currentInstruction->instructionID == PARSE_ERROR_INSTR )
 	{
@@ -194,11 +222,15 @@ void LEORemoteDebuggerUpdateState( struct LEOContext* inContext )
 		uint32_t	lineNumber = (uint32_t)script->parseErrors[inContext->currentInstruction->param2].errorLine;
 		
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, "LINE", 4 );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 		dataLen = sizeof(fileID) + sizeof(lineNumber);
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, sizeof(dataLen) );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 		printf("Remote debugger: Sending 'LINE' (%u bytes) for %u\n",dataLen,lineNumber);
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &fileID, sizeof(fileID) );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &lineNumber, sizeof(lineNumber) );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 	}
 }
 
@@ -217,10 +249,14 @@ void	LEORemoteDebuggerAddHandler( struct LEOHandler* inHandler )
 						inHandler->instructions[x].param1, inHandler->instructions[x].param2 );
 		size_t	dataLen = strlen(instructionStr) +1 +sizeof(instructionPointer);
 		size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "INST", 4 );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; } // Disconnected.
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 		printf("Remote debugger: Sending 'INST' (%zu bytes) for %s\n",dataLen,instructionStr);
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, instructionStr, strlen(instructionStr) +1 );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 		actuallyWritten = write( gLEORemoteDebuggerSocketFD, &instructionPointer, sizeof(instructionPointer) );
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 	}
 }
 
@@ -235,13 +271,18 @@ void	LEORemoteDebuggerAddFile( const char* filecontents, uint16_t inFileID, stru
 	size_t		filenameLen = strlen(filename) +1;
 	size_t		filecontentsLen = strlen(filecontents) +1;
 	size_t		actuallyWritten = write( gLEORemoteDebuggerSocketFD, "SOUR", 4 );
+	if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; } // Disconnected.
 	uint32_t	dataLen = (uint32_t) (sizeof(uint16_t) + filenameLen + filecontentsLen);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &dataLen, 4 );
-	printf("Remote debugger: Sending 'SOUR' (%u bytes) for %s\n",dataLen,filename);
+	if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
+	printf("Remote debugger: Sending 'SOUR' (%u bytes) for %s (%d)\n",dataLen,filename,inFileID);
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, &inFileID, sizeof(uint16_t) );
+	if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filename, filenameLen );
+	if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 	actuallyWritten = write( gLEORemoteDebuggerSocketFD, filecontents, filecontentsLen );
-	
+	if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
+
 	// Transmit all instructions for this file to remote debugger:
 	for( size_t x = 0; x < inScript->numFunctions; x++ )
 	{
@@ -275,6 +316,7 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 		LEORemoteDebuggerUpdateState( inContext );
 		printf( "Remote debugger: About to WAIT\n" );
 		size_t	actuallyWritten = write( gLEORemoteDebuggerSocketFD, "WAIT\0\0\0\0", 8 );	// Tell remote debugger to show its prompt now and call us back when the user has made a decision.
+		if( actuallyWritten == SIZE_MAX ) { LEORemoteDebuggerDisconnect(); return; }
 		printf( "Remote debugger: Returned from WAIT having written %lu bytes\n", actuallyWritten );
 		
 		printf( "Remote debugger: Now waiting for reply.\n" );
@@ -287,6 +329,11 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 			//printf( "Remote debugger: About to read.\n" );
 			size_t	numRead = read( gLEORemoteDebuggerSocketFD, currBytesPtr, amountLeft );
 			//printf( "Remote debugger: Read %lu bytes.\n", numRead );
+			if( numRead == 0 ) // Connection was closed?
+			{
+				LEORemoteDebuggerDisconnect();
+				break;
+			}
 			amountLeft -= numRead;
 			currBytesPtr += numRead;
 		}
@@ -332,12 +379,10 @@ void LEORemoteDebuggerPrompt( struct LEOContext* inContext )
 
 void LEORemoteDebuggerPreInstructionProc( struct LEOContext* inContext )
 {
-	if( !gLEORemoteDebuggerInitialized )
-		return;
-	
 	if( inContext->numSteps > 0 )
 	{
 		inContext->numSteps--;
+		LEOInitRemoteDebugger( NULL );	// Re-launch debugger if it's been quit in the meantime.
 		LEORemoteDebuggerPrompt( inContext );
 	}
 	else if( gLEORemoteDebuggerBreakpoints )
@@ -346,6 +391,7 @@ void LEORemoteDebuggerPreInstructionProc( struct LEOContext* inContext )
 		{
 			if( inContext->currentInstruction == gLEORemoteDebuggerBreakpoints[x] )
 			{
+				LEOInitRemoteDebugger( NULL );	// Re-launch debugger if it's been quit in the meantime.
 				LEORemoteDebuggerPrompt( inContext );
 				break;
 			}
@@ -358,7 +404,10 @@ void LEORemoteDebuggerPreInstructionProc( struct LEOContext* inContext )
 		if( theScript )
 		{
 			if( LEOScriptHasBreakpointAtLine( theScript, inContext->currentInstruction->param2 ) )
+			{
+				LEOInitRemoteDebugger( NULL );	// Re-launch debugger if it's been quit in the meantime.
 				LEORemoteDebuggerPrompt( inContext );
+			}
 		}
 	}
 }

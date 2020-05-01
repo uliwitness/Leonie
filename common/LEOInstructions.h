@@ -107,6 +107,8 @@ enum
 	PARSE_ERROR_INSTR,
 	IS_WITHIN_INSTR,
 	INTERSECTS_INSTR,
+	IS_UNSET_INSTR,
+	IS_TYPE_INSTR,
 
 	LEO_NUMBER_OF_INSTRUCTIONS	// MUST BE LAST.
 };
@@ -143,7 +145,7 @@ void		LEOInstructionsFindLineForInstruction( LEOInstruction* instr, size_t *line
 // -----------------------------------------------------------------------------
 
 extern struct LEOInstructionEntry*	gInstructions;
-extern size_t						gNumInstructions;
+extern LEOInstructionID				gNumInstructions;
 
 #if __cplusplus
 }

@@ -28,7 +28,7 @@ enum
 
 LEOINSTR_DECL(ObjCCall,LEO_NUMBER_OF_OBJCCALL_INSTRUCTIONS)
 
-extern size_t					kFirstObjCCallInstruction;
+extern LEOInstructionID				kFirstObjCCallInstruction;
 
 
 #if __cplusplus

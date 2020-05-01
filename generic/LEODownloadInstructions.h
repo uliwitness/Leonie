@@ -10,6 +10,11 @@
 #include "ForgeTypes.h"
 
 
+#if __cplusplus
+extern "C" {
+#endif
+
+
 enum
 {
 	DOWNLOAD_INSTR = 0,
@@ -24,6 +29,10 @@ enum
 
 LEOINSTR_DECL(Download,LEO_NUMBER_OF_DOWNLOAD_INSTRUCTIONS)
 
-extern size_t					kFirstDownloadInstruction;
+extern LEOInstructionID				kFirstDownloadInstruction;
 
 extern struct TGlobalPropertyEntry	gDownloadGlobalProperties[];
+
+#if __cplusplus
+}
+#endif

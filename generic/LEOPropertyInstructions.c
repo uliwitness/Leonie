@@ -9,7 +9,7 @@
 #include "LEOPropertyInstructions.h"
 
 
-size_t			kFirstPropertyInstruction = 0;
+LEOInstructionID			kFirstPropertyInstruction = 0;
 
 
 struct THostCommandEntry	gPropertyHostFunctions[] =

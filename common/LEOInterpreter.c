@@ -16,6 +16,7 @@
 #include "LEOContextGroup.h"
 #include "LEOScript.h"
 #include "LEOStringUtilities.h"
+#include "AnsiStrings.h"
 #include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,13 +38,13 @@ void	LEODoNothingPreInstructionProc( LEOContext* inContext );
 
 
 char*	*			gFileNamesTable = NULL;
-size_t				gFileNamesTableSize = 0;
+uint16_t			gFileNamesTableSize = 0;
 LEOInstructionID	gInstructionIDToDebugPrintBefore = INVALID_INSTR;
 LEOInstructionID	gInstructionIDToDebugPrintAfter = INVALID_INSTR;
-void				(*gCheckForResumeProc)() = NULL;
+void				(*gCheckForResumeProc)(void) = NULL;
 
 
-void	LEOSetCheckForResumeProc( void (*checkForResumeProc)() )
+void	LEOSetCheckForResumeProc( void (*checkForResumeProc)(void) )
 {
 	gCheckForResumeProc = checkForResumeProc;
 }
@@ -63,7 +64,7 @@ void	LEOSetInstructionIDToDebugPrintAfter( LEOInstructionID inID )
 
 uint16_t		LEOFileIDForFileName( const char* inFileName )
 {
-	for( size_t x = 0; x < gFileNamesTableSize; x++ )
+	for( uint16_t x = 0; x < gFileNamesTableSize; x++ )
 	{
 		if( strcmp(inFileName, gFileNamesTable[x]) == 0 )
 			return x;
@@ -185,10 +186,10 @@ LEOHandler*	LEOContextPeekCurrentHandler( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Error: No current handler found." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Error: No current handler found." );
 		return NULL;
 	}
 	else
@@ -200,10 +201,10 @@ LEOScript*	LEOContextPeekCurrentScript( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Error: No current script found." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Error: No current script found." );
 		return NULL;
 	}
 	else
@@ -215,10 +216,10 @@ LEOInstruction*	LEOContextPeekReturnAddress( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Error: No return address found." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Error: No return address found." );
 		return NULL;
 	}
 	else
@@ -230,10 +231,10 @@ LEOValuePtr	LEOContextPeekBasePtr( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Error: No base pointer found." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Error: No base pointer found." );
 		return NULL;
 	}
 	else
@@ -245,10 +246,10 @@ void	LEOContextPopHandlerScriptReturnAddressAndBasePtr( LEOContext* inContext )
 {
 	if( inContext->numCallStackEntries < 1 )
 	{
-		size_t		lineNo = SIZE_T_MAX;
+		size_t		lineNo = SIZE_MAX;
 		uint16_t	fileID = 0;
 		LEOInstructionsFindLineForInstruction( inContext->currentInstruction, &lineNo, &fileID );
-		LEOContextStopWithError( inContext, lineNo, SIZE_T_MAX, fileID, "Error: Script attempted to return from handler that has never been called." );
+		LEOContextStopWithError( inContext, lineNo, SIZE_MAX, fileID, "Error: Script attempted to return from handler that has never been called." );
 		return;
 	}
 	
@@ -413,6 +414,21 @@ LEOValuePtr	LEOPushRectOnStack( LEOContext* theContext, LEOInteger l, LEOInteger
 }
 
 
+LEOValuePtr	LEOPushArrayValueOnStack( LEOContext* theContext, struct LEOArrayEntry* inArray )
+{
+	if( !theContext->stackEndPtr )
+		theContext->stackEndPtr = theContext->stack;
+	
+	LEOValuePtr		theValue = theContext->stackEndPtr;
+	
+	theContext->stackEndPtr++;
+	
+	LEOInitArrayValue( &theValue->array, inArray, kLEOInvalidateReferences, theContext );
+	
+	return theValue;
+}
+
+
 void	LEOCleanUpStackToPtr( LEOContext* theContext, union LEOValue* lastItemToDelete )
 {
 	if( theContext->stack > lastItemToDelete )
@@ -455,6 +471,7 @@ void	LEOResumeContext( LEOContext *inContext )
 void	LEOContextResumeIfAvailable( void )
 {
 	LEOContext*	contextToResume = sContextToResume;
+	sContextToResume = NULL;
 	contextToResume->flags |= kLEOContextResuming | kLEOContextKeepRunning;
 	contextToResume->flags &= ~kLEOContextPause;
 	
@@ -466,9 +483,15 @@ void	LEOContextResumeIfAvailable( void )
 			;
 	}
 	
+	if( contextToResume->errMsg[0] != 0 )
+	{
+		printf("Error in resumed context: %s\n", contextToResume->errMsg); // TODO: Provide a callback here (so host apps can present error dialogs or whatever).
+	}
+	
 	if( (contextToResume->flags & kLEOContextPause) == 0 && contextToResume->contextCompleted )
 		contextToResume->contextCompleted( contextToResume );
 	
+	LEOContextRelease(contextToResume);
 	contextToResume = NULL;	// Either we're done, or we're paused.
 }
 
@@ -537,7 +560,7 @@ void	LEOContextStopWithError( LEOContext* inContext, size_t errLine, size_t errO
 
 void	LEOContextSetLocalVariable( LEOContext* inContext, const char* varName, const char* inMessageFmt, ... )
 {
-    char        str[1024] = {};
+    char        str[1024] = {0};
 	va_list		varargs;
 	va_start( varargs, inMessageFmt );
 	vsnprintf( str, sizeof(str) -1, inMessageFmt, varargs );
@@ -552,7 +575,7 @@ void	LEOContextSetLocalVariable( LEOContext* inContext, const char* varName, con
 }
 
 
-void	LEODebugPrintInstr( LEOInstruction* instruction )
+void	LEODebugPrintInstr( LEOInstruction* instruction, LEOScript* inScript, LEOHandler * inHandler, LEOContext * inContext )
 {
 	if( !instruction )
 	{
@@ -560,23 +583,64 @@ void	LEODebugPrintInstr( LEOInstruction* instruction )
 		return;
 	}
 	
-	printf( "%p: ", instruction );
+	if( !inHandler && inContext )
+		inHandler = LEOContextPeekCurrentHandler(inContext);
+	
 	LEOInstructionID	currID = instruction->instructionID;
 	if( currID >= gNumInstructions )
-		printf("UNKNOWN_%d",currID);
+	{
+		printf("%p: UNKNOWN_%d", instruction, currID);
+		printf("( %u, %d );", instruction->param1, instruction->param2 );
+	}
+	else if( currID == LINE_MARKER_INSTR )
+		printf("# LINE %d \"%s\"", instruction->param2, LEOFileNameForFileID( instruction->param1 ) );
 	else
-		printf("%s",gInstructions[currID].name);
-	printf("( %u, %d );\n", instruction->param1, instruction->param2 );
+	{
+		printf("%p: %s", instruction,gInstructions[currID].name);
+		printf("( %u, %d );", instruction->param1, instruction->param2 );
+	}
+	
+	if( currID == PUSH_STR_VARIANT_FROM_TABLE_INSTR || currID == PUSH_STR_FROM_TABLE_INSTR )
+	{
+		const char*		theString = "";
+		if( instruction->param2 < inScript->numStrings )
+			theString = inScript->strings[instruction->param2];
+		printf(" --> \"%s\"", LEOStringEscapedForPrintingInQuotes(theString) );
+	}
+	else if( currID == PUSH_REFERENCE_INSTR )
+	{
+		if( instruction->param1 == BACK_OF_STACK )
+			printf(" --> BACK_OF_STACK" );
+		else if( inHandler )
+		{
+			char* varName = NULL;
+			char* realVarName = NULL;
+			LEOHandlerFindVariableByAddress( inHandler, instruction->param1, &varName, &realVarName, inContext );
+			printf(" --> @%s", varName );
+		}
+	}
+	else if( currID == PUSH_INTEGER_INSTR )
+	{
+		LEOUnit theUnit = (LEOUnit) instruction->param1;
+		printf( " --> %d%s", instruction->param2, LEOUnitSuffixForUnit(theUnit) );
+	}
+	else if( currID == PUSH_NUMBER_INSTR )
+	{
+		LEOUnit theUnit = (LEOUnit) instruction->param1;
+		float theNumber = (*(float*)&instruction->param2);
+		printf( " --> %g%s", theNumber, LEOUnitSuffixForUnit(theUnit) );
+	}
+	printf("\n" );
 }
 
 
-void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions )
+void	LEODebugPrintInstructions( LEOInstruction instructions[], size_t numInstructions, LEOScript* inScript, LEOHandler * inHandler, LEOContext * inContext )
 {
 	//printf( "%u INSTRUCTIONS:\n", (unsigned int)numInstructions );
 	for( size_t x = 0; x < numInstructions; x++ )
 	{
 		printf( "    " );
-		LEODebugPrintInstr( instructions +x );
+		LEODebugPrintInstr( instructions +x, inScript, inHandler, inContext );
 	}
 }
 
@@ -600,12 +664,14 @@ void	LEOContextDebugPrintCallStack( LEOContext* inContext )
 
 void	LEODebugPrintContext( LEOContext* ctx )
 {
+	LEOScript * script = LEOContextPeekCurrentScript( ctx );
+	
 	printf( "CONTEXT:\n" );
 	if( (ctx->flags & kLEOContextKeepRunning) == 0 )
 		printf( "    keepRunning: FALSE\n" );
 	if( ctx->errMsg[0] != 0 )
 		printf( "    errMsg: \"%s\"\n", LEOStringEscapedForPrintingInQuotes(ctx->errMsg) );
-	printf( "    currentInstruction: " ); LEODebugPrintInstr( ctx->currentInstruction );
+	printf( "    currentInstruction: " ); LEODebugPrintInstr( ctx->currentInstruction, script, NULL, ctx );
 	
 	if( ctx->stackEndPtr != NULL )
 	{
@@ -624,13 +690,13 @@ void	LEODebugPrintContext( LEOContext* ctx )
             char			oldErrMsg[1024];
             size_t          oldErrLine = ctx->errLine;
             size_t          oldErrOffset = ctx->errOffset;
-            strcpy( oldErrMsg, ctx->errMsg );
+            strlcpy( oldErrMsg, ctx->errMsg, sizeof(ctx->errMsg) );
 			LEOGetValueAsString( currValue, str, sizeof(str), ctx );
 			if( (ctx->flags & kLEOContextKeepRunning) == 0 && ctx->errMsg[0] != 0 )
 			{
 				ctx->flags = oldFlags;
-				strcpy( str, ctx->errMsg );
-                strcpy( ctx->errMsg, oldErrMsg );
+				strlcpy( str, ctx->errMsg, sizeof(ctx->errMsg) );
+                strlcpy( ctx->errMsg, oldErrMsg, sizeof(ctx->errMsg) );
                 ctx->errLine = oldErrLine;
                 ctx->errOffset = oldErrOffset;
 				printf( "[%s] (%s)", LEOStringEscapedForPrintingInQuotes(str), currValue->base.isa->displayTypeName );

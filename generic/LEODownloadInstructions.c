@@ -9,5 +9,5 @@
 #include "LEODownloadInstructions.h"
 
 
-size_t			kFirstDownloadInstruction = 0;
+LEOInstructionID			kFirstDownloadInstruction = 0;
 
