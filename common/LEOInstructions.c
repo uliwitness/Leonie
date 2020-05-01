@@ -638,7 +638,7 @@ void	LEOCallHandlerInstruction( LEOContext* inContext )
 	bool			isMessagePassing = (inContext->currentInstruction->param1 & kLEOCallHandler_PassMessage) == kLEOCallHandler_PassMessage;
 	LEOHandlerID	handlerName = inContext->currentInstruction->param2;
 	if( inContext->group->messageSent && !isMessagePassing )
-		inContext->group->messageSent( handlerName, inContext->group );
+		inContext->group->messageSent( handlerName, inContext, inContext->group );
 
 	LEOScript*		currScript = LEOContextPeekCurrentScript( inContext );
 	if( isMessagePassing

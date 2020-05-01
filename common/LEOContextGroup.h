@@ -65,7 +65,7 @@ typedef struct LEOContextGroup
 	char**					handlerNames;		// Array of handler names. The indexes into this array are 'handler IDs' used throughout the bytecode.
 	size_t					numReferences;		// Available slots in "references" array.
 	LEOObject				*references;		// "Master pointer" table for references so we can detect when a reference goes away.
-	void					(*messageSent)( LEOHandlerID sentMessage, struct LEOContextGroup* inContext );
+	void					(*messageSent)( LEOHandlerID sentMessage, struct LEOContext * ctx, struct LEOContextGroup * inContext );
 	void*							userData;
 	LEOUserDataCleanUpFuncPtr		cleanUpUserData;
 } LEOContextGroup;
